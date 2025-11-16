@@ -215,7 +215,7 @@
     }
     
     /* 봇 메시지 내부 요소 (전체 컨테이너) */
-    .bot-message .message-blocks, .bot-message .streaming-block {
+    .bot-message .streaming-block {
         display: block;
         padding: 0; 
         border-radius: 0; 
@@ -225,32 +225,13 @@
         white-space: normal;
         color: var(--accent); 
     }
-
-    /* 🌟🌟🌟 부드러운 페이드인 애니메이션 🌟🌟🌟 */
-    .new-block-fade {
-        opacity: 0; /* 초기 투명도 0 */
-        transform: translateY(10px);
-        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-        color: var(--accent); /* 텍스트 색상 검은색 강제 지정 */
-    }
-    .new-block-fade.visible {
-        opacity: 1; /* 최종 투명도 1 */
-        transform: translateY(0);
-    }
     
-    /* 🌟🌟🌟 스트리밍 중인 블록은 즉시 표시 (문제 해결 핵심) 🌟🌟🌟 */
+    /* 🌟🌟🌟 스트리밍 중인 블록은 즉시 표시 (타이핑 효과만) 🌟🌟🌟 */
     .bot-message .streaming-block {
         opacity: 1 !important; /* 투명도를 1로 강제 적용 */
         transform: translateY(0) !important;
         transition: none !important; /* 애니메이션 제거 */
         color: var(--accent) !important; /* 텍스트 색상 검은색 강제 적용 */
-    }
-
-    
-    /* 봇 메시지 블록 스타일 */
-    .bot-message-block {
-        padding: 0;
-        margin-top: 5px; 
     }
 
     /* 마크다운 스타일링 */
@@ -281,7 +262,7 @@
     .bot-message code {
         font-family: monospace;
     }
-    .bot-message .streaming-block code, .bot-message .message-blocks code {
+    .bot-message .streaming-block code {
         background-color: #e5e7eb;
         padding: 2px 4px;
         border-radius: 3px;
@@ -632,7 +613,8 @@
 
     /**
      * 봇 메시지 컨테이너를 생성하고 '생각하는 중...' 표시기 포함
-     * @returns {Object} {indicatorElement, messageBlocksElement, streamingBlockElement}
+     * 타이핑 효과만 구현하도록 단순화
+     * @returns {Object} {indicatorElement, streamingBlockElement}
      */
     function appendBotMessageContainer() {
         const botMessageContainer = document.createElement('div');
@@ -646,17 +628,11 @@
         indicatorText.textContent = '답변을 생각하는 중...';
         indicatorContainer.appendChild(indicatorText);
         
-        // 🌟 이미 완성된 블록들이 들어갈 컨테이너
-        const messageBlocks = document.createElement('div');
-        messageBlocks.className = 'message-blocks';
-        
-        // 🌟 현재 스트리밍되는 텍스트가 들어갈 컨테이너 (Fade-in 적용)
+        // 🌟 스트리밍되는 텍스트가 들어갈 컨테이너 (이것만 사용)
         const streamingBlock = document.createElement('div');
-        // streaming-block에는 new-block-fade 클래스를 적용하되, CSS에서 !important로 opacity:1을 강제함
-        streamingBlock.className = 'streaming-block new-block-fade'; 
+        streamingBlock.className = 'streaming-block'; // 페이드인 클래스 제거
         
         botMessageContainer.appendChild(indicatorContainer);
-        botMessageContainer.appendChild(messageBlocks);
         botMessageContainer.appendChild(streamingBlock);
 
         chatMessages.appendChild(botMessageContainer);
@@ -664,7 +640,6 @@
         
         return { 
             indicatorElement: indicatorContainer, 
-            messageBlocksElement: messageBlocks,
             streamingBlockElement: streamingBlock 
         };
     }
@@ -676,106 +651,46 @@
 
     /**
      * 원본 마크다운 텍스트를 HTML로 변환합니다.
-     * 이 함수는 이제 인라인 마크다운(굵게, 코드) 및 줄바꿈만 처리합니다.
      * @param {string} rawText - 변환할 원본 마크다운 텍스트.
      */
-    function renderInlineMarkdown(rawText) {
+    function renderMarkdown(rawText) {
         if (!rawText) return "";
         let html = rawText.replace(/\r/g, ''); 
         
-        // 1. 인라인 코드 `code`
+        // 1. 블록 코드 ```code```
+        html = html.replace(/```([^`]+?)```/gs, (match, content) => {
+             return `<pre><code>${content.trim()}</code></pre>`;
+        });
+        
+        // 2. 헤더 (#, ##, ###)
+        html = html.replace(/^(#+)\s*([^\n]+)/gm, (match, hashes, content) => {
+            return `<h${hashes.length}>${content}</h${hashes.length}>`;
+        });
+        
+        // 3. 인라인 코드 `code`
         html = html.replace(/`([^`\n]+?)`/g, '<code>$1</code>');
 
-        // 2. 굵은 글씨 **text** 또는 __text__
+        // 4. 굵은 글씨 **text** 또는 __text__
         html = html.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/__([^__]+?)__/g, '<strong>$1</strong>');
         
-        // 3. 단일 줄바꿈을 <br>로
+        // 5. 단락 처리 (2개 이상의 줄바꿈을 단락으로 처리, 단 pre 태그 안은 제외)
+        // 이 로직은 스트리밍에 방해가 되므로 단순 줄바꿈 처리만 남깁니다.
+        
+        // 6. 단일 줄바꿈을 <br>로 변환
         html = html.replace(/\n/g, '<br>');
-
+        
+        // 7. p 태그로 감싸기 (optional) - 스트리밍 시 타이핑 효과에 방해될 수 있으므로 제거합니다.
+        
         return html;
     }
     
     /**
-     * 완성된 블록을 렌더링하고 페이드인 효과를 적용합니다.
+     * 스트리밍되는 전체 텍스트를 기반으로 내용을 덮어씁니다.
      */
-    function appendBlockToContainer(blockContent, container) {
-        let element = document.createElement('div');
-        element.className = 'bot-message-block new-block-fade'; 
-        
-        // 헤더 변환 (여기에 모든 헤더 처리를 몰아넣습니다)
-        // $1: #+ (e.g., #, ##, ###) / $2: content
-        blockContent = blockContent.replace(/^(#+)\s*([^\n]+)/, (match, hashes, content) => {
-            return `<h${hashes.length}>${content}</h${hashes.length}>`;
-        });
-        
-        // 인라인 마크다운 및 줄바꿈 처리
-        let blockHtml = renderInlineMarkdown(blockContent);
-        
-        // 이미 헤더로 변환된 경우, <p>로 감싸지 않습니다.
-        if (blockHtml.match(/<h[1-3]>|<\/h[1-3]>/i) || blockHtml.match(/<pre>|<\/pre>/i)) {
-            element.innerHTML = blockHtml;
-        } else {
-            element.innerHTML = `<p>${blockHtml}</p>`;
-        }
-        
-        container.appendChild(element);
-
-        // 🌟 페이드인 효과 적용
-        requestAnimationFrame(() => {
-            element.classList.add('visible');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
-    }
-
-    // 전역 변수: 완성된 블록의 원본 텍스트를 추적
-    let completedRawText = ""; 
-    
-    /**
-     * 스트리밍되는 전체 텍스트를 기반으로 완성된 블록을 분리하고 렌더링합니다.
-     */
-    function updateStreamingDisplay(rawResponse, blocksContainer, streamingElement) {
-        let currentRawText = rawResponse.substring(completedRawText.length);
-        let blocks = [];
-        let remainingText = currentRawText;
-        
-        // 단락 구분자 (\n\n)를 찾습니다.
-        let doubleNewlineIndex = currentRawText.indexOf('\n\n');
-        
-        // 🌟 헤더와 강제 줄바꿈을 위한 정규식
-        // (#+) : 헤더 마크다운 / ([^\n]+?([.?!])) : 구두점으로 끝나는 내용 / ([^\n]*) : 뒤따르는 텍스트
-        const headerRegex = /^(#+)\s*([^\n]+?([.?!]))\s*([^\n]*)/;
-        
-        let match = currentRawText.match(headerRegex);
-        let blockCompleted = false;
-
-        if (doubleNewlineIndex !== -1) {
-             // 일반 단락으로 분리
-             let completedBlock = currentRawText.substring(0, doubleNewlineIndex);
-             blocks.push(completedBlock);
-             remainingText = currentRawText.substring(doubleNewlineIndex + 2);
-             blockCompleted = true;
-        } else if (match) {
-            // 헤더 + 강제 줄바꿈으로 분리
-            let contentBeforeTrailing = match[0].substring(0, match[0].length - match[4].length);
-            let contentAfterTrailing = match[4];
-            
-            blocks.push(contentBeforeTrailing);
-            remainingText = contentAfterTrailing;
-            blockCompleted = true;
-        }
-        
-        // 완성된 블록이 있다면 렌더링하고 추적 변수 업데이트
-        for (let block of blocks) {
-            if (block.trim().length > 0) {
-                appendBlockToContainer(block.trim(), blocksContainer);
-                // 블록이 완성되면 뒤에 \n\n을 추가하여 completedRawText에 기록합니다.
-                completedRawText += block + '\n\n'; 
-            }
-        }
-        
-        // 현재 스트리밍 중인 블록 텍스트 업데이트
-        streamingElement.innerHTML = renderInlineMarkdown(remainingText);
+    function updateStreamingDisplay(rawResponse, streamingElement) {
+        // 타이핑 효과를 위해 전체 텍스트를 마크다운 변환 후 덮어씁니다.
+        streamingElement.innerHTML = renderMarkdown(rawResponse);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
@@ -805,19 +720,15 @@
             if (lastBotMessageElement) {
                 const indicator = lastBotMessageElement.querySelector('#thinking-indicator');
                 const streamingBlock = lastBotMessageElement.querySelector('.streaming-block');
-                const blocksContainer = lastBotMessageElement.querySelector('.message-blocks');
 
                 // indicator가 아직 남아있다면 메시지를 추가하지 않고 삭제
                 if (indicator && indicator.style.display !== 'none') {
                     lastBotMessageElement.remove(); 
                 } 
                 else if (streamingBlock && streamingBlock.textContent.trim().length > 0) {
-                    // 현재 스트리밍 중이던 내용을 완성된 블록으로 렌더링
-                    let remainingBlockContent = streamingBlock.textContent.trim();
-                    if (remainingBlockContent.length > 0) {
-                        appendBlockToContainer(remainingBlockContent, blocksContainer);
-                    }
-                    streamingBlock.remove(); // 스트리밍 블록 제거
+                    // 스트리밍을 중지하고 최종 텍스트로 업데이트
+                    // 이미 fullResponse가 마지막 상태를 가지고 있으므로 다시 업데이트
+                    updateStreamingDisplay(fullResponse, streamingBlock);
                 } 
             }
         }
@@ -857,7 +768,7 @@
         autoResizeTextarea(); 
         
         // 3. 봇 메시지를 위한 컨테이너 추가 및 로딩 표시
-        const { indicatorElement, messageBlocksElement, streamingBlockElement } = appendBotMessageContainer();
+        const { indicatorElement, streamingBlockElement } = appendBotMessageContainer();
         
         // 4. 스트리밍 상태 시작
         setStreamingState(true);
@@ -865,7 +776,6 @@
         const signal = abortController.signal;
         
         fullResponse = ""; 
-        completedRawText = ""; // 스트리밍 시작 시 초기화
         let buffer = ""; 
         let isFirstChunk = true; 
         
@@ -910,18 +820,16 @@
                 
                 buffer += decoder.decode(value, { stream: true });
                 
+                // 스트리밍은 \n 단위로 끊어서 처리합니다.
                 const parts = buffer.split('\n');
                 buffer = parts.pop(); 
 
                 for (const part of parts) {
                     const cleanPart = part; 
                     if (cleanPart.trim() === "[DONE]") {
-                        // 남은 모든 텍스트를 최종 블록으로 처리
+                        // 남은 버퍼를 최종 응답에 추가
                         fullResponse += buffer;
-                        updateStreamingDisplay(fullResponse, messageBlocksElement, streamingBlockElement);
-                        
-                        // 마지막 스트리밍 블록 제거
-                        if (streamingBlockElement) streamingBlockElement.remove();
+                        updateStreamingDisplay(fullResponse, streamingBlockElement);
                         
                         setStreamingState(false);
                         history.push({ role: 'model', content: fullResponse });
@@ -936,10 +844,10 @@
                         }
                         
                         // 원본 텍스트 누적
-                        fullResponse += cleanPart;
+                        fullResponse += cleanPart + '\n'; // 스트림 청크 뒤에 줄바꿈을 추가하여 자연스러운 타이핑을 유도
                         
-                        // 🌟🌟🌟 부드러운 스트리밍 로직 🌟🌟🌟
-                        updateStreamingDisplay(fullResponse, messageBlocksElement, streamingBlockElement);
+                        // 🌟🌟🌟 타이핑 효과 업데이트 🌟🌟🌟
+                        updateStreamingDisplay(fullResponse, streamingBlockElement);
                     }
                 }
             }
@@ -950,14 +858,11 @@
                     isFirstChunk = false;
                  }
                  fullResponse += buffer;
-                 updateStreamingDisplay(fullResponse, messageBlocksElement, streamingBlockElement);
+                 updateStreamingDisplay(fullResponse, streamingBlockElement);
             }
             
-            // 스트리밍이 정상 종료된 후, 마지막 스트리밍 블록을 완성된 블록으로 처리
+            // 스트리밍이 정상 종료된 후
             if (isStreaming) {
-                updateStreamingDisplay(fullResponse, messageBlocksElement, streamingBlockElement);
-                 if (streamingBlockElement) streamingBlockElement.remove();
-                 
                  setStreamingState(false);
                  history.push({ role: 'model', content: fullResponse });
             }
