@@ -30,7 +30,11 @@
       /* 폰트 변경: Elms Sans 적용 */
       font-family: 'Elms Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
     }
-    *{box-sizing:border-box;}
+    *{
+        box-sizing:border-box;
+        /* 🌟🌟🌟 모바일 탭 하이라이트 제거 🌟🌟🌟 */
+        -webkit-tap-highlight-color: transparent; 
+    }
     body{
       margin:0;
       background:var(--bg);
@@ -65,7 +69,7 @@
       /* 고정 속성 */
       position: sticky;
       top: 0;
-      z-index: 10; /* 다른 콘텐츠 위에 표시 */
+      z-index: 100; /* 모달 위에 오지 않게 100으로 설정 */
       background: var(--bg); /* 배경색 지정 (스크롤 시 내용이 비치지 않도록) */
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* 약간의 그림자 추가 */
     }
@@ -317,7 +321,7 @@
       box-shadow:none; 
       height: auto;
       min-height: calc(var(--min-input-container-height) + var(--composer-padding-v)); 
-      z-index: 10; /* 헤더와 동일하게 상단에 위치 */
+      z-index: 10; 
     }
     .composer-inner{
       display:flex;
@@ -383,8 +387,9 @@
       cursor: pointer;
     }
     .plus svg {
-      width: 24px; 
-      height: 24px;
+      /* 🌟🌟🌟 플러스 아이콘 크기 축소 (24px -> 20px) 🌟🌟🌟 */
+      width: 20px; 
+      height: 20px;
       fill: #111827;
     }
 
@@ -432,6 +437,121 @@
     .stop-btn {
         background-color: #ef4444; 
     }
+
+    /* ===================================== */
+    /* 🌟🌟🌟 플러스 버튼 모달 스타일 🌟🌟🌟 */
+    /* ===================================== */
+    #modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+    }
+
+    #modal-backdrop.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    #plus-modal {
+        width: 100%;
+        max-width: 768px; /* composer-inner와 동일 */
+        background-color: var(--bg);
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        padding: 24px 16px 40px 16px; 
+        
+        /* 초기 위치: 화면 밖 아래로 */
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+    }
+
+    #modal-backdrop.visible #plus-modal {
+        /* 모달 활성화 시: 제자리로 */
+        transform: translateY(0);
+    }
+    
+    .modal-handle {
+        width: 40px;
+        height: 5px;
+        background-color: #e5e8eb;
+        border-radius: 5px;
+        margin: 0 auto 20px auto;
+    }
+    
+    .modal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+    
+    .modal-grid-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 12px 0;
+        background-color: #f1f4f9; 
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .modal-grid-icon {
+        width: 48px;
+        height: 48px;
+        background-color: #e5e8eb; 
+        border-radius: 12px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-grid-icon svg {
+        width: 24px;
+        height: 24px;
+        stroke: #111827;
+        fill: none;
+        stroke-width: 2;
+    }
+
+    .modal-option {
+        display: flex;
+        align-items: center;
+        padding: 12px 10px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background-color 0.1s ease;
+    }
+    .modal-option:hover {
+        background-color: #f1f4f9;
+    }
+    .modal-option-icon {
+        margin-right: 12px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-option-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
   </style>
 </head>
 <body>
@@ -495,8 +615,8 @@
 
     <div id="composer" class="composer">
       <div class="composer-inner">
-        <div class="plus" aria-label="파일 첨부">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+        <div class="plus" id="plus-button" aria-label="파일 첨부">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
                 <path d="M12 4V20M4 12H20" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
@@ -529,6 +649,63 @@
         </div>
       </div>
     </div>
+    
+    <div id="modal-backdrop">
+        <div id="plus-modal">
+            <div class="modal-handle"></div>
+            
+            <div class="modal-grid">
+                <div class="modal-grid-item" data-action="camera">
+                    <div class="modal-grid-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 8a2 2 0 0 1 2-2h2l1-3h6l1 3h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                        </svg>
+                    </div>
+                    카메라
+                </div>
+                <div class="modal-grid-item" data-action="album">
+                    <div class="modal-grid-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-4-4L6 21"/>
+                        </svg>
+                    </div>
+                    앨범
+                </div>
+                <div class="modal-grid-item" data-action="file">
+                    <div class="modal-grid-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 7l4 4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8l4 4z"/>
+                            <path d="M10 10v4M12 12h-4"/>
+                        </svg>
+                    </div>
+                    파일
+                </div>
+            </div>
+            
+            <div class="modal-option" data-action="create-image">
+                <div class="modal-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                이미지 만들기
+            </div>
+            
+            <div class="modal-option" data-action="set-reminder">
+                <div class="modal-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 12l2 2 4-4m7 4a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                리마인더 등록하기
+            </div>
+            
+        </div>
+    </div>
+    
   </div>
 
   <script>
@@ -555,6 +732,8 @@
     const chatMessages = document.getElementById('chat-messages');
     const composer = document.getElementById('composer');
     const inputContainer = document.getElementById('input-container');
+    const plusButton = document.getElementById('plus-button'); // 🌟 새로 추가
+    const modalBackdrop = document.getElementById('modal-backdrop'); // 🌟 새로 추가
 
     // 🌟🌟🌟 백엔드 엔드포인트 설정 (사용자 주소 반영) 🌟🌟🌟
     const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; 
@@ -613,8 +792,6 @@
 
     /**
      * 봇 메시지 컨테이너를 생성하고 '생각하는 중...' 표시기 포함
-     * 타이핑 효과만 구현하도록 단순화
-     * @returns {Object} {indicatorElement, streamingBlockElement}
      */
     function appendBotMessageContainer() {
         const botMessageContainer = document.createElement('div');
@@ -630,7 +807,7 @@
         
         // 🌟 스트리밍되는 텍스트가 들어갈 컨테이너 (이것만 사용)
         const streamingBlock = document.createElement('div');
-        streamingBlock.className = 'streaming-block'; // 페이드인 클래스 제거
+        streamingBlock.className = 'streaming-block'; 
         
         botMessageContainer.appendChild(indicatorContainer);
         botMessageContainer.appendChild(streamingBlock);
@@ -651,7 +828,6 @@
 
     /**
      * 원본 마크다운 텍스트를 HTML로 변환합니다.
-     * @param {string} rawText - 변환할 원본 마크다운 텍스트.
      */
     function renderMarkdown(rawText) {
         if (!rawText) return "";
@@ -674,13 +850,8 @@
         html = html.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/__([^__]+?)__/g, '<strong>$1</strong>');
         
-        // 5. 단락 처리 (2개 이상의 줄바꿈을 단락으로 처리, 단 pre 태그 안은 제외)
-        // 이 로직은 스트리밍에 방해가 되므로 단순 줄바꿈 처리만 남깁니다.
-        
-        // 6. 단일 줄바꿈을 <br>로 변환
+        // 5. 단일 줄바꿈을 <br>로 변환
         html = html.replace(/\n/g, '<br>');
-        
-        // 7. p 태그로 감싸기 (optional) - 스트리밍 시 타이핑 효과에 방해될 수 있으므로 제거합니다.
         
         return html;
     }
@@ -727,7 +898,6 @@
                 } 
                 else if (streamingBlock && streamingBlock.textContent.trim().length > 0) {
                     // 스트리밍을 중지하고 최종 텍스트로 업데이트
-                    // 이미 fullResponse가 마지막 상태를 가지고 있으므로 다시 업데이트
                     updateStreamingDisplay(fullResponse, streamingBlock);
                 } 
             }
@@ -820,14 +990,12 @@
                 
                 buffer += decoder.decode(value, { stream: true });
                 
-                // 스트리밍은 \n 단위로 끊어서 처리합니다.
                 const parts = buffer.split('\n');
                 buffer = parts.pop(); 
 
                 for (const part of parts) {
                     const cleanPart = part; 
                     if (cleanPart.trim() === "[DONE]") {
-                        // 남은 버퍼를 최종 응답에 추가
                         fullResponse += buffer;
                         updateStreamingDisplay(fullResponse, streamingBlockElement);
                         
@@ -843,10 +1011,8 @@
                             isFirstChunk = false;
                         }
                         
-                        // 원본 텍스트 누적
-                        fullResponse += cleanPart + '\n'; // 스트림 청크 뒤에 줄바꿈을 추가하여 자연스러운 타이핑을 유도
+                        fullResponse += cleanPart + '\n'; 
                         
-                        // 🌟🌟🌟 타이핑 효과 업데이트 🌟🌟🌟
                         updateStreamingDisplay(fullResponse, streamingBlockElement);
                     }
                 }
@@ -861,7 +1027,6 @@
                  updateStreamingDisplay(fullResponse, streamingBlockElement);
             }
             
-            // 스트리밍이 정상 종료된 후
             if (isStreaming) {
                  setStreamingState(false);
                  history.push({ role: 'model', content: fullResponse });
@@ -902,6 +1067,30 @@
         }
     });
 
+    // 🌟🌟🌟 모달창 토글 로직 🌟🌟🌟
+    function toggleModal() {
+        modalBackdrop.classList.toggle('visible');
+    }
+
+    plusButton.addEventListener('click', (e) => {
+        e.preventDefault(); 
+        toggleModal();
+    });
+    
+    // 배경 클릭 시 모달 닫기
+    modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) {
+            toggleModal();
+        }
+    });
+    // 모달 내부 버튼 클릭 시 닫기 (실제 기능은 여기에 구현해야 함)
+    document.getElementById('plus-modal').addEventListener('click', (e) => {
+        if (e.target.closest('.modal-grid-item') || e.target.closest('.modal-option')) {
+            // alert(e.target.closest('[data-action]').getAttribute('data-action') + " 클릭됨! (실제 기능 구현 필요)");
+            // toggleModal(); 
+        }
+    });
+    
     // 초기 상태 높이 조정
     toggleSendButton();
     autoResizeTextarea();
