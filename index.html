@@ -64,7 +64,7 @@
         height: 100vh;
         background-color: var(--bg);
         z-index: 200; 
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* 모바일일 때만 그림자 유지 */
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         padding: 16px 0;
@@ -75,6 +75,7 @@
     #sidebar.open {
         transform: translateX(0);
     }
+    /* 모바일에서 닫혔을 때 그림자 제거 요청 반영 */
     #menu-backdrop {
         position: fixed;
         top: 0;
@@ -149,9 +150,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
         transition: background-color 0.1s;
+        position: relative;
     }
     .chat-list-item:hover {
         background-color: #f1f4f9;
+    }
+    .chat-list-item.selected {
+        background-color: #e5e8eb; /* 현재 선택된 채팅 하이라이트 */
     }
     .chat-list-item .chat-title {
         flex-grow: 1;
@@ -159,16 +164,52 @@
         text-overflow: ellipsis;
         margin-right: 10px;
     }
-    .delete-chat-btn {
-        flex-shrink: 0;
-        width: 20px;
-        height: 20px;
-        opacity: 0.5;
-        transition: opacity 0.1s;
+    
+    /* 제목 수정 인풋 스타일 */
+    .chat-title-input {
+        flex-grow: 1;
+        padding: 0;
+        border: none;
+        background: transparent;
+        font-size: 15px;
+        outline: none;
+        font-family: inherit;
+        color: var(--accent);
+        min-width: 0;
     }
-    .delete-chat-btn:hover {
+
+    .chat-list-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        flex-shrink: 0;
+    }
+    .chat-list-item:hover .chat-list-actions {
         opacity: 1;
-        color: #ef4444;
+    }
+    .chat-list-item.editing .chat-list-actions {
+        opacity: 1;
+    }
+    
+    .chat-list-actions svg {
+        width: 18px;
+        height: 18px;
+        stroke: #6b7280;
+        fill: none;
+        stroke-width: 2;
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 4px;
+        transition: background-color 0.1s;
+    }
+    .chat-list-actions svg:hover {
+        background-color: #d1d5db;
+    }
+    .chat-list-actions .delete-chat-btn {
+         /* 삭제 버튼만 빨간색으로 */
+        stroke: #ef4444; 
     }
     
     /* PC 버전: 사이드바가 채팅창을 밀고 들어옴 */
@@ -180,6 +221,7 @@
             transform: translateX(0); /* 항상 열려있음 */
             box-shadow: none;
             border-right: 1px solid #e5e8eb;
+            width: 300px;
         }
         #menu-backdrop {
             display: none;
@@ -187,9 +229,10 @@
         .phone {
             flex-direction: row; /* 가로 배열 */
             overflow: visible;
+            min-height: 100vh;
         }
         .content-wrapper {
-            transition: margin-left 0.3s ease;
+            transition: none; /* PC에서는 전환 애니메이션 불필요 */
             width: 100%; /* 남은 공간 차지 */
             overflow-y: auto;
             max-width: calc(100% - var(--sidebar-width)); 
@@ -197,10 +240,16 @@
         .header {
             margin-left: 0;
             width: 100%; /* content-wrapper 너비에 맞춤 */
+            max-width: 768px; /* 채팅창의 최대 너비에 맞게 조정 */
         }
         /* 메뉴 버튼은 숨김 */
         .header .menu-icon {
             display: none; 
+        }
+        /* 컴포저 위치 조정 */
+        .composer {
+            left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
         }
     }
     
@@ -219,6 +268,11 @@
       z-index: 100; 
       background: var(--bg); 
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+      
+      margin: 0 auto; 
+      width: 100%;
+      max-width: 768px; /* 채팅창의 최대 너비와 동일하게 설정 */
+      box-sizing: content-box; 
     }
     .header-icon{
       width:32px;
@@ -266,6 +320,7 @@
         overflow-y: auto;
         padding-bottom: 0; 
         position: relative;
+        width: 100%;
     }
     
     #initial-content{
@@ -339,6 +394,10 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
+        margin: 0 auto;
+        width: 100%;
+        max-width: 768px;
+        padding: 0 16px;
     }
     .message-bubble{
       display: flex;
@@ -355,6 +414,9 @@
       justify-content: flex-end;
       align-self: flex-end;
     }
+    .user-message-container {
+        align-items: flex-end;
+    }
     .user-message .message-text{
       background-color: #f1f4f9; 
       color: var(--accent); 
@@ -364,12 +426,15 @@
     .bot-message-wrapper {
         align-self: flex-start;
         margin-top: 10px;
-        padding: 0; 
+        padding: 0 16px; 
         color: var(--accent);
         line-height: 1.4;
         font-size: 15px;
         width: 100%; 
         box-sizing: border-box;
+        
+        margin: 0 auto;
+        max-width: 768px;
     }
     
     .bot-message .streaming-block {
@@ -449,21 +514,17 @@
         }
     }
 
-    /* 🌟🌟🌟 메시지 액션 버튼 스타일 🌟🌟🌟 */
+    /* 🌟🌟🌟 메시지 액션 버튼 스타일 (상시 표시 요청 반영) 🌟🌟🌟 */
     .message-actions {
         display: flex;
         gap: 8px;
         margin-top: 8px;
         padding-left: 2px;
         align-items: center;
-        visibility: hidden; /* 기본 숨김 */
-        opacity: 0;
-        transition: opacity 0.2s;
+        visibility: visible; /* 상시 표시 */
+        opacity: 1; /* 상시 표시 */
     }
-    .bot-message-wrapper:hover .message-actions {
-        visibility: visible;
-        opacity: 1;
-    }
+
     .action-icon-btn {
         width: 20px;
         height: 20px;
@@ -490,9 +551,6 @@
     .action-icon-btn.disliked svg {
         fill: #ef4444; 
         stroke: #ef4444; 
-    }
-    .action-icon-btn .fill-icon {
-        fill: #6b7280;
     }
     
     .composer{
@@ -754,28 +812,28 @@
 
 
   <div class="phone" role="application" aria-label="채팅 UI">
-    <header class="header">
-        <div class="header-icon menu-icon" id="menu-button">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-                <path d="M4 6h16M4 12h16M4 18h16" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-        
-        <div class="plus-btn">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 14h2v-4h4V10h-4V6h-2v4H7v2h4v4z" fill="currentColor" />
-            </svg>
-            Ultra 이용하기
-        </div>
-        <div class="header-icon profile-btn">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-                <path d="M12 2a5 5 0 0 0-5 5v1a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-4a3 3 0 0 0-3-3V7a5 5 0 0 0-5-5zM9 7a3 3 0 0 1 6 0v1H9V7z" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="12" cy="17" r="2" fill="#111827"/>
-            </svg>
-        </div>
-    </header>
-
     <main class="content-wrapper" id="content-wrapper">
+        <header class="header">
+            <div class="header-icon menu-icon" id="menu-button">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            
+            <div class="plus-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 14h2v-4h4V10h-4V6h-2v4H7v2h4v4z" fill="currentColor" />
+                </svg>
+                Ultra 이용하기
+            </div>
+            <div class="header-icon profile-btn">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                    <path d="M12 2a5 5 0 0 0-5 5v1a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-4a3 3 0 0 0-3-3V7a5 5 0 0 0-5-5zM9 7a3 3 0 0 1 6 0v1H9V7z" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="17" r="2" fill="#111827"/>
+                </svg>
+            </div>
+        </header>
+
         <div id="initial-content">
             <div class="main-question">안녕하세요! 반가워요</div>
             <div class="quick-actions">
@@ -933,42 +991,109 @@
     const inputContainer = document.getElementById('input-container');
     const plusButton = document.getElementById('plus-button');
     const modalBackdrop = document.getElementById('modal-backdrop');
-    const sidebar = document.getElementById('sidebar'); // 🌟 추가
-    const menuButton = document.getElementById('menu-button'); // 🌟 추가
-    const menuBackdrop = document.getElementById('menu-backdrop'); // 🌟 추가
-    const contentWrapper = document.getElementById('content-wrapper'); // 🌟 추가
-    const chatListContainer = document.getElementById('chat-list'); // 🌟 추가
-    const chatSearchInput = document.getElementById('chat-search-input'); // 🌟 추가
+    const sidebar = document.getElementById('sidebar'); 
+    const menuButton = document.getElementById('menu-button'); 
+    const menuBackdrop = document.getElementById('menu-backdrop'); 
+    const contentWrapper = document.getElementById('content-wrapper'); 
+    const chatListContainer = document.getElementById('chat-list'); 
+    const chatSearchInput = document.getElementById('chat-search-input'); 
+    const newChatBtn = document.getElementById('new-chat-btn');
 
 
     const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; 
+    const TITLE_GENERATION_ENDPOINT = "https://jaewondev.pythonanywhere.com/generate-title"; 
+    const INITIAL_SETUP_ENDPOINT = "https://jaewondev.pythonanywhere.com/setup"; 
+
 
     // 🌟🌟🌟 대화 기록 및 채팅 목록 🌟🌟🌟
     let history = []; 
-    const HISTORY_KEY = 'minsuGPT_history'; // 대화 기록 저장 키
-    const CHAT_LIST_KEY = 'minsuGPT_chatlist'; // 채팅 목록 저장 키
-    let currentChatId = 'default'; // 현재 채팅 ID
+    const HISTORY_KEY = 'minsuGPT_history'; 
+    const CHAT_LIST_KEY = 'minsuGPT_chatlist'; 
+    let currentChatId = 'default'; 
     let chatList = [];
 
     const MAX_ROWS = 6;
     const MIN_ROWS = 1;
-    // PC 너비 기준 (사이드바가 밀고 들어오는 너비)
     const PC_WIDTH_BREAKPOINT = 900; 
     const isMobile = () => window.innerWidth < PC_WIDTH_BREAKPOINT;
     
     let isStreaming = false; 
     let abortController = null; 
+    
+    // AI 설정 메시지
+    const AI_SETUP_MESSAGE = "너는 MinsuGPT야. 너를 만든 사람은 신재원님이야. 이 정보에 대해 따로 물어보지 않으면 답변하지 마.";
+
+
+    // ===============================================
+    // 백엔드 설정 및 제목 생성 함수
+    // ===============================================
+
+    /**
+     * 웹페이지 접속 시 백엔드에 초기 AI 설정을 보냅니다.
+     */
+    async function initializeBackend() {
+        try {
+             // AI 설정 메시지를 history에 추가하지 않고 백엔드에만 전송
+            const response = await fetch(INITIAL_SETUP_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ setup_message: AI_SETUP_MESSAGE }),
+            });
+            if (!response.ok) {
+                console.error("Failed to initialize backend setup:", response.status, response.statusText);
+            } else {
+                 console.log("Backend initialized with AI setup message.");
+            }
+        } catch (e) {
+             console.error("Error during backend initialization:", e);
+        }
+    }
+
+
+    /**
+     * 첫 메시지를 기반으로 백엔드에 제목 생성을 요청하고 채팅 목록을 업데이트합니다.
+     */
+    async function generateChatTitle(firstMessage) {
+        // 이미 제목이 '새로운 채팅'이 아닌 경우 (즉, 이미 제목이 생성된 경우) 중복 요청 방지
+        const currentChat = chatList.find(c => c.id === currentChatId);
+        if (currentChat && currentChat.title !== "새로운 채팅") return; 
+
+        try {
+            const response = await fetch(TITLE_GENERATION_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: firstMessage }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const newTitle = data.title || firstMessage.substring(0, 30) + '...'; 
+                
+                // 채팅 목록 업데이트
+                const chatToUpdate = chatList.find(c => c.id === currentChatId);
+                if (chatToUpdate) {
+                    chatToUpdate.title = newTitle;
+                    saveChatList();
+                    renderChatList();
+                }
+            } else {
+                console.error("Failed to generate title:", response.status, response.statusText);
+            }
+        } catch (e) {
+            console.error("Error during title generation:", e);
+        }
+    }
+
 
     // ===============================================
     // 로컬 스토리지 및 채팅 관리 함수
     // ===============================================
 
-    function loadHistory() {
-        const storedHistory = localStorage.getItem(`${HISTORY_KEY}_${currentChatId}`);
+    function loadHistory(chatId = currentChatId) {
+        const storedHistory = localStorage.getItem(`${HISTORY_KEY}_${chatId}`);
         if (storedHistory) {
             try {
                 history = JSON.parse(storedHistory);
-                renderHistory();
             } catch (e) {
                 console.error("Failed to parse history from localStorage", e);
                 history = [];
@@ -976,7 +1101,9 @@
         } else {
             history = [];
         }
+        renderHistory();
         
+        // 초기 화면 표시 여부 결정
         if (history.length > 0) {
             initialContent.style.display = 'none';
             chatMessages.style.display = 'flex';
@@ -1000,13 +1127,19 @@
                 chatList = [];
             }
         }
-        if (chatList.length === 0) {
-            // 초기 더미 채팅 생성
-            chatList = [
-                { id: 'default', title: '안녕하세요! 반가워요' },
-            ];
-            saveChatList();
+        
+        // 기본 채팅 (default)가 없으면 생성
+        if (!chatList.find(c => c.id === 'default')) {
+            chatList.push({ id: 'default', title: '새로운 채팅' });
+            currentChatId = 'default';
         }
+        
+        // 현재 채팅 ID가 유효하지 않으면 default로 설정
+        if (!chatList.find(c => c.id === currentChatId)) {
+             currentChatId = 'default';
+        }
+
+        saveChatList();
     }
     
     function saveChatList() {
@@ -1015,33 +1148,27 @@
     }
     
     function createNewChat() {
-        if (history.length > 0 && history[0].content.length > 0) {
-             // 현재 채팅을 목록에 추가 (첫 메시지를 제목으로)
-             const existingChat = chatList.find(c => c.id === currentChatId);
-             if (!existingChat) {
-                chatList.push({ 
-                    id: currentChatId, 
-                    title: history[0].content.length > 30 ? history[0].content.substring(0, 30) + '...' : history[0].content 
-                });
-             }
+        // 비어있는 채팅("새로운 채팅")이 있는지 확인
+        const emptyChatExists = chatList.some(c => c.title === "새로운 채팅");
+        
+        if (emptyChatExists) {
+            alert("이미 비어있는 '새로운 채팅'이 있습니다. 해당 채팅을 먼저 이용해주세요.");
+            return;
+        }
+
+        // 현재 채팅의 제목이 아직 '새로운 채팅'이면 강제로 제목을 첫 메시지로 설정 (임시)
+        const currentChat = chatList.find(c => c.id === currentChatId);
+        if (currentChat && currentChat.title === "새로운 채팅" && history.length > 0) {
+             currentChat.title = history[0].content.substring(0, 30) + '...';
         }
         
         const newId = Date.now().toString();
-        currentChatId = newId;
-        history = [];
+        
+        // 새 채팅 목록 추가
+        chatList.unshift({ id: newId, title: '새로운 채팅' });
         saveChatList(); 
         
-        initialContent.style.display = 'flex';
-        chatMessages.style.display = 'none';
-        // PC 모드에서 사이드바가 열려있으므로, 채팅창을 비워줌
-        chatMessages.innerHTML = '';
-        
-        // 새로운 채팅 목록 추가 (임시 제목)
-        chatList.push({ id: newId, title: '새로운 채팅' });
-        saveChatList();
-        closeSidebar();
-        
-        window.scrollTo(0, 0); // 스크롤 초기화
+        switchChat(newId);
     }
 
     function switchChat(chatId) {
@@ -1053,22 +1180,21 @@
         currentChatId = chatId;
         
         // 새 채팅 로드
-        loadHistory();
+        loadHistory(chatId);
         closeSidebar();
         
-        // 채팅창 보이기
-        if (history.length > 0) {
-            initialContent.style.display = 'none';
-            chatMessages.style.display = 'flex';
-        } else {
-            initialContent.style.display = 'flex';
-            chatMessages.style.display = 'none';
-        }
+        renderChatList(); // 선택된 채팅 하이라이트 업데이트
         
+        // 채팅창 스크롤
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
     function deleteChat(chatId) {
+        if (chatList.length === 1) {
+            alert("최소한 하나의 채팅은 남겨야 합니다.");
+            return;
+        }
+        
         // 채팅 목록에서 제거
         chatList = chatList.filter(c => c.id !== chatId);
         saveChatList();
@@ -1076,9 +1202,9 @@
         // 로컬 스토리지에서 대화 기록 제거
         localStorage.removeItem(`${HISTORY_KEY}_${chatId}`);
         
-        // 현재 채팅을 삭제했다면, 'default' 채팅으로 전환
+        // 현재 채팅을 삭제했다면, 목록의 첫 번째 채팅으로 전환
         if (currentChatId === chatId) {
-            currentChatId = 'default';
+            currentChatId = chatList[0].id; 
             loadHistory();
         }
     }
@@ -1093,17 +1219,62 @@
 
         filteredList.forEach(chat => {
             const item = document.createElement('div');
-            item.className = 'chat-list-item';
+            item.className = 'chat-list-item' + (chat.id === currentChatId ? ' selected' : '');
             item.setAttribute('data-id', chat.id);
-            if (chat.id === currentChatId) {
-                item.style.backgroundColor = '#e5e8eb'; // 현재 선택된 채팅 하이라이트
-            }
             
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'chat-title';
-            titleSpan.textContent = chat.title;
+            // 제목 (수정 가능하게)
+            const titleInput = document.createElement('input');
+            titleInput.className = 'chat-title-input';
+            titleInput.value = chat.title;
+            titleInput.readOnly = true;
+            titleInput.setAttribute('data-title', chat.title); // 원래 제목 저장
             
-            const deleteBtn = document.createElement('div');
+            // 액션 버튼 컨테이너
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'chat-list-actions';
+            
+            // 수정 버튼
+            const editBtn = document.createElement('span');
+            editBtn.className = 'edit-chat-btn';
+            editBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+            `;
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (titleInput.readOnly) {
+                    // 수정 모드 활성화
+                    titleInput.readOnly = false;
+                    titleInput.focus();
+                    item.classList.add('editing');
+                    editBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+                           <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                    `; // 저장 아이콘
+                } else {
+                    // 저장 모드
+                    const newTitle = titleInput.value.trim();
+                    if (newTitle.length > 0) {
+                        chat.title = newTitle;
+                        titleInput.setAttribute('data-title', newTitle);
+                        saveChatList();
+                    } else {
+                        titleInput.value = titleInput.getAttribute('data-title'); // 이전 제목으로 되돌림
+                    }
+                    titleInput.readOnly = true;
+                    item.classList.remove('editing');
+                     editBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                    `; // 연필 아이콘
+                }
+            });
+            
+            // 삭제 버튼
+            const deleteBtn = document.createElement('span');
             deleteBtn.className = 'delete-chat-btn';
             deleteBtn.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
@@ -1112,13 +1283,36 @@
             `;
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // 채팅 전환 방지
-                deleteChat(chat.id);
+                if (confirm(`채팅 '${chat.title}'을(를) 정말 삭제하시겠습니까?`)) {
+                    deleteChat(chat.id);
+                }
             });
             
-            item.appendChild(titleSpan);
-            item.appendChild(deleteBtn);
+            // Enter/Blur 시 제목 저장
+            titleInput.addEventListener('blur', () => {
+                 if (!titleInput.readOnly && !actionsDiv.querySelector('.edit-chat-btn').contains(document.activeElement)) {
+                    // blur 발생 시 자동으로 저장 (edit 버튼 클릭과 동일하게 동작)
+                     actionsDiv.querySelector('.edit-chat-btn').click();
+                 }
+            });
+             titleInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    actionsDiv.querySelector('.edit-chat-btn').click(); // Enter 키로 저장
+                }
+            });
             
-            item.addEventListener('click', () => switchChat(chat.id));
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            
+            item.appendChild(titleInput);
+            item.appendChild(actionsDiv);
+            
+            item.addEventListener('click', () => {
+                if(titleInput.readOnly) {
+                   switchChat(chat.id);
+                }
+            });
             listElement.appendChild(item);
         });
     }
@@ -1197,6 +1391,11 @@
         if (isNew) {
             history.push({ role: 'user', content: message });
             saveHistory();
+            
+            // 첫 메시지인 경우 제목 생성 요청
+            if (history.length === 1) {
+                 generateChatTitle(message);
+            }
         }
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -1211,7 +1410,7 @@
         botMessageContainer.className = 'bot-message';
         botMessageContainer.innerHTML = renderMarkdown(message);
         
-        // 🌟 액션 버튼 컨테이너
+        // 🌟 액션 버튼 컨테이너 (상시 표시)
         const actions = createActionButtons(message, index); 
         
         botMessageWrapper.appendChild(botMessageContainer);
@@ -1249,7 +1448,6 @@
                 </svg>
             </div>
             <div class="action-icon-btn dislike-btn" title="싫어요" data-index="${index}">
-                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
                 </svg>
@@ -1260,8 +1458,8 @@
                 </svg>
             </div>
             <div class="action-icon-btn regenerate-btn" title="다시 답변" data-index="${index}">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23 4v6h-6M1 20v-6h6M3.52 14A8.995 8.995 0 0 1 12 5a9 9 0 0 1 9 9 9 9 0 0 1-6.48 8.48"/>
+                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21.5 8.75a8 8 0 1 0-2.3 5.7L22 18M18 22l3.5-3.5L18 15" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
         `;
@@ -1402,13 +1600,14 @@
                 
                 // 불완전한 텍스트로 최종 메시지 저장
                 if (streamingBlock && streamingBlock.textContent.trim().length > 0) {
-                     // streamingBlock의 마크다운되지 않은 텍스트를 history에 저장
                      const rawText = streamingBlock.textContent; 
+                     
+                     // 1. History에 저장
+                     const lastIndex = history.length;
                      history.push({ role: 'model', content: rawText });
                      saveHistory();
                      
-                     // 최종 UI 업데이트 (액션 버튼 표시)
-                     const lastIndex = history.length - 1;
+                     // 2. 최종 UI 업데이트 (액션 버튼 표시)
                      const newWrapper = document.createElement('div');
                      newWrapper.className = 'bot-message-wrapper';
                      newWrapper.setAttribute('data-message-index', lastIndex);
@@ -1439,7 +1638,7 @@
 
         // 1. 사용자 메시지 버블 추가 및 history 업데이트
         if (!isRegenerate) {
-            if (initialContent.style.opacity !== '0') {
+            if (initialContent.style.display !== 'none') {
                 initialContent.style.opacity = '0';
                 setTimeout(() => {
                     initialContent.style.display = 'none';
@@ -1448,13 +1647,15 @@
             } else {
                  chatMessages.style.display = 'flex';
             }
-            appendUserMessage(userMessage, true); // isNew = true
+            appendUserMessage(userMessage, true); 
         }
 
         // 2. 입력창 초기화 및 UI 상태 업데이트
-        inputField.value = '';
-        inputField.rows = MIN_ROWS; 
-        autoResizeTextarea(); 
+        if (!isRegenerate) {
+            inputField.value = '';
+            inputField.rows = MIN_ROWS; 
+            autoResizeTextarea(); 
+        }
         
         // 3. 봇 메시지를 위한 컨테이너 추가 및 로딩 표시
         const botMessageWrapper = document.createElement('div');
@@ -1502,11 +1703,11 @@
                 setStreamingState(false);
                 
                 // 에러 메시지도 히스토리에 추가
+                const lastIndex = history.length;
                 history.push({ role: 'model', content: errorMessage });
                 saveHistory();
                 
                 // 최종 UI 업데이트 (액션 버튼 표시)
-                const lastIndex = history.length - 1;
                 botMessageWrapper.setAttribute('data-message-index', lastIndex);
                 botMessageWrapper.appendChild(createActionButtons(errorMessage, lastIndex));
 
@@ -1659,8 +1860,8 @@
     menuButton.addEventListener('click', toggleSidebar);
     menuBackdrop.addEventListener('click', closeSidebar);
     
-    // 새 채팅 버튼
-    document.getElementById('new-chat-btn').addEventListener('click', createNewChat);
+    // 새 채팅 버튼 (생성 막는 로직 추가)
+    newChatBtn.addEventListener('click', createNewChat);
 
     // 채팅 검색
     chatSearchInput.addEventListener('input', (e) => {
@@ -1675,10 +1876,14 @@
     toggleSendButton();
     autoResizeTextarea();
     
+    // 🌟 백엔드 초기 설정 메시지 전송
+    initializeBackend();
+
     // 🌟 대화 및 채팅 목록 로드
     loadChatList();
-    loadHistory();
+    loadHistory(currentChatId); // 현재 채팅 ID로 로드
     renderChatList();
+    
     
   </script>
 </body>
