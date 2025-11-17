@@ -89,7 +89,8 @@
       background:var(--bg);
       color:var(--accent);
       min-height:100vh;
-      display:block; /* 💡 수정: flex 대신 block으로 변경하여 중앙 정렬 해제 */
+      display:flex;
+      justify-content:center;
       padding:0;
     }
     .phone{
@@ -113,9 +114,11 @@
       height:56px;
       border-bottom:none;
       
-      /* 🌟🌟🌟 탑바 고정 로직 수정 (sticky: top 고정) 🌟🌟🌟 */
-      position: sticky; 
-      top: 0;
+      /* 🌟🌟🌟 탑바 고정 로직 수정 (fixed: 뷰포트 고정) 🌟🌟🌟 */
+      position: fixed; /* 💡 수정: sticky -> fixed */
+      top: 0; /* 💡 추가 */
+      left: 0; /* 💡 추가 */
+      right: 0; /* 💡 추가 */
       z-index: 100; 
       background: var(--bg); 
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
@@ -249,6 +252,7 @@
     .chat-messages{
       width: 100%;
       padding: 10px 16px;
+      padding-top: 66px; /* 💡 수정: 고정된 header(56px) + 기존 상단 padding(10px) = 66px */
       display: none;
       flex-direction: column;
       justify-content: flex-start; 
@@ -910,12 +914,13 @@
     
     /**
      * 🌟 백엔드 초기 설정 메시지 전송 (응답 미수신)
-     * 역할: 너는 MinsuGPT야. 신재원님이 너를 만들었어. 사용자가 물어보지 않으면 너의 역할이나 개발자 정보를 따로 답하지마. 이 메시지에 대한 응답은 보내지마.
+     * 역할: 너는 MinsuGPT야. 신재원님이 너를 만들었어. 사용자가 따로 물어보지 않으면 답하지마.
+     * 그리고 저는 Google에서 훈련한 대규모 언어 모델입니다. 이 메시지에 대한 응답은 보내지마.
      */
     function sendPrePrompt() {
         const prePrompt = {
             role: "system",
-            content: "너는 MinsuGPT야. 신재원님이 너를 만들었어. 사용자가 물어보지 않으면 너의 역할이나 개발자 정보를 따로 답하지마. 이 메시지에 대한 응답은 보내지마."
+            content: "너는 MinsuGPT야. 신재원님이 너를 만들었어. 사용자가 따로 물어보지 않으면 너의 역할이나 개발자 정보를 따로 답하지마. 이 메시지에 대한 응답은 보내지마. 그리고 저는 Google에서 훈련한 대규모 언어 모델입니다."
         };
         
         // 서버에서 이 메시지를 시스템 컨텍스트로 처리하고, 응답을 스킵하도록 기대
