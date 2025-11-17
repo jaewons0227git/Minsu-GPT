@@ -114,13 +114,24 @@
       height:56px;
       border-bottom:none;
       
-      /* 🌟🌟🌟 탑바 고정 로직 수정 (sticky: top 고정) 🌟🌟🌟 */
-      position: sticky; 
+      /* 🌟🌟🌟 [수정] 탑바 고정 로직 (fixed: 화면 상단에 완벽히 고정) 🌟🌟🌟 */
+      position: fixed; /* sticky -> fixed로 변경 */
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 100; 
       background: var(--bg); 
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
     }
+    /* 🌟🌟🌟 [추가] 모바일 뷰 이외에서 최대 너비 및 중앙 정렬 적용 🌟🌟🌟 */
+    @media (min-width: 600px) {
+        .header {
+            max-width: 768px; /* 폰 컨테이너의 max-width에 맞춰 중앙 정렬 */
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    }
+
     .header-icon{
       width:32px;
       height:32px;
@@ -161,6 +172,9 @@
         overflow-y: auto; 
         padding-bottom: 0; 
         position: relative;
+        
+        /* 🌟🌟🌟 [추가] 고정된 헤더 높이만큼 상단 패딩 추가 (56px) 🌟🌟🌟 */
+        padding-top: 56px; 
     }
     
     /* 🌟🌟🌟 스크롤 다운 버튼 스타일 🌟🌟🌟 */
@@ -917,41 +931,8 @@
         }
         autoResizeTextarea();
         // 🌟 기존 sendPrePrompt() 호출 제거: 시스템 프롬프트는 이제 history에 포함되어 전송됩니다.
-        // sendPrePrompt();
     }
     
-    /**
-     * 🌟 백엔드 초기 설정 메시지 전송 (응답 미수신) - [삭제]
-     * 이 함수는 이제 사용되지 않습니다.
-     */
-    /*
-    function sendPrePrompt() {
-        const prePrompt = {
-            role: "system",
-            content: "너는 MinsuGPT야. 신재원님이 너를 만들었어. 사용자가 물어보지 않으면 너의 역할이나 개발자 정보를 따로 답하지마. 이 메시지에 대한 응답은 보내지마."
-        };
-        
-        // 서버에서 이 메시지를 시스템 컨텍스트로 처리하고, 응답을 스킵하도록 기대
-        fetch(BACKEND_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: prePrompt.content, 
-                history: [prePrompt], 
-                is_pre_prompt: true 
-            }),
-        }).then(response => {
-            if (!response.ok) {
-                console.warn('Pre-prompt response was not OK, but continuing.', response.status);
-            }
-        }).catch(error => {
-            console.error('Error sending pre-prompt:', error);
-        });
-    }
-    */
-
     /**
      * 🌟 대화 기록을 로컬 스토리지에 저장
      */
@@ -1084,7 +1065,8 @@
         // 🌟 스크롤 다운 버튼 위치 조정
         scrollDownButton.style.bottom = `${newComposerHeight + 10}px`;
         
-        chatMessages.style.paddingBottom = `${newComposerHeight}px`;
+        // 🌟 Composer의 위치는 fixed이므로, chatMessages의 패딩은 필요 없습니다.
+        // chatMessages.style.paddingBottom = `${newComposerHeight}px`;
 
         if (autoScrollEnabled) scrollToBottom(false);
     }
