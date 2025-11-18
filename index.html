@@ -15,7 +15,7 @@
     
     <style>
         :root{
-            --bg: linear-gradient(135deg, #ffc0d3 0%, #ffb3c6 25%, #c7d7ff 75%, #a8c5ff 100%);
+            --bg-gradient: linear-gradient(135deg, #ffc0d3 0%, #ffb3c6 25%, #c7d7ff 75%, #a8c5ff 100%);
             --accent:#111827; 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
             --header-height: 56px; 
@@ -27,6 +27,7 @@
             --transition-duration: 0.5s;
             --glow-color: rgba(220, 220, 220, 0.4); 
             --border-color: #d0d0d0; 
+            --pink-accent: #ff69b4; /* 핑크색 정의 */
         }
 
         /* 폰트 적용 */
@@ -44,13 +45,24 @@
         /* 전체 레이아웃 및 중앙 정렬 */
         *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
         body{
-            margin:0; background: linear-gradient(135deg, #ffc0d3 0%, #ffb3c6 25%, #c7d7ff 75%, #a8c5ff 100%); color:var(--accent); min-height:100vh;
+            margin:0; 
+            /* PC 기본 배경: 그라데이션 유지 */
+            background: var(--bg-gradient); 
+            color:var(--accent); min-height:100vh;
             padding:0; overflow: hidden; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             flex-direction: column;
         }
+        
+        /* 모바일 환경 (768px 이하): 배경색 흰색으로 변경 */
+        @media (max-width: 768px) {
+            body {
+                background: #ffffff; /* 모바일 배경색 흰색 */
+            }
+        }
+        
         .phone{
             width:100%; min-height:100vh; position:relative; margin: 0;
             display:flex; flex-direction:column;
@@ -96,10 +108,22 @@
         /* 중앙 콘텐츠 간격 0 설정 */
         .top-image { max-width: 100px; height: auto; margin-bottom: 0px; flex-shrink: 0; animation-delay: var(--delay-img); }
         h1 { 
-            color: #333; font-size: 2.5em; margin-bottom: 0px; 
+            color: #333; /* PC 기본 색상: #333 유지 */
+            font-size: 2.5em; margin-bottom: 0px; 
             line-height: 1.1; white-space: nowrap; overflow: hidden; animation-delay: var(--delay-h1);
             padding: 0 10px; display: block; width: 100%;
         }
+        
+        /* 모바일 환경 (768px 이하): H1 텍스트에 그라데이션 적용 */
+        @media (max-width: 768px) {
+            h1 {
+                background-image: var(--bg-gradient); /* 배경 그라데이션 사용 */
+                -webkit-background-clip: text; /* 텍스트 클립 */
+                background-clip: text;
+                color: transparent; /* 텍스트 색상을 투명하게 */
+            }
+        }
+        
         p { 
             color: #555; font-size: 1.2em; margin-bottom: 0px; 
             line-height: 1.1; white-space: nowrap; overflow: hidden; animation-delay: var(--delay-p);
@@ -109,7 +133,8 @@
         /* 메시지 입력창 스타일 */
         .message-input-container {
             width: 90%; max-width: 600px; display: flex; align-items: center; padding: 5px 5px 5px 20px; 
-            border: 1px solid var(--border-color); 
+            /* PC/모바일 관계없이 핑크색 테두리 적용 */
+            border: 1px solid var(--pink-accent); 
             border-radius: 25px; 
             background-color: #ffffff; 
             box-shadow: 0 0 10px var(--glow-color); 
@@ -122,6 +147,7 @@
             margin-top: 10px;
         }
 
+
         /* 내부 요소 숨김 transition */
         .message-input-container input[type="text"], .message-input-container .send-button, .message-input-container input[type="text"]::placeholder {
             transition: opacity var(--hide-duration) ease-out;
@@ -131,14 +157,13 @@
             opacity: 0 !important;
         }
         
-        /* 클릭 시 전체 화면 전환 스타일 (테두리 및 글로우 부드럽게 사라짐) */
+        /* 클릭 시 전체 화면 전환 스타일 (모바일 화면 꽉 채우기) */
         .message-input-container.full-screen-transition {
             width: 100vw !important; 
             height: calc(100vh - var(--header-height)) !important; 
             top: var(--header-height) !important; 
             left: 0 !important;
             
-            transform: none !important; 
             max-width: none; border-radius: 0; padding: 0; 
             
             border: none; 
@@ -151,8 +176,16 @@
         /* 입력 필드 및 버튼 스타일 (나머지는 유지) */
         .message-input-container input[type="text"] { flex-grow: 1; border: none; outline: none; padding: 8px 10px; font-size: 1.1em; color: #333; background-color: transparent; min-width: 0; }
         .message-input-container input[type="text"]::placeholder { color: #b0b0b0; font-size: 1em; }
-        .message-input-container .send-button { width: 40px; height: 40px; border: none; border-radius: 50%; background-color: #c0c0c0; color: #ffffff; font-size: 1.3em; display: flex; align-items: center; justify-content: center; margin-left: 0; margin-right: 5px; cursor: pointer; transition: background-color 0.2s; box-shadow: none; flex-shrink: 0; }
-        .message-input-container .send-button:hover { background-color: #a0a0a0; }
+        
+        /* 전송 버튼 스타일 (PC/모바일 관계없이 핑크색 적용) */
+        .message-input-container .send-button { 
+            width: 40px; height: 40px; border: none; border-radius: 50%; 
+            background-color: var(--pink-accent); /* 핑크색 버튼 */
+            color: #ffffff; font-size: 1.3em; display: flex; align-items: center; justify-content: center; margin-left: 0; margin-right: 5px; cursor: pointer; transition: background-color 0.2s; box-shadow: none; flex-shrink: 0; 
+        }
+        .message-input-container .send-button:hover { 
+            background-color: #e6529c; /* 핑크색 호버 */
+        }
 
         /* 모바일/작은 화면 미디어 쿼리 */
         @media (max-width: 600px) {
@@ -216,7 +249,7 @@
                 const isMobile = window.innerWidth <= 768;
                 
                 if (isMobile) {
-                    // 모바일: 기존 확대 로직
+                    // 모바일: 확대 로직 (화면 꽉 채우도록 수정된 CSS 사용)
                     // 1. 초기 콘텐츠 숨김
                     document.querySelector('h1').style.opacity = 0;
                     document.querySelector('p').style.opacity = 0;
@@ -229,8 +262,6 @@
                     // 3. 내부 요소 사라진 후 (0.3초) 확대 시작
                     setTimeout(() => {
                         const rect = inputContainer.getBoundingClientRect();
-                        const centerX = rect.left + rect.width / 2;
-                        const centerY = rect.top + rect.height / 2;
                         
                         // a) 현재 위치와 크기를 CSS inline style로 설정하여 고정
                         inputContainer.style.position = 'fixed';
@@ -238,7 +269,6 @@
                         inputContainer.style.left = rect.left + 'px';
                         inputContainer.style.width = rect.width + 'px';
                         inputContainer.style.height = rect.height + 'px';
-                        inputContainer.style.transformOrigin = `${centerX}px ${centerY}px`;
                         
                         // b) 강제 리플로우를 유발하여 애니메이션 시작점을 보장 
                         void inputContainer.offsetWidth;
@@ -295,5 +325,3 @@
 </a>
 </body>
 </html>
-
-
