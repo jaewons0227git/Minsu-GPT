@@ -26,7 +26,6 @@
     // 리퍼러가 없거나 (직접 접속), 허용된 주소로 시작하지 않으면 리디렉션
     // 주의: referrer는 완벽히 신뢰할 수 없지만 GitHub Pages에서는 최선의 방법입니다.
     if (referrer === '' || !referrer.startsWith(ALLOWED_REFERRER)) {
-        // 뒤로 가기 기록을 남기지 않는 replace()를 사용해 무한 루프를 방지합니다.
         // window.location.replace(REDIRECT_URL); 
     }
 </script>
@@ -228,10 +227,6 @@
             content: "Beta";
             display: inline;
         }
-        .plus-btn {
-            padding: 4px 8px;
-        }
-        /* 기존 텍스트는 숨김 */
         .plus-btn > span {
             display: none;
         }
@@ -1079,7 +1074,7 @@
     function animateUIOnLoad() {
         // 탑바를 제외한 모든 UI 요소에 애니메이션 클래스 추가
         contentWrapper.classList.add('loaded');
-        composer.classList.add('loaded'); // 🌟🌟🌟 추가: composer에도 loaded 클래스 추가 🌟🌟🌟
+        composer.classList.add('loaded'); 
 
         // 채팅 기록 로드 후 스크롤 보장
         // setTimeout을 사용하여 애니메이션이 시작된 후 스크롤이 발생하도록 합니다.
@@ -1135,15 +1130,21 @@
         const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
         if (storedHistory) {
             try {
-                history = JSON.parse(storedHistory);
+                let tempHistory = JSON.parse(storedHistory);
+                // 🌟🌟🌟 수정: history 배열을 필터링하고 유효한 메시지만 처리 (undefined 오류 방지) 🌟🌟🌟
+                history = tempHistory.filter(msg => {
+                    // role이 'user' 또는 'model'이고 content가 비어있지 않은 경우만 유효
+                    return (msg.role === 'user' || msg.role === 'model') && typeof msg.content === 'string' && msg.content.trim().length > 0;
+                });
+                
                 if (history.length > 0) {
                     initialContent.style.display = 'none';
                     chatMessages.style.display = 'flex';
                     history.forEach(message => {
+                        // 필터링을 거쳤으므로 content가 안전함
                         if (message.role === 'user') {
                             appendUserMessage(message.content, false);
                         } else if (message.role === 'model') {
-                            // 🌟🌟🌟 수정: 로딩 시 appendBotMessage 호출 🌟🌟🌟
                             appendBotMessage(message.content, message.feedback, false); 
                         }
                     });
@@ -1154,8 +1155,10 @@
                     initialContent.style.opacity = '0'; 
                 }
             } catch (e) {
-                console.error("Failed to parse history from localStorage:", e);
+                console.error("Failed to parse history from localStorage. Clearing corrupted history:", e);
                 history = [];
+                // 🌟🌟🌟 추가: 파싱 오류 시 로컬 스토리지 데이터 제거 🌟🌟🌟
+                localStorage.removeItem(HISTORY_STORAGE_KEY); 
                 
                 initialContent.style.display = 'flex';
                 initialContent.style.opacity = '1'; 
@@ -1167,8 +1170,6 @@
         animateUIOnLoad(); 
     }
     
-    // 🌟🌟🌟 sendPrePrompt 함수는 sendMessage에 통합되었으므로 제거함 🌟🌟🌟
-
     /**
      * 🌟 대화 기록을 로컬 스토리지에 저장
      */
@@ -1373,8 +1374,12 @@
         
         // 3. 복사 버튼 (Copy)
         const copyBtn = createActionButton('copy', '복사', null, 'content_copy');
+        
+        // 🌟🌟🌟 수정: 복사할 내용이 undefined일 경우 빈 문자열로 처리하도록 수정 🌟🌟🌟
+        const contentToCopy = String(content || ''); 
+        
         copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(content).then(() => {
+            navigator.clipboard.writeText(contentToCopy).then(() => {
                 showSnackbar('메시지가 복사되었습니다.');
             }).catch(err => {
                 console.error('복사 실패: ', err);
@@ -1388,10 +1393,10 @@
             if (navigator.share) {
                 navigator.share({
                     title: 'MinsuGPT 공유',
-                    text: content,
+                    text: contentToCopy, // 🌟🌟🌟 수정: contentToCopy 사용 🌟🌟🌟
                 }).catch(error => console.error('공유 실패', error));
             } else {
-                navigator.clipboard.writeText(content).then(() => {
+                navigator.clipboard.writeText(contentToCopy).then(() => { // 🌟🌟🌟 수정: contentToCopy 사용 🌟🌟🌟
                     showSnackbar('공유 기능이 없어 메시지를 복사했습니다.');
                 }).catch(err => {
                     console.error('복사 실패: ', err);
@@ -1591,8 +1596,6 @@
         const feedbackStatus = history[messageIndex].feedback;
         
         // 🌟 문장별 페이드인으로 인해 streamingBlockElement에 이미 내용이 있음.
-        // 마크다운 최종 렌더링을 위해 다시 설정 (필요한 경우)
-        // streamingBlockElement.innerHTML = renderMarkdown(content);
         
         const actionsContainer = createBotActions(content, messageIndex, feedbackStatus);
         botMessageElement.appendChild(actionsContainer);
@@ -1633,7 +1636,7 @@
         chatMessages.appendChild(botMessageContainer);
 
         // 과거 기록 로드 시는 즉시 표시
-        streamingBlock.innerHTML = renderMarkdown(content);
+        streamingBlock.innerHTML = content; // renderMarkdown은 타이핑 효과에서만 사용
         const actionsContainer = createBotActions(content, messageIndex, feedbackStatus);
         botMessageContainer.appendChild(actionsContainer);
         
@@ -1650,7 +1653,19 @@
      * 원본 마크다운 텍스트를 HTML로 변환합니다. (문장 분리 포함)
      */
     function renderMarkdown(rawText, wrapSentences = false) {
-        // ... (기존 코드 유지)
+        // 이 부분은 마크다운 렌더링 로직이 추가되는 곳입니다. 
+        // 현재 코드에서는 간단하게 줄바꿈만 처리합니다.
+        
+        let html = rawText.replace(/(?<!<br>)\n/g, '<br>');
+        
+        // 문장 분리 로직 (페이드 인 효과를 위해)
+        if (wrapSentences) {
+            // 마침표, 물음표, 느낌표, 또는 줄바꿈을 기준으로 분리
+            const sentences = html.match(/[^.!?\n]+[.!?\n]+/g) || [html];
+            return sentences.map(s => `<span class="sentence">${s.trim()}</span>`).join(' ');
+        }
+        
+        return html;
     }
     
     /**
@@ -1658,7 +1673,7 @@
      */
     function updateStreamingDisplay(rawResponse, streamingElement) {
         // 스트리밍 중에는 타이핑 효과 없이 즉시 업데이트
-        streamingElement.innerHTML = rawResponse.replace(/(?<!<br>)\n/g, '<br>'); 
+        streamingElement.innerHTML = renderMarkdown(rawResponse); 
         if (autoScrollEnabled) scrollToBottom(false);
     }
     
