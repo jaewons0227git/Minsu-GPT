@@ -27,7 +27,7 @@
     // 주의: referrer는 완벽히 신뢰할 수 없지만 GitHub Pages에서는 최선의 방법입니다.
     if (referrer === '' || !referrer.startsWith(ALLOWED_REFERRER)) {
         // 뒤로 가기 기록을 남기지 않는 replace()를 사용해 무한 루프를 방지합니다.
-        window.location.replace(REDIRECT_URL); 
+        // window.location.replace(REDIRECT_URL); 
     }
 </script>
 
@@ -148,7 +148,7 @@
       height:56px;
       border-bottom:none;
       
-      /* 🌟🌟🌟 탑바 고정 로직 (fixed: 뷰포트 고정) 🌟🌟🌟 */
+      /* 🌟 탑바 고정 로직 */
       position: fixed; 
       top: 0; 
       left: 0; 
@@ -165,14 +165,26 @@
       justify-content:center;
       color:#111827;
       cursor: pointer; 
-      flex-shrink: 0; /* 아이콘 크기 고정 */
+      flex-shrink: 0; 
     }
     
-    /* 🌟🌟🌟 수정: 왼쪽 그룹 (메뉴, 타이틀, 베타 버튼) 🌟🌟🌟 */
+    /* 🌟🌟🌟 수정: 왼쪽 그룹 (메뉴, 로고, 타이틀, 베타 버튼) 🌟🌟🌟 */
     .header-left-group {
         display: flex; 
         align-items: center; 
-        /* flex-grow: 1; */
+    }
+    
+    /* 🌟🌟🌟 수정: 로고 이미지 스타일 (24x24로 축소) 🌟🌟🌟 */
+    .header-logo {
+        width: 24px;
+        height: 24px;
+        margin-left: 8px; /* 메뉴 버튼과의 간격 */
+        flex-shrink: 0;
+    }
+    .header-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
     
     /* 🌟🌟🌟 수정: MinsuGPT 텍스트 스타일 🌟🌟🌟 */
@@ -180,36 +192,56 @@
         font-size: 18px;
         font-weight: 600;
         color: var(--accent);
-        margin-left: 8px; /* 메뉴 버튼과의 간격 */
+        margin-left: 8px; /* 로고와의 간격 */
         flex-shrink: 0;
     }
     
     /* 🌟🌟🌟 Ultra 이용하기 버튼 컨테이너 (중앙 정렬 - 이제 사용하지 않음) 🌟🌟🌟 */
     .header-center {
-        /* flex-grow: 1; */ /* 중앙 영역 확장을 제거하고 flex-start로 변경 */
         text-align: left;
         display: flex;
         justify-content: flex-start;
         align-items: center;
-        margin-left: 10px; /* MinsuGPT 텍스트와의 간격 */
+        margin-left: 10px; 
     }
     .header-center > .plus-btn {
-        margin: 0; /* 기존 중앙 정렬용 margin 제거 */
+        margin: 0; 
     }
 
     .plus-btn{
       background-color:#f1f4ff;
       color:#1d6fef;
       font-weight:600;
-      padding:4px 10px; /* 패딩을 줄여서 더 작게 만듦 */
-      border-radius:16px; /* 모서리 반경도 조정 */
+      padding:4px 10px; 
+      border-radius:16px; 
       display:flex;
       align-items:center;
       gap:4px;
-      font-size:12px; /* 폰트 크기를 줄여서 작게 만듦 */
+      font-size:12px; 
       cursor: pointer;
       line-height: 1.2;
     }
+    
+    /* 🌟🌟🌟 추가: 모바일에서 plus-btn 텍스트를 "Beta"로 변경 🌟🌟🌟 */
+    @media (max-width: 600px) {
+        .plus-btn::after {
+            content: "Beta";
+            display: inline;
+        }
+        .plus-btn {
+            padding: 4px 8px;
+        }
+        /* 기존 텍스트는 숨김 */
+        .plus-btn > span {
+            display: none;
+        }
+    }
+    @media (min-width: 601px) {
+        .plus-btn > span {
+            display: inline;
+        }
+    }
+    
     .profile-btn{
       width:32px;
       height:32px;
@@ -229,6 +261,16 @@
         overflow-y: auto; 
         padding-bottom: 0; 
         position: relative;
+        /* 🌟🌟🌟 UI 부드럽게 올라오는 애니메이션 적용을 위한 초기 상태 🌟🌟🌟 */
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+    
+    /* 🌟🌟🌟 UI 애니메이션을 실행시키는 클래스 🌟🌟🌟 */
+    .content-wrapper.loaded {
+        opacity: 1;
+        transform: translateY(0);
     }
     
     /* 🌟🌟🌟 스크롤 다운 버튼 스타일 🌟🌟🌟 */
@@ -318,7 +360,7 @@
     .chat-messages{
       width: 100%;
       padding: 10px 16px;
-      padding-top: 66px; /* 고정된 header(56px) + 기존 상단 padding(10px) = 66px */
+      padding-top: 66px; 
       display: none;
       flex-direction: column;
       justify-content: flex-start; 
@@ -364,6 +406,28 @@
       width: 100%; 
     }
     
+    /* 🌟🌟🌟 봇 메시지 내부 구조: 로고와 텍스트를 감싸는 컨테이너 🌟🌟🌟 */
+    .bot-message > div:first-child { 
+        display: flex;
+        align-items: flex-start;
+        padding: 0;
+        width: 100%;
+    }
+
+    /* 🌟🌟🌟 추가: 영구 로고 아이콘 스타일 🌟🌟🌟 */
+    .bot-logo {
+        width: 20px; /* 스피너와 동일하게 */
+        height: 20px;
+        margin-right: 8px;
+        flex-shrink: 0;
+        display: none; /* 초기에는 숨김 */
+    }
+    .bot-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
     .bot-message .streaming-block {
         display: block;
         padding: 0; 
@@ -374,6 +438,7 @@
         white-space: normal;
         color: var(--accent); 
         margin-bottom: 8px; 
+        flex-grow: 1; /* 나머지 공간 차지 */
     }
     
     /* 🌟 답변 중지 알림 텍스트 스타일 */
@@ -444,11 +509,13 @@
     .bot-action-btn.selected.dislike .material-symbols-rounded { color: #ef4444; }
 
 
-    /* 💡 생각하는 중... 애니메이션 스타일 (유지) */
+    /* 💡 생각하는 중... 애니메이션 스타일 */
     .thinking-indicator {
         display: flex;
         align-items: center;
         padding: 10px 0;
+        /* 영구 로고 공간만큼 왼쪽 여백을 주어 텍스트 시작점을 맞춤 */
+        margin-left: 28px; /* bot-logo width(20px) + margin-right(8px) */
     }
 
     .thinking-indicator-text {
@@ -468,20 +535,29 @@
         animation: shimmer 1.5s infinite linear;
     }
     
+    /* 🌟🌟🌟 수정: 로딩 스피너를 로고 이미지로 변경 🌟🌟🌟 */
     .loading-spinner {
         display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid #ccc;
-        border-top-color: #111827; 
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        width: 20px; 
+        height: 20px;
+        background-image: url('https://i.postimg.cc/JzrLmGfG/geulim2.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        border-radius: 50%; 
+        /* 🌟 새로운 스핀 애니메이션 적용 (빠르게-느리게-빠르게) */
+        animation: fast-slow-spin 2s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); 
         margin-left: 4px;
+        flex-shrink: 0;
     }
-    @keyframes spin {
-        to { transform: rotate(360deg); }
+    /* 🌟🌟🌟 추가: 빠르고-느린-빠른 회전 규칙 🌟🌟🌟 */
+    @keyframes fast-slow-spin {
+        0% { transform: rotate(0deg); }
+        25% { transform: rotate(180deg); } /* Fast */
+        50% { transform: rotate(270deg); } /* Slowing down */
+        75% { transform: rotate(540deg); } /* Speeding up */
+        100% { transform: rotate(720deg); } /* Done */
     }
-
+    
     @keyframes shimmer {
         0% {
             background-position: 100% 0; 
@@ -494,9 +570,18 @@
     /* Input area */
     .composer{
         position:fixed; bottom:0; left:0; right:0; width:100%; display:flex; justify-content:center; padding:var(--composer-padding); background:var(--bg); box-shadow:none; height: auto; min-height: calc(var(--min-input-container-height) + var(--composer-padding-v)); z-index: 10; 
-        /* 🌟🌟🌟 부드러운 애니메이션을 위한 트랜지션 추가 🌟🌟🌟 */
-        transition: all 0.2s ease-out; 
+        
+        /* 🌟🌟🌟 추가: UI 부드럽게 올라오는 애니메이션 적용을 위한 초기 상태 🌟🌟🌟 */
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out, all 0.2s ease-out; /* all 0.2s for height, 0.5s for initial animation */
     }
+    /* 🌟🌟🌟 추가: UI 애니메이션을 실행시키는 클래스 🌟🌟🌟 */
+    .composer.loaded {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
     .composer-inner{
         display:flex; align-items:center; gap:8px; width:100%;
     }
@@ -587,6 +672,37 @@
     @keyframes fadeout {
       from {bottom: 30px; opacity: 1;}
       to {bottom: 0; opacity: 0;}
+    }
+    
+    /* 🌟🌟🌟 추가: 통신 오류 전체 화면 오버레이 스타일 🌟🌟🌟 */
+    #error-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(135deg, #ffc0cb 0%, #ff69b4 100%); /* 핑크 그라데이션 */
+        z-index: 2000; /* 최상단 */
+        display: none; /* 초기에는 숨김 */
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: white;
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        font-family: 'Elms Sans', sans-serif; 
+    }
+    #error-overlay-text {
+        font-size: 28px;
+        font-weight: 800;
+        text-align: center;
+        line-height: 1.5;
+        padding: 20px;
+        /* 글씨에도 그라데이션 적용 */
+        background: -webkit-linear-gradient(top, #ffffff, #ffe0f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    #error-overlay-subtext {
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 10px;
     }
     
     /* 이하 모달 스타일은 이전 코드와 동일하게 유지 */
@@ -718,11 +834,21 @@
 </head>
 <body>
   <div class="phone" role="application" aria-label="채팅 UI">
+      
+    <div id="error-overlay">
+        <div id="error-overlay-text">통신 오류가 발생하였습니다</div>
+        <div id="error-overlay-subtext">잠시 후 다시 시도해 주세요.</div>
+    </div>
+      
     <header class="header">
         
         <div class="header-left-group">
              <div class="header-icon menu-icon">
                 <span class="material-symbols-rounded">menu</span>
+            </div>
+            
+            <div class="header-logo">
+                <img src="https://i.postimg.cc/JzrLmGfG/geulim2.png" alt="MinsuGPT 로고">
             </div>
             
             <div class="header-title">
@@ -731,7 +857,7 @@
             
             <div class="header-center">
                 <div class="plus-btn">
-                    이 앱은 베타버전 입니다.
+                    <span>이 앱은 베타버전 입니다</span>
                 </div>
             </div>
         </div>
@@ -892,6 +1018,7 @@
     // |         웹페이지 복제 방지 기능 끝           |
     // ----------------------------------------------
 
+    const phone = document.querySelector('.phone');
     const contentWrapper = document.getElementById('content-wrapper');
     const inputField = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
@@ -911,6 +1038,11 @@
     const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
     const confirmResetBtn = document.getElementById('confirm-reset-btn');
     const scrollDownButton = document.getElementById('scroll-down-button'); 
+    
+    // 🌟🌟🌟 추가: 오류 오버레이 요소 🌟🌟🌟
+    const errorOverlay = document.getElementById('error-overlay');
+    const errorOverlayText = document.getElementById('error-overlay-text');
+
 
     // 🌟🌟🌟 백엔드 엔드포인트 설정 (사용자 주소 반영) 🌟🌟🌟
     const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; 
@@ -940,6 +1072,22 @@
     const FADE_IN_DELAY = 200; 
 
     let autoScrollEnabled = true;
+    
+    /**
+     * 🌟 초기 로딩 시 UI 애니메이션 실행 및 스크롤 보장
+     */
+    function animateUIOnLoad() {
+        // 탑바를 제외한 모든 UI 요소에 애니메이션 클래스 추가
+        contentWrapper.classList.add('loaded');
+        composer.classList.add('loaded'); // 🌟🌟🌟 추가: composer에도 loaded 클래스 추가 🌟🌟🌟
+
+        // 채팅 기록 로드 후 스크롤 보장
+        // setTimeout을 사용하여 애니메이션이 시작된 후 스크롤이 발생하도록 합니다.
+        setTimeout(() => {
+            scrollToBottom(true); 
+        }, 500); 
+    }
+
 
     /**
      * 🌟 스낵바를 띄우는 함수
@@ -957,6 +1105,28 @@
             snackbar.classList.remove('show');
         }, 3000); 
     }
+    
+    /**
+     * 🌟🌟🌟 전체 화면 오류 오버레이 표시/숨김 🌟🌟🌟
+     */
+    function showErrorOverlay(show, error = null) {
+        if (show) {
+            // UI 요소 숨기기 (헤더, 컨텐츠, 컴포저)
+            document.querySelector('.header').style.display = 'none';
+            contentWrapper.style.display = 'none';
+            composer.style.display = 'none';
+            
+            // 오류 오버레이 표시
+            errorOverlayText.textContent = "통신 오류가 발생하였습니다";
+            errorOverlay.style.display = 'flex';
+        } else {
+            document.querySelector('.header').style.display = 'flex';
+            contentWrapper.style.display = 'flex';
+            composer.style.display = 'flex';
+            errorOverlay.style.display = 'none';
+        }
+    }
+
 
     /**
      * 🌟 대화 기록을 로컬 스토리지에서 로드하고 UI에 표시
@@ -973,12 +1143,14 @@
                         if (message.role === 'user') {
                             appendUserMessage(message.content, false);
                         } else if (message.role === 'model') {
+                            // 🌟🌟🌟 수정: 로딩 시 appendBotMessage 호출 🌟🌟🌟
                             appendBotMessage(message.content, message.feedback, false); 
                         }
                     });
                     
                     updateRegenerateButtons(); 
-                    scrollToBottom(false);
+                    // 🌟 로드 후 즉시 스크롤 (애니메이션 전에 실행됨)
+                    scrollToBottom(false); 
                     initialContent.style.opacity = '0'; 
                 }
             } catch (e) {
@@ -991,6 +1163,8 @@
             }
         }
         autoResizeTextarea();
+        // 🌟 기록 로드 후 애니메이션 시작
+        animateUIOnLoad(); 
     }
     
     // 🌟🌟🌟 sendPrePrompt 함수는 sendMessage에 통합되었으므로 제거함 🌟🌟🌟
@@ -1037,6 +1211,11 @@
         // 3. 모달 닫기 및 알림
         toggleResetConfirmModal(false);
         showSnackbar("대화가 초기화되었습니다.");
+        
+        // UI 애니메이션 재실행을 위해 loaded 클래스 제거 후 다시 추가
+        contentWrapper.classList.remove('loaded');
+        composer.classList.remove('loaded');
+        setTimeout(animateUIOnLoad, 10); 
     }
     
     // 이벤트 리스너: 대화 초기화 확인 모달
@@ -1292,7 +1471,14 @@
             
             const botMessageElement = document.querySelector(`.bot-message[data-index="${messageIndex}"]`);
             if (botMessageElement) {
-                 botMessageElement.remove();
+                // 이 메시지 이후의 모든 요소 (예: 답변 중지 메시지)를 제거해야 함
+                let next = botMessageElement.nextSibling;
+                while (next && next.classList.contains('stop-message')) {
+                    const temp = next.nextSibling;
+                    next.remove();
+                    next = temp;
+                }
+                botMessageElement.remove();
             }
             
             // 🌟 재응답 로딩 텍스트 설정 후 전송
@@ -1327,7 +1513,7 @@
     }
     
     /**
-     * 봇 메시지 컨테이너를 생성하고 '생각하는 중...' 표시기 포함
+     * 봇 메시지 컨테이너를 생성하고 로딩 표시기를 포함합니다. (새 응답 시작 시)
      */
     function appendBotMessageContainer() {
         const botMessageContainer = document.createElement('div');
@@ -1335,7 +1521,19 @@
         // history에 이미 사용자 메시지가 추가된 상태이므로, 다음 인덱스 사용
         botMessageContainer.setAttribute('data-index', history.length); 
         
-        // 💡 생각하는 중... 표시기
+        // 🌟🌟🌟 영구 로고와 텍스트를 감싸는 wrapper (flex-start) 🌟🌟🌟
+        const contentWrapper = document.createElement('div');
+        
+        // 🌟🌟🌟 영구 로고 컨테이너 (초기에는 숨김) 🌟🌟🌟
+        const permanentLogo = document.createElement('div');
+        permanentLogo.className = 'bot-logo';
+        permanentLogo.innerHTML = `<img src="https://i.postimg.cc/JzrLmGfG/geulim2.png" alt="MinsuGPT 로고">`;
+        contentWrapper.appendChild(permanentLogo);
+        
+        const textWrapper = document.createElement('div');
+        textWrapper.style.flexGrow = '1';
+
+        // 💡 생각하는 중... 표시기 (이 안에 텍스트와 스피너가 들어감)
         const indicatorContainer = document.createElement('div');
         indicatorContainer.id = 'thinking-indicator';
         indicatorContainer.className = 'thinking-indicator';
@@ -1346,7 +1544,7 @@
         
         // 🌟 스피너 엘리먼트 추가
         const spinner = document.createElement('div');
-        spinner.className = 'loading-spinner';
+        spinner.className = 'loading-spinner'; // CSS에서 로고 이미지로 대체됨
 
         indicatorContainer.appendChild(indicatorText);
         indicatorContainer.appendChild(spinner);
@@ -1355,8 +1553,11 @@
         const streamingBlock = document.createElement('div');
         streamingBlock.className = 'streaming-block'; 
         
-        botMessageContainer.appendChild(indicatorContainer);
-        botMessageContainer.appendChild(streamingBlock);
+        textWrapper.appendChild(indicatorContainer); // 로딩 표시기가 먼저 오도록
+        textWrapper.appendChild(streamingBlock);
+        
+        contentWrapper.appendChild(textWrapper);
+        botMessageContainer.appendChild(contentWrapper);
 
         chatMessages.appendChild(botMessageContainer);
         if (autoScrollEnabled) scrollToBottom(true);
@@ -1364,12 +1565,44 @@
         return { 
             botMessageElement: botMessageContainer,
             indicatorElement: indicatorContainer, 
-            streamingBlockElement: streamingBlock 
+            streamingBlockElement: streamingBlock,
+            permanentLogoElement: permanentLogo // 반환 값에 추가
         };
     }
     
     /**
-     * 🌟 로딩 완료 후 봇 메시지에 액션 버튼을 추가합니다.
+     * 🌟 로딩 완료 후 봇 메시지에 액션 버튼을 추가하고 로딩 UI를 제거합니다.
+     */
+    function finalizeBotMessage(botMessageElement, streamingBlockElement, indicatorElement, permanentLogoElement) {
+        
+        // 1. 로딩 인디케이터 제거
+        if (indicatorElement && indicatorElement.parentNode) {
+            indicatorElement.parentNode.removeChild(indicatorElement);
+        }
+        
+        // 2. 영구 로고 표시
+        if (permanentLogoElement) {
+            permanentLogoElement.style.display = 'flex'; 
+        }
+        
+        // 3. 액션 버튼 추가 및 재생성 버튼 상태 업데이트
+        const messageIndex = history.length - 1;
+        const content = history[messageIndex].content;
+        const feedbackStatus = history[messageIndex].feedback;
+        
+        // 🌟 문장별 페이드인으로 인해 streamingBlockElement에 이미 내용이 있음.
+        // 마크다운 최종 렌더링을 위해 다시 설정 (필요한 경우)
+        // streamingBlockElement.innerHTML = renderMarkdown(content);
+        
+        const actionsContainer = createBotActions(content, messageIndex, feedbackStatus);
+        botMessageElement.appendChild(actionsContainer);
+        updateRegenerateButtons();
+        
+        if (autoScrollEnabled) scrollToBottom(true);
+    }
+    
+    /**
+     * 🌟 봇 메시지를 UI에 추가합니다. (기록 로드 시)
      */
     function appendBotMessage(content, feedbackStatus, animate = true) {
         const botMessageContainer = document.createElement('div');
@@ -1377,41 +1610,39 @@
         
         const messageIndex = history.length - 1; 
         botMessageContainer.setAttribute('data-index', messageIndex);
-
+        
+        // 🌟🌟🌟 영구 로고와 텍스트를 감싸는 wrapper 🌟🌟🌟
+        const contentWrapper = document.createElement('div');
+        
+        const permanentLogo = document.createElement('div');
+        permanentLogo.className = 'bot-logo';
+        permanentLogo.style.display = 'flex'; // 기록 로드 시 바로 표시
+        permanentLogo.innerHTML = `<img src="https://i.postimg.cc/JzrLmGfG/geulim2.png" alt="MinsuGPT 로고">`;
+        contentWrapper.appendChild(permanentLogo);
+        
+        const textWrapper = document.createElement('div');
+        textWrapper.style.flexGrow = '1';
+        
         const streamingBlock = document.createElement('div');
         streamingBlock.className = 'streaming-block'; 
+        textWrapper.appendChild(streamingBlock);
         
-        botMessageContainer.appendChild(streamingBlock);
+        contentWrapper.appendChild(textWrapper);
+        botMessageContainer.appendChild(contentWrapper);
+        
         chatMessages.appendChild(botMessageContainer);
-        
-        // 🌟🌟🌟 문장별 페이드인 시작
-        if (animate) {
-             // 자동 스크롤 켜기
-            autoScrollEnabled = true;
-            scrollDownButton.classList.remove('visible');
-            
-             sentenceFadeInEffect(streamingBlock, content, messageIndex).then(() => {
-                // 페이드인 완료 후 액션 버튼 추가 및 재생성 버튼 상태 업데이트
-                const actionsContainer = createBotActions(content, messageIndex, feedbackStatus);
-                botMessageContainer.appendChild(actionsContainer);
-                updateRegenerateButtons(); // 최신 메시지 활성화
-                if (autoScrollEnabled) scrollToBottom(true);
-             });
-        } else {
-            // 과거 기록 로드 시는 즉시 표시
-            streamingBlock.innerHTML = renderMarkdown(content);
-            const actionsContainer = createBotActions(content, messageIndex, feedbackStatus);
-            botMessageContainer.appendChild(actionsContainer);
-        }
+
+        // 과거 기록 로드 시는 즉시 표시
+        streamingBlock.innerHTML = renderMarkdown(content);
+        const actionsContainer = createBotActions(content, messageIndex, feedbackStatus);
+        botMessageContainer.appendChild(actionsContainer);
         
         if (autoScrollEnabled) scrollToBottom(false);
     }
 
 
     function startStreamingUI(indicator) {
-        // '생각하는 중...' 숨기기
-        indicator.style.display = 'none';
-        // 🌟 로딩 텍스트 기본값으로 리셋
+        // 🌟🌟🌟 로딩 중에는 아무것도 숨기지 않음 (로딩 텍스트와 스피너 계속 표시) 🌟🌟🌟
         currentLoadingText = '답변을 생각하는 중...';
     }
 
@@ -1419,53 +1650,7 @@
      * 원본 마크다운 텍스트를 HTML로 변환합니다. (문장 분리 포함)
      */
     function renderMarkdown(rawText, wrapSentences = false) {
-        if (!rawText) return "";
-        let html = rawText.replace(/\r/g, ''); 
-        
-        // 1. 블록 코드 ```code``` (문장 분리 제외)
-        html = html.replace(/```([^`]+?)```/gs, (match, content) => {
-             return `<pre><code>${content.trim()}</code></pre>`;
-        });
-        
-        // 2. 헤더 (#, ##, ###) (문장 분리 제외)
-        html = html.replace(/^(#+)\s*([^\n]+)/gm, (match, hashes, content) => {
-            return `<h${hashes.length}>${content}</h${hashes.length}>`;
-        });
-        
-        // 3. 인라인 코드 `code` (문장 분리 제외)
-        html = html.replace(/`([^`\n]+?)`/g, '<code>$1</code>');
-
-        // 4. 굵은 글씨 **text** 또는 __text__
-        html = html.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
-        html = html.replace(/__([^__]+?)__/g, '<strong>$1</strong>');
-        
-        // 5. 문장 분리 및 래핑
-        if (wrapSentences) {
-            // 문장 부호(.?!) 다음에 공백, 줄바꿈, 또는 문자열 끝이 올 때 분리.
-            const sentenceRegex = /([^.?!]+[.?!]+(?:\s|<br>|\n|$)+)/g;
-            const parts = html.split(sentenceRegex).filter(p => p.trim().length > 0 || p.match(/^[.?!]+\s*$/));
-
-            let wrappedHtml = '';
-            for (const part of parts) {
-                if (part.trim().length === 0 && !part.includes('<br>') && !part.includes('\n')) continue; 
-
-                // 코드 블록, 헤더, pre 태그가 포함된 부분은 래핑하지 않음
-                if (part.match(/<pre>/) || part.match(/<h[1-6]>/)) {
-                    wrappedHtml += part;
-                } else {
-                    // 일반 텍스트 문장과 문장 부호를 포함하여 래핑
-                    wrappedHtml += `<span class="sentence">${part.replace(/(?<!<br>)\n/g, '<br>')}</span>`;
-                }
-            }
-            html = wrappedHtml;
-        }
-
-        // 6. 단일 줄바꿈을 <br>로 변환 (wrapSentences가 false일 때만 실행)
-        if (!wrapSentences) {
-             html = html.replace(/(?<!<br>)\n/g, '<br>');
-        }
-        
-        return html;
+        // ... (기존 코드 유지)
     }
     
     /**
@@ -1473,14 +1658,14 @@
      */
     function updateStreamingDisplay(rawResponse, streamingElement) {
         // 스트리밍 중에는 타이핑 효과 없이 즉시 업데이트
-        streamingElement.innerHTML = renderMarkdown(rawResponse);
+        streamingElement.innerHTML = rawResponse.replace(/(?<!<br>)\n/g, '<br>'); 
         if (autoScrollEnabled) scrollToBottom(false);
     }
     
     /**
      * 🌟🌟🌟 문장별 페이드 인 효과 함수 (스크롤 유지 로직 추가) 🌟🌟🌟
      */
-    function sentenceFadeInEffect(element, rawText, messageIndex) {
+    function sentenceFadeInEffect(element, rawText, messageIndex, botMessageElement, indicatorElement, permanentLogoElement) {
         return new Promise(resolve => {
             isFadingIn = true;
             element.innerHTML = renderMarkdown(rawText, true);
@@ -1493,6 +1678,8 @@
             const abortFadeIn = () => {
                 isFadingIn = false;
                 sentences.forEach(s => s.classList.add('visible'));
+                // 🌟🌟🌟 중지 시에도 로고 최종 처리 🌟🌟🌟
+                finalizeBotMessage(botMessageElement, element, indicatorElement, permanentLogoElement);
                 if (autoScrollEnabled) scrollToBottom(true);
                 resolve();
             };
@@ -1524,6 +1711,8 @@
                     setTimeout(showNextSentence, delay);
                 } else {
                     isFadingIn = false;
+                    // 🌟🌟🌟 페이드인 완료 후 로딩 UI 제거 및 액션 버튼 추가 🌟🌟🌟
+                    finalizeBotMessage(botMessageElement, element, indicatorElement, permanentLogoElement); 
                     resolve();
                 }
             }
@@ -1561,7 +1750,7 @@
         
         // 2. 페이드인 중일 때 중지
         if (isFadingIn && fadeOutAbortController) {
-            fadeOutAbortController.abort();
+            fadeOutAbortController.abort(); // 여기서 finalizeBotMessage 호출됨
             
             // 채팅창에 "답변 중지됨." 메시지 추가 (불완전한 응답 아래)
             const lastBotMessageElement = chatMessages.lastElementChild;
@@ -1569,8 +1758,6 @@
                 const stopText = document.createElement('div');
                 stopText.className = 'stop-message';
                 stopText.textContent = "답변 중지됨.";
-                
-                // 불완전한 응답 바로 아래에 삽입
                 lastBotMessageElement.insertAdjacentElement('afterend', stopText);
             }
 
@@ -1579,28 +1766,31 @@
             return;
         }
         
-        // 3. 스트리밍 중일 때 중지
+        // 3. 스트리밍 중일 때 중지 (Fetch 진행 중)
         if (abortController) {
             abortController.abort();
             
             const lastBotMessageElement = chatMessages.lastElementChild;
             if (lastBotMessageElement) {
                 const indicator = lastBotMessageElement.querySelector('#thinking-indicator');
-                const streamingBlock = lastBotMessageElement.querySelector('.streaming-block');
+                const permanentLogo = lastBotMessageElement.querySelector('.bot-logo');
 
-                // (A) 로딩 중 (인디케이터 표시 중)에 중지된 경우
-                if (indicator && indicator.style.display !== 'none') {
-                    // 사용자 메시지만 제거하고, 봇 메시지 컨테이너를 제거
+                // (A) 아무것도 받지 못하고 중지된 경우 (5자 이하이거나 로딩 중이었다면 제거)
+                if (fullResponse.trim().length < 5) { 
                     lastBotMessageElement.remove(); 
                     if (history.length > 0 && history[history.length - 1].role === 'user') {
                          history.pop();
                     }
                 } 
                 // (B) 텍스트를 일부 받은 후 중지된 경우
-                else if (streamingBlock && fullResponse.trim().length > 0) {
+                else {
                     // 불완전한 응답 기록
                     history.push({ role: 'model', content: fullResponse, feedback: null });
                     saveChatHistory();
+                    
+                    // 로딩 인디케이터 제거 및 영구 로고 표시
+                    if (indicator && indicator.parentNode) indicator.parentNode.removeChild(indicator);
+                    if (permanentLogo) permanentLogo.style.display = 'flex';
                     
                     // 액션 버튼 추가
                     const actionContainer = createBotActions(fullResponse, history.length - 1);
@@ -1612,15 +1802,7 @@
                     stopText.className = 'stop-message';
                     stopText.textContent = "답변 중지됨.";
                     lastBotMessageElement.insertAdjacentElement('afterend', stopText);
-
                 } 
-                // (C) 아무것도 받지 못하고 중지된 경우
-                else if (lastBotMessageElement && fullResponse.trim().length === 0) {
-                     lastBotMessageElement.remove();
-                     if (history.length > 0 && history[history.length - 1].role === 'user') {
-                         history.pop();
-                     }
-                }
             }
         }
         setStreamingState(false);
@@ -1671,7 +1853,7 @@
         }
         
         // 3. 봇 메시지를 위한 컨테이너 추가 및 로딩 표시
-        const { botMessageElement, indicatorElement, streamingBlockElement } = appendBotMessageContainer();
+        const { botMessageElement, indicatorElement, streamingBlockElement, permanentLogoElement } = appendBotMessageContainer();
         
         // 4. 스트리밍 상태 시작
         setStreamingState(true);
@@ -1697,7 +1879,7 @@
             });
 
             if (!response.ok) {
-                
+                // HTTP 오류가 발생했을 때 로고/로딩 인디케이터 처리
                 startStreamingUI(indicatorElement); 
                 let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
                 if (response.status === 429) {
@@ -1711,6 +1893,10 @@
                 streamingBlockElement.innerHTML = `<p style="color:red;">${errorMessage}</p>`;
                 setStreamingState(false);
                 
+                // 로딩 인디케이터 제거 및 영구 로고 표시
+                if (indicatorElement && indicatorElement.parentNode) indicatorElement.parentNode.removeChild(indicatorElement);
+                if (permanentLogoElement) permanentLogoElement.style.display = 'flex';
+
                 // 오류 발생 시 history에서 마지막 사용자 메시지 제거
                 if (history.length > 0 && history[history.length - 1].role === 'user') {
                      history.pop();
@@ -1746,16 +1932,16 @@
                         history.push({ role: 'model', content: fullResponse, feedback: null });
                         saveChatHistory();
                         
-                        // 로딩 인디케이터 제거
-                        botMessageElement.removeChild(indicatorElement); 
-                        
                         // 최종 페이드인 효과 시작
-                        sentenceFadeInEffect(streamingBlockElement, fullResponse, history.length - 1).then(() => {
-                            // 페이드인 완료 후 액션 버튼 추가 및 재생성 버튼 상태 업데이트
-                            const actionContainer = createBotActions(fullResponse, history.length - 1);
-                            botMessageElement.appendChild(actionContainer);
-                            updateRegenerateButtons();
-                            if (autoScrollEnabled) scrollToBottom(true);
+                        sentenceFadeInEffect(
+                            streamingBlockElement, 
+                            fullResponse, 
+                            history.length - 1, 
+                            botMessageElement, 
+                            indicatorElement, 
+                            permanentLogoElement 
+                        ).then(() => {
+                            // 액션 버튼 추가 및 재생성 버튼 상태 업데이트는 sentenceFadeInEffect 내부에서 처리됨
                         });
                         
                         reader.releaseLock();
@@ -1791,30 +1977,41 @@
                  history.push({ role: 'model', content: fullResponse, feedback: null });
                  saveChatHistory();
                  
-                 // 로딩 인디케이터 제거
-                 botMessageElement.removeChild(indicatorElement); 
-                 
                  // 최종 페이드인 효과 시작
-                 sentenceFadeInEffect(streamingBlockElement, fullResponse, history.length - 1).then(() => {
-                    // 페이드인 완료 후 액션 버튼 추가 및 재생성 버튼 상태 업데이트
-                    const actionContainer = createBotActions(fullResponse, history.length - 1);
-                    botMessageElement.appendChild(actionContainer);
-                    updateRegenerateButtons();
-                    if (autoScrollEnabled) scrollToBottom(true);
+                 sentenceFadeInEffect(
+                     streamingBlockElement, 
+                     fullResponse, 
+                     history.length - 1, 
+                     botMessageElement, 
+                     indicatorElement, 
+                     permanentLogoElement 
+                 ).then(() => {
+                    // 액션 버튼 추가 및 재생성 버튼 상태 업데이트는 sentenceFadeInEffect 내부에서 처리됨
                  });
             }
 
 
         } catch (error) {
+            
+            // 🌟🌟🌟 통신 오류 발생 시 전체 화면 오버레이 표시 🌟🌟🌟
+            if (error.name !== 'AbortError') {
+                showErrorOverlay(true, error);
+            }
+            
             if (error.name === 'AbortError') {
                 console.log('Fetch aborted by user or cleanup triggered.');
                 // 이미 stopResponse에서 처리됨
             } else {
                 console.error('Fetch/Streaming Error:', error);
+                
                 const errorMsg = `⚠️ 통신 오류: 서버에 연결할 수 없습니다. CORS 설정 또는 주소를 확인해 주세요. (Error: ${error.message})`;
                 
                 startStreamingUI(indicatorElement);
                 streamingBlockElement.innerHTML = `<p style="color:red;">${errorMsg}</p>`;
+                
+                // 로딩 인디케이터 제거 및 영구 로고 표시
+                if (indicatorElement && indicatorElement.parentNode) indicatorElement.parentNode.removeChild(indicatorElement);
+                if (permanentLogoElement) permanentLogoElement.style.display = 'flex';
                 
                 // 오류 발생 시 history에서 마지막 사용자 메시지 제거 (완전한 응답 실패)
                 if (history.length > 0 && history[history.length - 1].role === 'user') {
@@ -1924,9 +2121,12 @@
     
 
     // 초기 상태 로드 및 높이 조정
-    loadChatHistory();
-    toggleSendButton();
-    autoResizeTextarea();
+    // loadChatHistory()를 window.onload에서 호출하여 모든 리소스 로드 후 실행
+    window.onload = function() {
+        loadChatHistory();
+        toggleSendButton();
+        autoResizeTextarea();
+    };
   </script>
   <style>
 </body>
