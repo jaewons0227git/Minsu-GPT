@@ -397,7 +397,8 @@
         max-width: 768px;
         background: #ffffff;
         border-radius: 35px; /* 둥근 알약 형태 */
-        padding: 6px 6px 6px 8px;
+        /* 🎯 수정: 오른쪽 패딩을 12px로 늘려서 전송 버튼과 오른쪽 끝 사이 여백 확보 */
+        padding: 6px 12px 6px 8px; 
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12); /* 부드러운 그림자 */
         border: 1px solid #e5e8eb;
         gap: 4px;
@@ -412,6 +413,12 @@
         padding: 4px 4px 4px 8px;
         max-height: 150px;
     }
+    
+    /* 🎯 수정: 기본 스타일에서 마이크 아이콘 숨김 */
+    .composer.style-default .mic-icon {
+        display: none;
+    }
+
     .composer.style-default .plus {
         width: 36px; height: 36px;
         border-radius: 50%;
@@ -915,7 +922,9 @@
         const composerHeight = composer.offsetHeight;
         
         scrollDownButton.style.bottom = `${composerHeight + 10}px`;
-        chatMessages.style.paddingBottom = `${composerHeight}px`;
+        
+        // 🎯 수정: 채팅창 하단 여백을 넉넉하게 추가 (+50px) 하여 메시지가 입력창에 가려지지 않도록 함
+        chatMessages.style.paddingBottom = `${composerHeight + 50}px`;
 
         if (autoScrollEnabled) scrollToBottom(false);
     }
