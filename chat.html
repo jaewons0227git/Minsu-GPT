@@ -11,7 +11,7 @@
   
   <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
 
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/JzrLmGfG/geulim2.png">
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/MKBHwqWk/logogogo.png">
 
   <script>
     // 📢 허용된 직전 페이지 주소 (버튼이 있는 곳)
@@ -537,7 +537,7 @@
         width: 16px; 
         height: 16px; 
         /* border 대신 이미지 사용 */
-        background-image: url('https://i.postimg.cc/JzrLmGfG/geulim2.png');
+        background-image: url('https://i.postimg.cc/MKBHwqWk/logogogo.png');
         background-size: cover;
         background-position: center;
         border-radius: 50%;
@@ -817,7 +817,7 @@
             </div>
             
             <div class="header-logo">
-                <img src="https://i.postimg.cc/JzrLmGfG/geulim2.png" alt="MinsuGPT 로고">
+                <img src="https://i.postimg.cc/MKBHwqWk/logogogo.png" alt="MinsuGPT 로고">
             </div>
             
             <div class="header-title">
@@ -1045,7 +1045,7 @@
         // `content-wrapper`와 `composer`는 이미 CSS에서 초기 상태를 가지고 있으므로,
         // 여기에 `loaded` 클래스를 추가하여 애니메이션을 실행합니다.
         
-        // phone과 content-wrapper에 loaded 클래스를 추가하여 애니메이션 시작
+        // phone과 content-wrapper에 loaded 클래스 추가하여 애니메이션 시작
         contentWrapper.classList.add('loaded');
         composer.classList.add('loaded'); // composer에도 애니메이션이 필요한 경우를 대비해 추가
 
@@ -1077,44 +1077,64 @@
 
     /**
      * 🌟 대화 기록을 로컬 스토리지에서 로드하고 UI에 표시
+     * 🌟🌟🌟 수정: 기록 로드 시 UI 상태 전환을 더 명확하게 처리 🌟🌟🌟
      */
     function loadChatHistory() {
         const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+        let validHistory = [];
+
         if (storedHistory) {
             try {
-                history = JSON.parse(storedHistory);
-                if (history.length > 0) {
-                    initialContent.style.display = 'none';
-                    chatMessages.style.display = 'flex';
-                    history.forEach(message => {
-                        if (message.role === 'user') {
-                            appendUserMessage(message.content, false);
-                        } else if (message.role === 'model') {
-                            appendBotMessage(message.content, message.feedback, false); 
-                        }
-                    });
-                    
-                    updateRegenerateButtons(); 
-                    // 🌟 로드 후 즉시 스크롤 (애니메이션 전에 실행됨)
-                    scrollToBottom(false); 
-                    initialContent.style.opacity = '0'; 
-                }
-            } catch (e) {
-                console.error("Failed to parse history from localStorage:", e);
-                history = [];
+                const parsedHistory = JSON.parse(storedHistory);
+                // 유효한 메시지 (user 또는 model 역할)만 필터링하여 복사
+                validHistory = parsedHistory.filter(msg => msg.role === 'user' || msg.role === 'model');
                 
-                initialContent.style.display = 'flex';
-                initialContent.style.opacity = '1'; 
-                chatMessages.style.display = 'none';
+            } catch (e) {
+                console.error("Failed to parse history from localStorage. Resetting history.", e);
+                localStorage.removeItem(HISTORY_STORAGE_KEY);
+                validHistory = [];
             }
         }
+        
+        history = validHistory;
+
+        if (history.length > 0) {
+            // 채팅 기록이 있을 경우
+            chatMessages.innerHTML = ''; // 기존 메시지 컨테이너 초기화
+            
+            // 1. UI 전환: 퀵 액션 숨김, 채팅 메시지 표시
+            initialContent.style.opacity = '0';
+            initialContent.style.visibility = 'hidden'; // 완전히 숨김
+            chatMessages.style.display = 'flex';
+            
+            history.forEach(message => {
+                if (message.role === 'user') {
+                    appendUserMessage(message.content, false);
+                } else if (message.role === 'model') {
+                    // 🌟 로드된 메시지는 스트리밍이 아니므로 바로 전체 내용을 표시
+                    appendBotMessage(message.content, message.feedback, false); 
+                }
+            });
+            
+            updateRegenerateButtons(); 
+            // 🌟 로드 후 즉시 스크롤
+            scrollToBottom(false); 
+        } else {
+            // 채팅 기록이 없을 경우 (또는 로드 실패 후 초기화된 경우)
+            // 1. UI 전환: 퀵 액션 표시, 채팅 메시지 숨김
+            chatMessages.style.display = 'none';
+            chatMessages.innerHTML = '';
+            
+            initialContent.style.visibility = 'visible'; // 표시
+            initialContent.style.display = 'flex';
+            initialContent.style.opacity = '1';
+        }
+
         autoResizeTextarea();
         // 🌟 기록 로드 후 애니메이션 시작
         animateUIOnLoad(); 
     }
     
-    // 🌟🌟🌟 sendPrePrompt 함수는 sendMessage에 통합되었으므로 제거함 🌟🌟🌟
-
     /**
      * 🌟 대화 기록을 로컬 스토리지에 저장
      */
@@ -1145,14 +1165,19 @@
         localStorage.removeItem(HISTORY_STORAGE_KEY);
         
         // 2. UI 초기화
+        
+        // A. 채팅 메시지 숨기기
         chatMessages.innerHTML = '';
         chatMessages.style.display = 'none';
         
+        // B. 퀵 액션 콘텐츠 트랜지션을 위해 opacity 0 -> 1 적용
         initialContent.style.opacity = '0';
         initialContent.style.display = 'flex';
+        initialContent.style.visibility = 'visible'; // 표시
+        
         setTimeout(() => {
             initialContent.style.opacity = '1';
-        }, 10); 
+        }, 10); // 트랜지션을 적용하기 위해 작은 지연 시간을 둠
         
         // 3. 모달 닫기 및 알림
         toggleResetConfirmModal(false);
@@ -1269,6 +1294,30 @@
         chatMessages.appendChild(userBubble);
         if (animate) scrollToBottom(true);
     }
+    
+    /**
+     * 🌟 봇 메시지를 UI에 추가합니다. (로드 시 사용)
+     */
+    function appendBotMessage(content, feedbackStatus = null, animate = true) {
+        const botMessageContainer = document.createElement('div');
+        botMessageContainer.className = 'bot-message';
+        const messageIndex = history.length;
+        botMessageContainer.setAttribute('data-index', messageIndex); 
+
+        const streamingBlock = document.createElement('div');
+        streamingBlock.className = 'streaming-block'; 
+        streamingBlock.innerHTML = renderMarkdown(content);
+        
+        botMessageContainer.appendChild(streamingBlock);
+
+        // 액션 버튼 추가
+        const actionContainer = createBotActions(content, messageIndex, feedbackStatus);
+        botMessageContainer.appendChild(actionContainer);
+        
+        chatMessages.appendChild(botMessageContainer);
+        if (animate) scrollToBottom(true);
+    }
+
 
     /**
      * 🌟 재생성 버튼만 비활성화 (이전 답변에도 다른 버튼은 작동)
@@ -1407,31 +1456,56 @@
             return;
         }
 
-        const lastUserMessage = history.slice().reverse().find(msg => msg.role === 'user');
-        if (lastUserMessage) {
-            const lastModelIndex = history.findIndex((msg, index) => index === messageIndex);
-            if (lastModelIndex !== -1) {
-                // 이전 답변 제거 (사용자 질문은 유지)
-                history.splice(lastModelIndex, 1); 
-            }
-            
-            const botMessageElement = document.querySelector(`.bot-message[data-index="${messageIndex}"]`);
-            if (botMessageElement) {
-                 botMessageElement.remove();
-            }
-            
-            // 🌟 재응답 로딩 텍스트 설정 후 전송
-            currentLoadingText = '다시 답변을 생각하는 중...';
-            const originalPrompt = lastUserMessage.content;
-            
-            // 자동 스크롤 켜기
-            autoScrollEnabled = true;
-            scrollDownButton.classList.remove('visible');
-            
-            sendMessage(originalPrompt);
-        } else {
-            showSnackbar('다시 답변받을 이전 사용자 메시지가 없습니다.');
+        // history에서 현재 재생성 대상이 되는 모델 메시지를 찾습니다.
+        const modelMessageIndex = history.findIndex((msg, index) => index === messageIndex && msg.role === 'model');
+        if (modelMessageIndex === -1) {
+            showSnackbar('재생성할 답변을 찾을 수 없습니다.');
+            return;
         }
+
+        // 해당 모델 메시지 바로 앞의 사용자 메시지를 찾습니다.
+        let userMessageIndex = -1;
+        for (let i = modelMessageIndex - 1; i >= 0; i--) {
+            if (history[i].role === 'user') {
+                userMessageIndex = i;
+                break;
+            }
+        }
+        
+        if (userMessageIndex === -1) {
+            showSnackbar('재생성할 사용자 질문을 찾을 수 없습니다.');
+            return;
+        }
+        
+        const originalPrompt = history[userMessageIndex].content;
+        
+        // 1. 해당 모델 답변과 그 이후의 모든 기록을 삭제합니다.
+        history.splice(modelMessageIndex, history.length - modelMessageIndex);
+        saveChatHistory();
+        
+        // 2. UI에서 해당 모델 답변과 그 이후의 모든 요소를 제거합니다.
+        const botMessageElement = document.querySelector(`.bot-message[data-index="${messageIndex}"]`);
+        if (botMessageElement) {
+             let current = botMessageElement;
+             while (current) {
+                 const next = current.nextSibling;
+                 // 현재 요소가 .bot-message이거나 .stop-message이면 제거
+                 if (current.classList.contains('bot-message') || current.classList.contains('stop-message')) {
+                     current.remove();
+                 }
+                 current = next;
+             }
+        }
+        
+        // 3. 재응답 로딩 텍스트 설정 후 전송
+        currentLoadingText = '다시 답변을 생각하는 중...';
+        
+        // 자동 스크롤 켜기
+        autoScrollEnabled = true;
+        scrollDownButton.classList.remove('visible');
+        
+        // 4. 새 응답 요청
+        sendMessage(originalPrompt, true); 
     }
     
     /**
@@ -1504,7 +1578,7 @@
     function startStreamingUI(indicator) {
         // '생각하는 중...' 표시기 유지 (display: none 하지 않음)
         // 🌟 로딩 텍스트 기본값으로 리셋
-        currentLoadingText = '답변을 생각하는 중...';
+        // currentLoadingText는 sendMessage 시작 시 설정됨
     }
 
     /**
@@ -1560,15 +1634,6 @@
         return html;
     }
     
-    /**
-     * 스트리밍되는 전체 텍스트를 기반으로 내용을 덮어씁니다. (스트리밍 중에만 사용)
-     * 🌟 요청 수정: 이제 스트리밍 중에는 사용되지 않고, 최종적으로만 사용됨.
-     */
-    function updateStreamingDisplay(rawResponse, streamingElement) {
-        // 스트리밍 중에는 타이핑 효과 없이 즉시 업데이트
-        // streamingElement.innerHTML = renderMarkdown(rawResponse);
-        // if (autoScrollEnabled) scrollToBottom(false);
-    }
     
     /**
      * 🌟🌟🌟 문장별 페이드 인 효과 함수 (스크롤 유지 로직 추가) 🌟🌟🌟
@@ -1689,6 +1754,15 @@
                 
                 // 불완전한 응답 바로 아래에 삽입
                 lastBotMessageElement.insertAdjacentElement('afterend', stopText);
+                
+                // 불완전한 응답 기록 (fullResponse는 스트리밍 중 받은 내용)
+                history.push({ role: 'model', content: fullResponse, feedback: null });
+                saveChatHistory();
+                
+                // 액션 버튼 추가
+                const actionContainer = createBotActions(fullResponse, history.length - 1);
+                lastBotMessageElement.appendChild(actionContainer);
+                updateRegenerateButtons();
             }
 
             setStreamingState(false);
@@ -1709,6 +1783,7 @@
                     lastBotMessageElement.remove(); 
                     if (history.length > 0 && history[history.length - 1].role === 'user') {
                          history.pop();
+                         saveChatHistory();
                     }
                 } 
                 // (B) 텍스트를 일부 받은 후 중지된 경우
@@ -1717,7 +1792,7 @@
                     history.push({ role: 'model', content: fullResponse, feedback: null });
                     saveChatHistory();
                     
-                    // 🌟 요청 수정: 스피너 정지, 텍스트 변경 및 그라데이션 고정
+                    // 🌟 요청 수정: 스피너 정지 및 복귀, 텍스트 변경 및 그라데이션 고정
                     if (spinner) spinner.classList.add('reset-spin'); 
                     if (indicatorText) {
                         indicatorText.textContent = '답변 중지됨'; 
@@ -1737,7 +1812,6 @@
                     stopText.className = 'stop-message';
                     stopText.textContent = "답변 중지됨.";
                     lastBotMessageElement.insertAdjacentElement('afterend', stopText);
-
                 } 
             }
         }
@@ -1749,7 +1823,7 @@
     // 메시지 전송 처리
     let fullResponse = ""; 
 
-    async function sendMessage(userMessageOverride = null) {
+    async function sendMessage(userMessageOverride = null, isRegenerate = false) {
         const userMessage = userMessageOverride !== null ? userMessageOverride : inputField.value.trim();
         if (userMessage.length === 0 || isStreaming || isFadingIn) {
             if (isStreaming || isFadingIn) showSnackbar('현재 답변 생성 중이거나 애니메이션이 동작 중입니다.');
@@ -1757,11 +1831,12 @@
         }
 
         // 1. UI 표시 및 history 업데이트 (재생성이 아닐 경우)
-        if (userMessageOverride === null) {
+        if (!isRegenerate) {
             currentLoadingText = '답변을 생각하는 중...';
             
             if (initialContent.style.opacity !== '0') {
                 initialContent.style.opacity = '0';
+                initialContent.style.visibility = 'hidden'; // 퀵 액션 완전 숨김
                 setTimeout(() => {
                     initialContent.style.display = 'none';
                     chatMessages.style.display = 'flex'; 
@@ -1780,7 +1855,9 @@
             appendUserMessage(userMessage);
             history.push({ role: 'user', content: userMessage }); 
         } 
-
+        // 재생성일 경우: 이미 history에 user message가 있고, model message가 제거되었으므로,
+        // user message UI와 history는 그대로 두고 새로운 bot message container만 추가.
+        
         // 2. 입력창 초기화 및 UI 상태 업데이트
         if (userMessageOverride === null) {
             inputField.value = '';
@@ -1838,11 +1915,13 @@
                 
                 setStreamingState(false);
                 
-                // 오류 발생 시 history에서 마지막 사용자 메시지 제거
+                // 오류 발생 시 history에서 마지막 사용자 메시지 제거 (봇 메시지 생성 실패 시)
                 if (history.length > 0 && history[history.length - 1].role === 'user') {
                      history.pop();
                      saveChatHistory();
                 }
+                
+                // 봇 메시지 컨테이너를 오류 메시지로 대체했으므로 제거하지 않음.
                 updateRegenerateButtons();
                 // 오류 후 맨 아래로 스크롤
                 scrollToBottom(true); 
@@ -2002,7 +2081,8 @@
                 autoScrollEnabled = true;
                 scrollDownButton.classList.remove('visible');
                 
-                sendMessage();
+                // 🌟 Quick Action은 재생성(isRegenerate)이 아니므로 false
+                sendMessage(null, false); 
             }
         });
     });
