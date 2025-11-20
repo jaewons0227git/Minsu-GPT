@@ -20,9 +20,9 @@
     const REDIRECT_URL = 'https://minsugpt.kro.kr/';
     const referrer = document.referrer;
 
-    // if (referrer === '' || !referrer.startsWith(ALLOWED_REFERRER)) {
-    //    window.location.replace(REDIRECT_URL); 
-    // }
+    if (referrer === '' || !referrer.startsWith(ALLOWED_REFERRER)) {
+    window.location.replace(REDIRECT_URL); 
+    }
   </script>
 
 
@@ -387,48 +387,50 @@
     .composer.style-simple .send-btn:not(.active) { background-color: var(--send-button-disabled); }
 
 
-    /* 📌 스타일 2: 기본 (Default) - 🌟 수정됨 🌟 */
-.composer.style-default {
-    background: transparent; padding: 0 16px 24px 16px; border: none;
-}
-.composer.style-default .composer-inner {
-    max-width: 768px;
-    border-radius: 35px;
-    /* 🌟 하단 정렬 및 패딩 조정: 수직 정렬의 기준 */
-    padding: 8px 12px 8px 8px; 
-    box-shadow: var(--composer-shadow);
-    gap: 4px; flex-direction: row;
-    align-items: flex-end; /* 하단 라인 정렬 (핵심!) */
-}
-.composer.style-default .input-area-wrapper { 
-    flex: 1; margin-bottom: 0; 
-    padding-bottom: 0; /* 하단 패딩 제거 */
-}
-.composer.style-default .simple-tools { display: none; }
-.composer.style-default .bottom-controls { display: contents; }
+   /* 📌 스타일 2: 기본 (Default) - 🌟 수정됨 🌟 */
+    .composer.style-default {
+        background: transparent; padding: 0 16px 24px 16px; border: none;
+    }
+    .composer.style-default .composer-inner {
+        max-width: 768px;
+        border-radius: 35px;
+        /* 🌟 하단 정렬 및 패딩 조정 */
+        padding: 8px 12px 8px 8px; 
+        box-shadow: var(--composer-shadow);
+        gap: 4px; flex-direction: row;
+        align-items: flex-end; /* 하단 라인 정렬 */
+    }
+    .composer.style-default .input-area-wrapper { 
+        flex: 1; margin-bottom: 0; 
+        padding-bottom: 0; /* 하단 패딩 제거 */
+    }
+    .composer.style-default .simple-tools { display: none; }
+    .composer.style-default .bottom-controls { display: contents; }
+    
+    .composer.style-default .input-container {
+        background: transparent; border: none; padding: 4px 8px; max-height: 150px;
+        /* 🌟 텍스트 수직 중앙 정렬을 위한 Flex */
+        display: flex; align-items: center;
+        min-height: 38px; /* 버튼과 높이 맞춤 */
+    }
+    .composer.style-default .mic-icon { display: none; }
 
-.composer.style-default .input-container {
-    background: transparent; border: none; padding: 4px 8px; max-height: 150px;
-    /* 🌟 텍스트 수직 중앙 정렬을 위한 Flex */
-    display: flex; align-items: center;
-    min-height: 38px; /* 버튼과 높이 맞춤 */
-}
-.composer.style-default .mic-icon { display: none; }
+    .composer.style-default .plus {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: var(--surface-secondary);
+        border: none;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
+        align-self: flex-end; /* 하단 정렬 */
+        margin-bottom: 1px; /* 미세 조정 */
+        cursor: pointer; color: var(--text-sub);
+    }
+    .composer.style-default .plus .material-symbols-rounded { font-size: 20px; }
 
-.composer.style-default .plus {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--surface-secondary);
-    border: none;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
-    align-self: flex-end; /* 하단 정렬 */
-    margin-bottom: 1px; /* 미세 조정 (하단 정렬을 더 깔끔하게) */
-    cursor: pointer; color: var(--text-sub);
-}
-.composer.style-default .plus .material-symbols-rounded { font-size: 20px; }
+    .composer.style-default .right-controls {
+        align-self: flex-end; margin-bottom: 0; height: 38px; display: flex; align-items: center;
+    }
 
-.composer.style-default .right-controls {
-    align-self: flex-end; margin-bottom: 0; height: 38px; display: flex; align-items: center;
-}
+    /* ============================================ */
 
     /* ============================================ */
 
