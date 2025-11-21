@@ -23,7 +23,7 @@
     const referrer = document.referrer;
 
     if (referrer === '' || !referrer.startsWith(ALLOWED_REFERRER)) {
-    // window.location.replace(REDIRECT_URL); // 배포 시 주석 해제
+    window.location.replace(REDIRECT_URL); // 배포 시 주석 해제
     }
   </script>
 </head>
