@@ -80,21 +80,18 @@
                 </div>
             </div>
         </div>
-
-      <div id="scroll-to-bottom-container">
-        <button id="scrollDownButton" class="hidden" aria-label="맨 아래로 스크롤">
-        </button>
-      </div>
       
         <div class="header-icon" id="settings-button" aria-label="설정" style="visibility: visible;"> 
             <span class="material-symbols-rounded">settings</span>
         </div>
     </header>
 
+    <div id="scroll-to-bottom-container">
+        <button id="scrollDownButton" class="hidden" aria-label="맨 아래로 스크롤">
+        </button>
+    </div>
+
     <main id="content-wrapper" class="content-wrapper">
-        <div id="scroll-down-button" class="">
-            <span class="material-symbols-rounded">arrow_downward</span>
-        </div>
         
         <div id="initial-content">
             <div class="main-question">안녕하세요! 반가워요</div>
@@ -284,6 +281,28 @@
             </div>
 
             <div class="copyright-text">Copyright 2025. CorerepubliX all rights reserved.</div>
+        </div>
+    </div>
+
+    <div id="rename-modal-backdrop" class="modal-backdrop" style="align-items: center; z-index: 1050;">
+        <div id="rename-modal" class="modal" style="transform: translateY(0); max-width: 320px; border-radius: 12px; padding: 24px;">
+            <h3>이름 변경</h3>
+            <input type="text" id="rename-input" placeholder="새로운 채팅 이름" style="width: 100%; padding: 10px; margin: 10px 0 20px 0; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-secondary); color: var(--text-color); outline: none;">
+            <div class="confirm-actions">
+                <button id="rename-cancel-btn">취소</button>
+                <button id="rename-confirm-btn" style="background-color: var(--primary-blue); color: white;">변경</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal-backdrop" class="modal-backdrop" style="align-items: center; z-index: 1050;">
+        <div id="delete-modal" class="modal" style="transform: translateY(0); max-width: 320px; border-radius: 12px; padding: 24px;">
+            <h3 id="delete-modal-title">삭제 확인</h3>
+            <p id="delete-modal-desc" style="font-size: 0.95em; color: var(--text-sub); margin-bottom: 24px; text-align: center;">정말로 삭제하시겠습니까?</p>
+            <div class="confirm-actions">
+                <button id="delete-cancel-btn">취소</button>
+                <button id="delete-confirm-btn" style="background-color: var(--error-red); color: white;">삭제</button>
+            </div>
         </div>
     </div>
 
