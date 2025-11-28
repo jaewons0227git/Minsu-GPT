@@ -6,7 +6,7 @@ document.onkeydown = function(e) {
 };
 
 // ===========================================
-// 1. DOM 요소 및 상수 정의
+// 1. DOM 요소 및 상수 정의 (수정/추가)
 // ===========================================
  
 const phone = document.querySelector('.phone');
@@ -55,6 +55,23 @@ const sidebarExport = document.getElementById('sidebar-export');
 const sidebarImport = document.getElementById('sidebar-import');
 const importFileInput = document.getElementById('import-file-input');
 
+// 🌟 [추가] 사이드바 커스텀 모달 요소
+const deleteAllConfirmModalBackdrop = document.getElementById('delete-all-confirm-modal-backdrop');
+const deleteAllConfirmBtn = document.getElementById('delete-all-confirm-btn');
+const deleteAllCancelBtn = document.getElementById('delete-all-cancel-btn');
+
+const renameModalBackdrop = document.getElementById('rename-modal-backdrop');
+const renameInput = document.getElementById('rename-input');
+const renameConfirmBtn = document.getElementById('rename-confirm-btn');
+const renameCancelBtn = document.getElementById('rename-cancel-btn');
+let sessionToRename = null; // 상태 저장
+
+const deleteChatConfirmModalBackdrop = document.getElementById('delete-chat-confirm-modal-backdrop');
+const deleteChatConfirmBtn = document.getElementById('delete-chat-confirm-btn');
+const deleteChatCancelBtn = document.getElementById('delete-chat-cancel-btn');
+const deleteChatMessageElement = document.getElementById('delete-chat-message');
+let sessionToDelete = null; // 상태 저장
+
 // 🎯 백엔드 엔드포인트
 const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; 
 const IMAGE_ENDPOINT = "https://jaewondev.pythonanywhere.com/generate-image"; 
@@ -91,7 +108,7 @@ if (typeof marked !== 'undefined') {
 }
 
 // ===========================================
-// 2. UI 및 설정 (테마, 스타일, 모달) 관련 함수
+// 2. UI 및 설정 (테마, 스타일, 모달) 관련 함수 (수정/추가)
 // ===========================================
 
 function animateUIOnLoad() {
@@ -208,33 +225,50 @@ function toggleResetConfirmModal(show) {
     if (show) toggleSettingsModal(false); 
 }
 
+// 🌟 [추가] 전체 삭제 모달
+function toggleDeleteAllModal(show) {
+    if (show === undefined) { deleteAllConfirmModalBackdrop.classList.toggle('visible'); } 
+    else if (show) { deleteAllConfirmModalBackdrop.classList.add('visible'); } 
+    else { deleteAllConfirmModalBackdrop.classList.remove('visible'); }
+}
+
+// 🌟 [추가] 이름 변경 모달
+function toggleRenameModal(show) {
+    if (show === undefined) { renameModalBackdrop.classList.toggle('visible'); } 
+    else if (show) { renameModalBackdrop.classList.add('visible'); } 
+    else { renameModalBackdrop.classList.remove('visible'); }
+    if (!show) { sessionToRename = null; renameInput.value = ''; }
+}
+
+// 🌟 [추가] 채팅 삭제 모달
+function toggleDeleteChatModal(show) {
+    if (show === undefined) { deleteChatConfirmModalBackdrop.classList.toggle('visible'); } 
+    else if (show) { deleteChatConfirmModalBackdrop.classList.add('visible'); } 
+    else { deleteChatConfirmModalBackdrop.classList.remove('visible'); }
+    if (!show) { sessionToDelete = null; deleteChatMessageElement.textContent = '선택한 채팅을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'; }
+}
+
+
 // 🌟 사이드바 토글 함수 (PC Push 효과 포함)
 function toggleSidebar(show) {
+    const isCurrentlyVisible = sidebarBackdrop.classList.contains('visible');
+    
     if (show === undefined) { 
-        // 토글 동작
-        const isVisible = sidebarBackdrop.classList.contains('visible');
-        if (isVisible) {
-            sidebarBackdrop.classList.remove('visible');
-            document.body.classList.remove('sidebar-open'); // PC Push용 클래스 제거
-        } else {
-            renderSidebarList();
-            sidebarBackdrop.classList.add('visible');
-            document.body.classList.add('sidebar-open'); // PC Push용 클래스 추가
-        }
+        show = !isCurrentlyVisible; // 토글 동작
     }
-    else if (show) { 
-        renderSidebarList(); 
-        sidebarBackdrop.classList.add('visible'); 
+    
+    if (show) {
+        renderSidebarList();
+        sidebarBackdrop.classList.add('visible');
         document.body.classList.add('sidebar-open'); // PC Push용 클래스 추가
-    }
-    else { 
+    } else { 
         sidebarBackdrop.classList.remove('visible'); 
         document.body.classList.remove('sidebar-open'); // PC Push용 클래스 제거
     }
 }
 
 // ===========================================
-// 3. 채팅 세션 관리 (목록, 저장, 불러오기)
+// 3. 채팅 세션 관리 (목록, 저장, 불러오기) (수정)
 // ===========================================
 
 function generateSessionId() {
@@ -262,7 +296,7 @@ function loadSessions() {
                         messages: parsed,
                         timestamp: Date.now()
                     };
-                    sessions.push(newSession);
+                    sessions.unshift(newSession); // 최신으로 추가
                     saveSessions();
                     localStorage.removeItem(HISTORY_STORAGE_KEY);
                 }
@@ -278,7 +312,7 @@ function loadSessions() {
         }
         loadCurrentSession();
     } else {
-        startNewChat(false);
+        startNewChat(true); // 로드 시 새 채팅 시작 (render는 loadCurrentSession이 담당)
     }
 }
 
@@ -295,7 +329,10 @@ function startNewChat(skipRender = false) {
     saveSessions();
     if (!skipRender) {
         loadCurrentSession();
-        toggleSidebar(false);
+        // 🌟 [수정] PC(769px 이상)에서는 닫지 않음
+        if(window.innerWidth < 769) {
+            toggleSidebar(false);
+        }
     }
 }
 
@@ -310,35 +347,63 @@ function loadCurrentSession() {
     renderChatMessages();
 }
 
-function deleteSession(id, e) {
-    if(e) e.stopPropagation();
-    if(!confirm('이 채팅을 삭제하시겠습니까?')) return;
-    
-    sessions = sessions.filter(s => s.id !== id);
+// 🌟 [수정] deleteSession 함수 - 커스텀 모달 사용
+function deleteSession(id) {
+    sessionToDelete = id;
+    const session = sessions.find(s => s.id === id);
+    if (session) {
+        // HTML 내부에 안전하게 텍스트 삽입 (XSS 방지)
+        deleteChatMessageElement.innerHTML = `채팅 **'${session.title.substring(0, 20)}...'**을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`;
+    }
+    toggleDeleteChatModal(true);
+}
+
+// 🌟 [추가] confirmDeleteSession 함수
+function confirmDeleteSession() {
+    if (!sessionToDelete) return;
+
+    sessions = sessions.filter(s => s.id !== sessionToDelete);
     saveSessions();
     
-    if (currentSessionId === id) {
+    if (currentSessionId === sessionToDelete) {
         if (sessions.length > 0) {
             currentSessionId = sessions[0].id;
             loadCurrentSession();
         } else {
-            startNewChat();
+            startNewChat(false);
         }
     }
+    toggleDeleteChatModal(false);
     renderSidebarList();
+    showSnackbar('채팅이 삭제되었습니다.');
 }
 
-function renameSession(id, e) {
-    if(e) e.stopPropagation();
+
+// 🌟 [수정] renameSession 함수 - 커스텀 모달 사용
+function renameSession(id) {
+    sessionToRename = id;
     const session = sessions.find(s => s.id === id);
     if (!session) return;
     
-    const newTitle = prompt('채팅 이름 변경:', session.title);
-    if (newTitle) {
+    renameInput.value = session.title;
+    toggleRenameModal(true);
+    renameInput.focus();
+}
+
+// 🌟 [추가] confirmRenameSession 함수
+function confirmRenameSession() {
+    if (!sessionToRename) return;
+    const newTitle = renameInput.value.trim();
+    if (!newTitle) { showSnackbar('채팅 이름을 입력해주세요.'); return; }
+    
+    const session = sessions.find(s => s.id === sessionToRename);
+    if (session) {
         session.title = newTitle;
         saveSessions();
         renderSidebarList();
     }
+    toggleRenameModal(false);
+    showSnackbar('채팅 이름이 변경되었습니다.');
 }
 
 function updateCurrentSession() {
@@ -379,62 +444,45 @@ function renderSidebarList() {
             </div>
         `;
         
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+            // 액션 버튼 클릭 시 전파 방지
+            if (e.target.closest('.sidebar-item-actions')) return; 
+
             currentSessionId = session.id;
             loadCurrentSession();
-            toggleSidebar(false);
+            // 🌟 [수정] PC(769px 이상)에서는 닫지 않음
+            if(window.innerWidth < 769) {
+                toggleSidebar(false);
+            }
         });
         
+        // 🌟 [수정] 이름 변경/삭제 버튼 클릭 시 모달 띄우기
         const editBtn = el.querySelector('.edit');
-        editBtn.addEventListener('click', (e) => renameSession(session.id, e));
+        editBtn.addEventListener('click', (e) => { e.stopPropagation(); renameSession(session.id); });
         
         const deleteBtn = el.querySelector('.delete');
-        deleteBtn.addEventListener('click', (e) => deleteSession(session.id, e));
+        deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteSession(session.id); });
         
         sidebarList.appendChild(el);
     });
 }
 
-function renderChatMessages() {
-    chatMessages.innerHTML = '';
-    
-    if (history.length > 0) {
-        initialContent.style.opacity = '0';
-        initialContent.style.visibility = 'hidden'; 
-        chatMessages.style.display = 'flex';
-        history.forEach(message => {
-            if (message.role === 'user') { appendUserMessage(message.content, false); } 
-            else if (message.role === 'model') { 
-                if (message.content.includes('<img src="data:image')) {
-                    appendBotImage(message.content, false);
-                } else {
-                    appendBotMessage(message.content, message.feedback, false); 
-                }
-            }
-        });
-        updateRegenerateButtons(); 
-    } else {
-        chatMessages.style.display = 'none';
-        initialContent.style.visibility = 'visible'; 
-        initialContent.style.display = 'flex';
-        initialContent.style.opacity = '1';
-    }
-    autoResizeTextarea();
-    // 렌더링 직후 스크롤 최하단 이동
-    setTimeout(() => scrollToBottom(false), 0);
+// 🌟 [수정] resetAllChats 함수 - 커스텀 모달 사용
+function resetAllChats() {
+    toggleDeleteAllModal(true);
 }
 
-function resetAllChats() {
-    if(!confirm('정말로 모든 대화 기록을 삭제하시겠습니까?')) return;
+// 🌟 [추가] confirmResetAllChats 함수
+function confirmResetAllChats() {
     sessions = [];
     localStorage.removeItem(SESSIONS_STORAGE_KEY);
-    startNewChat();
-    toggleSidebar(false);
+    startNewChat(false);
+    toggleDeleteAllModal(false);
     showSnackbar('모든 대화가 삭제되었습니다.');
 }
 
 // ===========================================
-// 4. 입력창 및 메시지 UI 관련 함수
+// 4. 입력창 및 메시지 UI 관련 함수 (유지)
 // ===========================================
 
 /**
@@ -811,7 +859,7 @@ async function sendMessage(userMessageOverride = null, isRegenerate = false) {
                 } else {
                     fullResponse += chunk;
                     streamingBlockElement.innerHTML = typeof marked !== 'undefined' ? marked.parse(fullResponse) : fullResponse;
-                    // 🌟 [핵심] 스트리밍 중에는 무조건 맨 아래로 즉시 이동 (부드러움 X, 즉시)
+                    // 🌟 스트리밍 중에는 무조건 맨 아래로 즉시 이동
                     contentWrapper.scrollTop = contentWrapper.scrollHeight;
                 }
             }
@@ -845,7 +893,7 @@ async function sendMessage(userMessageOverride = null, isRegenerate = false) {
 }
 
 // ===========================================
-// 5. 내보내기 및 가져오기 기능
+// 5. 내보내기 및 가져오기 기능 (유지)
 // ===========================================
 
 function exportChats() {
@@ -856,6 +904,7 @@ function exportChats() {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    showSnackbar('채팅 내역을 내보냈습니다.'); // 내보내기 후 스낵바 표시
 }
 
 function importChats(e) {
@@ -867,7 +916,7 @@ function importChats(e) {
         try {
             const importedSessions = JSON.parse(event.target.result);
             if (Array.isArray(importedSessions)) {
-                // 기존 세션에 병합하거나 덮어쓰기 선택 가능하지만 여기선 병합
+                // 기존 세션에 병합
                 sessions = [...importedSessions, ...sessions];
                 
                 // 중복 ID 제거 (단순 병합 시 발생 가능)
@@ -883,11 +932,16 @@ function importChats(e) {
                 
                 saveSessions();
                 renderSidebarList();
-                if(sessions.length > 0) {
+                if(sessions.length > 0 && currentSessionId === null) {
                     currentSessionId = sessions[0].id;
                     loadCurrentSession();
+                } else if (sessions.length > 0) {
+                    loadCurrentSession(); // 현재 세션 유지하면서 목록만 업데이트
                 }
-                toggleSidebar(false);
+                // 🌟 [수정] 불러오기 후 닫지 않음 (모바일에서만 닫음)
+                if (window.innerWidth < 769) {
+                    toggleSidebar(false);
+                }
                 showSnackbar('채팅 내역을 불러왔습니다.');
             } else {
                 alert('잘못된 파일 형식입니다.');
@@ -902,7 +956,7 @@ function importChats(e) {
 
 
 // ===========================================
-// 6. 이벤트 리스너
+// 6. 이벤트 리스너 (수정/추가)
 // ===========================================
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -984,7 +1038,6 @@ confirmResetBtn.addEventListener('click', () => {
 resetConfirmModalBackdrop.addEventListener('click', (e) => { if (e.target === resetConfirmModalBackdrop) toggleResetConfirmModal(false); });
 
 // 스크롤 및 스크롤 다운 버튼 로직
-// 🌟 contentWrapper가 이제 실제 스크롤 이벤트를 발생시킵니다.
 contentWrapper.addEventListener('scroll', () => {
     const distanceFromBottom = contentWrapper.scrollHeight - contentWrapper.scrollTop - contentWrapper.clientHeight;
     
@@ -1013,27 +1066,49 @@ if(toolAttach) { toolAttach.addEventListener('click', (e) => { e.preventDefault(
 
 if(toolStudy) { toolStudy.addEventListener('click', () => { toolStudy.classList.toggle('active-blue'); }); }
 
-// 🌟 사이드바 및 새 기능 이벤트 리스너
-menuButton.addEventListener('click', () => toggleSidebar()); // 토글 동작으로 변경
+// 🌟 사이드바 및 새 기능 이벤트 리스너 (수정)
+menuButton.addEventListener('click', () => toggleSidebar()); 
 sidebarClose.addEventListener('click', () => toggleSidebar(false));
-sidebarBackdrop.addEventListener('click', (e) => { if(e.target === sidebarBackdrop) toggleSidebar(false); });
+sidebarBackdrop.addEventListener('click', (e) => { if(e.target === sidebarBackdrop && window.innerWidth < 769) toggleSidebar(false); }); // PC에서는 닫지 않음
 sidebarNewChat.addEventListener('click', () => startNewChat());
+
+// 🌟 [수정] 사이드바 액션 버튼 이벤트 리스너
 sidebarSearchInput.addEventListener('input', renderSidebarList);
 sidebarDeleteAll.addEventListener('click', resetAllChats);
 sidebarExport.addEventListener('click', exportChats);
 sidebarImport.addEventListener('click', () => importFileInput.click());
 importFileInput.addEventListener('change', importChats);
 
+// 🌟 [추가] 신규 모달 이벤트 리스너
+deleteAllCancelBtn.addEventListener('click', () => toggleDeleteAllModal(false));
+deleteAllConfirmBtn.addEventListener('click', confirmResetAllChats);
+deleteAllConfirmModalBackdrop.addEventListener('click', (e) => { if (e.target === deleteAllConfirmModalBackdrop) toggleDeleteAllModal(false); });
+
+renameCancelBtn.addEventListener('click', () => toggleRenameModal(false));
+renameConfirmBtn.addEventListener('click', confirmRenameSession);
+renameModalBackdrop.addEventListener('click', (e) => { if (e.target === renameModalBackdrop) toggleRenameModal(false); });
+
+deleteChatCancelBtn.addEventListener('click', () => toggleDeleteChatModal(false));
+deleteChatConfirmBtn.addEventListener('click', confirmDeleteSession);
+deleteChatConfirmModalBackdrop.addEventListener('click', (e) => { if (e.target === deleteChatConfirmModalBackdrop) toggleDeleteChatModal(false); });
+
 // ===========================================
-// 7. 초기화
+// 7. 초기화 (수정)
 // ===========================================
 
 window.onload = function() {
     loadTheme();
     loadUIStyle(); 
-    loadSessions(); // 🌟 loadChatHistory 대신 loadSessions 사용
+    loadSessions(); 
     toggleSendButton();
     autoResizeTextarea();
+    
+    // 🌟 [추가] PC 버전에서 기본적으로 메뉴탭 열림
+    if (window.innerWidth >= 769) {
+        document.body.classList.add('sidebar-open');
+        sidebarBackdrop.classList.add('visible');
+        renderSidebarList(); 
+    }
     
     // 페이지 로드 시 항상 맨 아래로 즉시 스크롤 (타이밍 보정)
     setTimeout(() => scrollToBottom(false), 10);
