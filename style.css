@@ -90,16 +90,21 @@ body :is(
 body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:100vh; display:flex; justify-content:center; padding:0; transition: background-color 0.3s ease, color 0.3s ease; }
 
 .phone{
-  width:100%; background:var(--bg-color); border-radius:0; overflow:hidden; border:none; display:flex; flex-direction:column; min-height:100vh; position:relative; margin: 0;
+  width:100%; background:var(--bg-color); border-radius:0; border:none; display:flex; flex-direction:column; min-height:100vh; position:relative; margin: 0;
   transition: background-color 0.3s ease;
+  
+  /* 🌟 [수정] 스크롤 컨테이너를 .phone 내부로 제한하여 웹사이트 전체 스크롤 방지 */
+  height: 100vh; 
+  overflow: hidden; 
 }
 
 /* Header */
 .header{
-  display:flex; justify-content:space-between; align-items:center; padding:10px 16px; height:56px; border-bottom:none; position: fixed; top: 0; left: 0; right: 0; z-index: 100; 
+  display:flex; justify-content:space-between; align-items:center; padding:10px 16px; height:56px; border-bottom:none; 
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100; 
   background: var(--bg-color); 
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, left 0.3s ease, width 0.3s ease; /* 🌟 transition 추가 */
 }
 [data-theme="dark"] .header { box-shadow: 0 1px 3px rgba(255,255,255, 0.05); }
 
@@ -125,10 +130,13 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
 /* Content */
 .content-wrapper{
-    flex-grow:1; display:flex; flex-direction:column; overflow-y: auto; padding-bottom: 0; position: relative;
-    opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    /* 스크롤 동작 설정 */
-    scroll-behavior: auto; /* JS에서 제어하기 위해 auto로 설정 */
+    flex-grow:1; display:flex; flex-direction:column; 
+    overflow-y: auto; /* 🌟 여기가 유일한 스크롤 영역 */
+    padding-bottom: 0; position: relative;
+    padding-top: 56px; /* Header Height */
+    opacity: 0; transform: translateY(20px); 
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, margin-left 0.3s ease; /* 🌟 margin-left transition 추가 */
+    scroll-behavior: auto; 
 }
 .content-wrapper.loaded { opacity: 1; transform: translateY(0); }
 
@@ -161,7 +169,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .action-btn.orange .material-symbols-rounded{ color:#fd7e14; } 
 
 /* Chat Messages */
-.chat-messages{ width: 100%; padding: 10px 16px; padding-top: 66px; display: none; flex-direction: column; justify-content: flex-start; gap: 10px; margin: 0 auto; }
+.chat-messages{ width: 100%; padding: 10px 16px; padding-top: 10px; display: none; flex-direction: column; justify-content: flex-start; gap: 10px; margin: 0 auto; }
 @media (min-width: 600px) { .chat-messages { max-width: 768px; padding-left: 0; padding-right: 0; } }
 
 .message-bubble{ display: flex; max-width: 80%; }
@@ -247,8 +255,8 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     z-index: 20; /* 그라데이션 오버레이보다 위로 */
     opacity: 0;
     transform: translateY(100%);
-    transition: opacity 0.5s ease-out 0.2s, transform 0.5s ease-out 0.2s, all 0.2s ease-out;
-    background-color: var(--bg-color); /* 🌟 입력창 배경 추가 */
+    transition: opacity 0.5s ease-out 0.2s, transform 0.5s ease-out 0.2s, all 0.2s ease-out, left 0.3s ease, width 0.3s ease; /* 🌟 left/width transition 추가 */
+    background-color: var(--bg-color); 
 }
 .composer.loaded { opacity: 1; transform: translateY(0); }
 
@@ -516,7 +524,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 #about-modal-backdrop { align-items: flex-end; justify-content: center; }
 #about-modal { max-width: 768px; padding-top: 24px; padding-bottom: 40px; border-radius: 20px 20px 0 0; transform: translateY(100%); }
 .modal-backdrop.visible #about-modal { transform: translateY(0); }
-#about-modal h3 { font-size: 1.1em; font-weight: 600; margin: 0 0 16px 0; padding: 0 12px; color: var(--text-color); }
+#about-modal h3 { font-size: 1.1em; font-weight: 600; margin: 0 0 16px 0; padding: 0 12px; color: var(--text-color); font-size: 15px; }
 
 .about-info-row { padding: 4px 12px; color: var(--text-sub); font-size: 15px; }
 .creator-section-title { margin-top: 24px; padding: 0 12px; font-weight: 600; margin-bottom: 10px; color: var(--text-color); font-size: 15px; }
@@ -534,7 +542,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     font-size: 12px; color: var(--text-sub); opacity: 0.7; 
   }
 
-/* 🌟 [추가] 사이드바 (채팅 목록) 스타일 */
+/* 🌟 [추가/수정] 사이드바 (채팅 목록) 스타일 */
 #sidebar-backdrop {
     justify-content: flex-start; /* 왼쪽 정렬 */
     align-items: stretch;
@@ -721,4 +729,55 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     
     /* 아래를 가리키는 화살표 모양으로 회전 및 위치 조정 */
     transform: translateY(-2px) rotate(45deg); 
+}
+
+/* ================================================================= */
+/* 🌟🌟🌟 [PC 전용] 사이드바 PUSH 효과 및 스크롤 개선 🌟🌟🌟 */
+/* ================================================================= */
+
+@media (min-width: 769px) {
+    /* 1. 사이드바가 모달이 아닌 패널처럼 동작 */
+    #sidebar-backdrop {
+        background-color: transparent !important; /* 어두운 배경 제거 */
+        width: 0; /* 클릭 이벤트가 본문을 가리지 않도록 */
+        transition: none; /* 배경색 전환 제거 */
+        z-index: 90; /* 헤더보다 아래, 컨텐츠보다 위 */
+    }
+
+    #sidebar-backdrop.visible {
+        width: 300px; /* 열렸을 때는 사이드바 영역만큼 차지 */
+    }
+
+    .sidebar {
+        /* 사이드바 자체는 상호작용 가능해야 함 */
+        pointer-events: auto;
+        border-right: 1px solid var(--border-color);
+        box-shadow: none; /* 그림자 제거하고 경계선으로 대체 */
+    }
+
+    /* 2. 사이드바가 열렸을 때 (body에 sidebar-open 클래스가 있을 때) */
+    
+    /* 헤더 밀기 */
+    body.sidebar-open .header {
+        left: 300px;
+        width: calc(100% - 300px);
+    }
+
+    /* 메인 컨텐츠 밀기 */
+    body.sidebar-open .content-wrapper {
+        margin-left: 300px;
+        width: auto; /* flex-grow가 처리하지만 명시 */
+    }
+
+    /* 입력창(Composer) 밀기 */
+    body.sidebar-open .composer {
+        left: 300px;
+        width: calc(100% - 300px);
+    }
+    
+    /* 그라데이션 오버레이도 같이 밀기 */
+    body.sidebar-open .composer-gradient-overlay {
+        left: 300px;
+        width: calc(100% - 300px);
+    }
 }
