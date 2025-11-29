@@ -103,6 +103,11 @@ let currentLoadingText = '답변을 생각하는 중...';
 let autoScrollEnabled = true;
 let isImageMode = false;
 
+// 🌟 부드러운 타이핑 효과를 위한 변수
+let streamQueue = ""; // 네트워크에서 받아온 전체 데이터
+let displayedResponse = ""; // 현재 화면에 표시된 데이터
+let streamInterval = null; // 타이핑 인터벌
+
 // Marked 옵션 설정 (줄바꿈 처리 등)
 if (typeof marked !== 'undefined') {
     marked.setOptions({
@@ -775,7 +780,7 @@ function setStreamingState(active) {
     toggleSendButton();
 }
 
-let fullResponse = ""; 
+let fullResponse = ""; // 전역 사용을 위해 유지 (복사 기능 등)
 
 function stopResponse() {
     showSnackbar("답변 중지됨.");
@@ -783,6 +788,12 @@ function stopResponse() {
         abortController.abort();
     }
     
+    // 🌟 [수정] 스트리밍 인터벌 정리
+    if (streamInterval) {
+        clearInterval(streamInterval);
+        streamInterval = null;
+    }
+
     // 현재 답변 저장 및 마무리
     const lastBotMessageElement = chatMessages.lastElementChild;
     if (lastBotMessageElement) {
@@ -800,10 +811,11 @@ function stopResponse() {
         const stopText = document.createElement('div'); stopText.className = 'stop-message'; stopText.textContent = "답변 중지됨.";
         lastBotMessageElement.insertAdjacentElement('afterend', stopText);
         
-        history.push({ role: 'model', content: fullResponse, feedback: null }); 
+        // 현재까지 표시된 내용(displayedResponse)을 저장
+        history.push({ role: 'model', content: displayedResponse, feedback: null }); 
         updateCurrentSession(); // 저장
         
-        const actionContainer = createBotActions(fullResponse, history.length - 1);
+        const actionContainer = createBotActions(displayedResponse, history.length - 1);
         lastBotMessageElement.appendChild(actionContainer); updateRegenerateButtons();
     }
 
@@ -856,7 +868,50 @@ async function sendMessage(userMessageOverride = null, isRegenerate = false) {
     abortController = new AbortController();
     const signal = abortController.signal;
     
+    // 🌟 변수 초기화
     fullResponse = ""; 
+    streamQueue = "";      // 네트워크 버퍼 초기화
+    displayedResponse = ""; // 표시된 텍스트 초기화
+    
+    // 🌟 부드러운 타이핑 효과를 위한 인터벌 함수 시작
+    if (streamInterval) clearInterval(streamInterval);
+    
+    streamInterval = setInterval(() => {
+        // streamQueue에 데이터가 있고, 표시된 데이터가 전체 데이터보다 짧을 때
+        if (streamQueue.length > 0) {
+            // 한 번에 가져올 글자 수 (부드러움을 위해 2~3글자)
+            const charsToTake = 2; 
+            
+            // 큐에서 글자 가져오기
+            const chunkToAdd = streamQueue.slice(0, charsToTake);
+            streamQueue = streamQueue.slice(charsToTake); // 큐 업데이트
+            
+            displayedResponse += chunkToAdd;
+            fullResponse = displayedResponse; // 동기화
+            
+            // Markdown 파싱 및 업데이트
+            streamingBlockElement.innerHTML = typeof marked !== 'undefined' ? marked.parse(displayedResponse) : displayedResponse;
+            
+            // 자동 스크롤
+            if (autoScrollEnabled) scrollToBottom(false);
+        } else if (!isStreaming && streamQueue.length === 0) {
+            // 스트리밍이 끝났고 큐도 비었으면 종료
+            clearInterval(streamInterval);
+            streamInterval = null;
+            
+            // 최종 마무리 (저장 및 버튼 표시)
+             history.push({ role: 'model', content: displayedResponse, feedback: null }); 
+            updateCurrentSession(); 
+            
+            if (spinnerElement) spinnerElement.classList.add('reset-spin'); 
+            if (indicatorTextElement) { indicatorTextElement.style.display = 'none'; indicatorTextElement.classList.add('completed'); }
+            indicatorElement.classList.add('left-aligned'); 
+            
+            const actionContainer = createBotActions(displayedResponse, history.length - 1);
+            botMessageElement.appendChild(actionContainer); updateRegenerateButtons();
+            scrollToBottom(true);
+        }
+    }, 15); // 15ms 간격으로 업데이트 (타이핑 속도 조절)
     
     try {
         if (isImageMode) {
@@ -871,14 +926,17 @@ async function sendMessage(userMessageOverride = null, isRegenerate = false) {
             const data = await response.json();
             
             if (data.success && data.image_data) {
+                // 이미지는 스트리밍 큐를 타지 않고 즉시 표시
+                clearInterval(streamInterval); // 텍스트 스트리밍 중지
+                
                 const imgHtml = `<img src="${data.image_data}" alt="Generated Image" style="max-width: 100%; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`;
                 fullResponse = imgHtml;
                 streamingBlockElement.innerHTML = fullResponse;
+                
                 setStreamingState(false);
                 history.push({ role: 'model', content: fullResponse, feedback: null }); 
                 updateCurrentSession(); // 저장
                 if (spinnerElement) spinnerElement.classList.add('reset-spin'); 
-                // 🌟 [수정] 텍스트 숨김
                 if (indicatorTextElement) { indicatorTextElement.style.display = 'none'; indicatorTextElement.classList.add('completed'); }
                 indicatorElement.classList.add('left-aligned');
                 toggleImageMode(false);
@@ -909,36 +967,24 @@ async function sendMessage(userMessageOverride = null, isRegenerate = false) {
                 
                 if (chunk.includes("[DONE]")) {
                     const parts = chunk.split("[DONE]");
-                    fullResponse += parts[0]; 
-                    streamingBlockElement.innerHTML = typeof marked !== 'undefined' ? marked.parse(fullResponse) : fullResponse;
-                    // 스트리밍 중에는 자동 스크롤 (사용자가 위로 올리지 않은 경우)
-                    if (autoScrollEnabled) scrollToBottom(false);
+                    // 🌟 큐에 데이터 추가 (직접 렌더링 X)
+                    streamQueue += parts[0]; 
                     break;
                 } else {
-                    fullResponse += chunk;
-                    streamingBlockElement.innerHTML = typeof marked !== 'undefined' ? marked.parse(fullResponse) : fullResponse;
-                    if (autoScrollEnabled) scrollToBottom(false);
+                     // 🌟 큐에 데이터 추가 (직접 렌더링 X)
+                    streamQueue += chunk;
                 }
             }
             
+            // 네트워크 수신 완료, 이제 인터벌이 남은 큐를 처리할 때까지 대기
             setStreamingState(false);
-            history.push({ role: 'model', content: fullResponse, feedback: null }); 
-            updateCurrentSession(); // 저장
-            
-            if (spinnerElement) spinnerElement.classList.add('reset-spin'); 
-            // 🌟 [수정] 텍스트 숨김
-            if (indicatorTextElement) { indicatorTextElement.style.display = 'none'; indicatorTextElement.classList.add('completed'); }
-            indicatorElement.classList.add('left-aligned'); 
-            
-            const actionContainer = createBotActions(fullResponse, history.length - 1);
-            botMessageElement.appendChild(actionContainer); updateRegenerateButtons();
-            scrollToBottom(true);
         }
     } catch (error) {
         if (error.name === 'AbortError') { 
             console.log('Fetch aborted'); 
         } 
         else {
+            if(streamInterval) clearInterval(streamInterval); // 에러 시 인터벌 중지
             const errorMsg = `⚠️ 오류: ${error.message}`;
             streamingBlockElement.innerHTML = `<p style="color:red;">${errorMsg}</p>`;
             if (spinnerElement) spinnerElement.classList.add('reset-spin');
