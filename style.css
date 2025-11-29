@@ -26,6 +26,9 @@
   --min-textarea-height: 22.4px; 
   --min-input-container-height: 48px; 
   
+  --sidebar-width: 300px;
+  --mini-sidebar-width: 60px; /* PC 미니 사이드바 너비 */
+
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -92,7 +95,6 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .phone{
   width:100%; background:var(--bg-color); border-radius:0; border:none; display:flex; flex-direction:column; min-height:100vh; position:relative; margin: 0;
   transition: background-color 0.3s ease;
-  
   height: 100vh; 
   overflow: hidden; 
 }
@@ -159,8 +161,9 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .action-btn.orange .material-symbols-rounded{ color:#fd7e14; } 
 
 /* Chat Messages */
-.chat-messages{ width: 100%; padding: 10px 16px; padding-top: 10px; display: none; flex-direction: column; justify-content: flex-start; gap: 10px; margin: 0 auto; }
-@media (min-width: 600px) { .chat-messages { max-width: 768px; padding-left: 0; padding-right: 0; } }
+/* 🌟 [수정] 패딩을 늘려 안쪽으로 살짝 당김 */
+.chat-messages{ width: 100%; padding: 10px 24px; padding-top: 10px; display: none; flex-direction: column; justify-content: flex-start; gap: 10px; margin: 0 auto; box-sizing: border-box; }
+@media (min-width: 600px) { .chat-messages { max-width: 800px; padding-left: 24px; padding-right: 24px; } }
 
 .message-bubble{ display: flex; max-width: 80%; }
 .message-text{ padding: 10px 14px; border-radius: 20px; line-height: 1.4; font-size: 15px; white-space: pre-wrap; }
@@ -170,14 +173,14 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .bot-message{ align-self: flex-start; margin-top: 10px; padding: 0; color: var(--text-color); line-height: 1.4; font-size: 15px; width: 100%; }
 .bot-message .streaming-block { display: block; padding: 0; border-radius: 0; background-color: transparent; max-width: 100%; box-sizing: border-box; white-space: normal; color: var(--text-color); margin-bottom: 8px; }
 
-/* 봇 답변 페이드인 효과 */
+/* 🌟 [수정] 봇 답변 페이드인 효과: 위로 올라오지 않고 제자리에서 부드럽게 나타나게 변경 */
 @keyframes fadeInUpNode {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .bot-message .streaming-block > * {
-    animation: fadeInUpNode 0.5s ease forwards;
+    animation: fadeInUpNode 0.3s ease forwards;
 }
 
 .stop-message { color: var(--error-red); font-weight: 600; font-size: 0.9em; margin-top: -5px; margin-bottom: 10px; padding: 0 4px; align-self: flex-start; }
@@ -212,24 +215,16 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     animation: shimmer 1.5s infinite linear;
 }
 .thinking-indicator-text.completed { animation: none; background-position: 50% 0; }
+
+/* 🌟 [수정] 스피너 숨김 */
 .loading-spinner {
-    display: inline-block; width: 16px; height: 16px; background-image: url('https://i.postimg.cc/MKBHwqWk/logogogo.png');
-    background-size: cover; background-position: center; border-radius: 50%;
-    animation: spin-custom 2s infinite cubic-bezier(0.5, 0, 0.5, 1); flex-shrink: 0; margin-right: 4px; 
-    transform: rotate(0deg); transition: transform 0.5s ease-out;
-}
-.loading-spinner.image-gen {
-    filter: hue-rotate(240deg) brightness(1.2); 
+    display: none !important; 
 }
 
 @keyframes spin-custom {
     0% { transform: rotate(0deg); }
-    25% { transform: rotate(360deg); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); } 
-    50% { transform: rotate(720deg); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); } 
-    75% { transform: rotate(1080deg); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); } 
     100% { transform: rotate(1440deg); }
 }
-.loading-spinner.reset-spin { animation: none; transform: rotate(0deg); }
 @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
 /* ============================================ */
@@ -535,15 +530,14 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     font-size: 12px; color: var(--text-sub); opacity: 0.7; 
   }
 
-/* 🌟 [수정] 사이드바 (채팅 목록) 스타일 */
+/* 사이드바 (채팅 목록) 스타일 */
 #sidebar-backdrop {
     justify-content: flex-start; /* 왼쪽 정렬 */
     align-items: stretch;
 }
 .sidebar {
-    width: 300px;
-    /* 🌟 [추가] 텍스트 깨짐 방지를 위한 최소 너비 및 텍스트 줄바꿈 방지 */
-    min-width: 300px; 
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width); 
     max-width: 80%;
     height: 100%;
     background-color: var(--bg-color);
@@ -552,7 +546,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    flex-shrink: 0; /* 🌟 중요: 줄어듦 방지 */
+    flex-shrink: 0; 
     z-index: 110;
 }
 .modal-backdrop.visible .sidebar {
@@ -575,7 +569,6 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     font-size: 14px;
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    /* 🌟 [추가] 텍스트 깨짐 방지 */
     white-space: nowrap; 
 }
 .new-chat-btn .material-symbols-rounded { font-size: 20px; }
@@ -635,7 +628,6 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 }
 .sidebar-list-item-title {
     font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    /* 🌟 [추가] 텍스트 깨짐 방지 */
     white-space: nowrap;
 }
 .sidebar-list-item-date {
@@ -667,28 +659,53 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     font-size: 14px; color: var(--text-color);
     cursor: pointer;
     transition: background-color 0.2s;
-    /* 🌟 [추가] 텍스트 깨짐 방지 */
     white-space: nowrap;
 }
 .sidebar-menu-item:hover { background-color: var(--surface-hover); }
 .sidebar-menu-item.delete-all { color: var(--error-red); }
 .sidebar-menu-item.delete-all .material-symbols-rounded { color: var(--error-red); }
 
-
-/* 🌟 [수정] 스크롤 버튼 컨테이너 위치 고정 */
-/* 중앙 하단으로 이동 (입력창보다 더 위로) */
-#scroll-to-bottom-container {
+/* 🌟 [신규] PC 미니 사이드바 스타일 */
+.mini-sidebar {
     position: fixed;
-    /* 화면 가로 중앙 */
-    left: 50%;
-    transform: translateX(-50%);
-    /* 🌟 [수정] 입력창 위로 올라가도록 높이 조정 (100px -> 160px) */
-    bottom: 160px; 
-    z-index: 95; /* 헤더(100)보다 아래, 컨텐츠보다 위 */
-    pointer-events: none; /* 컨테이너 자체는 클릭 통과 */
+    top: 0; left: 0; bottom: 0;
+    width: var(--mini-sidebar-width);
+    background-color: var(--bg-color);
+    border-right: 1px solid var(--border-color);
+    display: none; /* 기본적으로 숨김 (모바일 등) */
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    z-index: 95;
+    transition: background-color 0.3s ease;
 }
 
-/* 🌟 [추가] 스크롤 버튼 기본 스타일 */
+.mini-sidebar-icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+    transition: background-color 0.2s, color 0.2s;
+}
+.mini-sidebar-icon:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+}
+.mini-sidebar-icon.delete-all { color: var(--error-red); opacity: 0.7; margin-top: auto; margin-bottom: 20px; }
+.mini-sidebar-icon.delete-all:hover { opacity: 1; background-color: rgba(239, 68, 68, 0.1); }
+
+/* 스크롤 버튼 컨테이너 */
+#scroll-to-bottom-container {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 160px; 
+    z-index: 95; 
+    pointer-events: none; 
+}
+
 #scrollDownButton {
     background-color: var(--surface-color); 
     border: 1px solid var(--border-color); 
@@ -735,6 +752,11 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 /* ================================================================= */
 
 @media (min-width: 769px) {
+    /* 🌟 PC에서는 닫기 버튼 숨김 */
+    #sidebar-close {
+        display: none;
+    }
+
     /* 1. 사이드바 백드롭: 투명하게 만들고 공간만 차지하지 않게 설정 */
     #sidebar-backdrop {
         background-color: transparent !important;
@@ -743,13 +765,12 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         z-index: 90;
         position: fixed;
         top: 0; bottom: 0; left: 0;
-        /* 🌟 [중요] 사이드바 텍스트 깨짐 방지: 넘치는 컨텐츠 숨김 */
         overflow: hidden; 
     }
 
     /* 사이드바가 열렸을 때 백드롭이 공간(300px)을 인식하도록 함 */
     #sidebar-backdrop.visible {
-        width: 300px;
+        width: var(--sidebar-width);
     }
 
     /* 사이드바: 기본 숨김 상태에서 시작 */
@@ -763,46 +784,60 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     .modal-backdrop.visible .sidebar {
         transform: translateX(0);
     }
+    
+    /* 🌟 미니 사이드바 제어: 사이드바가 닫혀있을 때 보임 */
+    body:not(.sidebar-open) .mini-sidebar {
+        display: flex;
+    }
 
-    /* 2. 헤더 밀기 애니메이션 */
+    /* 2. 헤더 밀기 애니메이션 (미니 사이드바 고려) */
     .header {
+        left: var(--mini-sidebar-width); 
+        width: calc(100% - var(--mini-sidebar-width));
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
         will-change: left, width; 
     }
 
     body.sidebar-open .header {
-        left: 300px;
-        width: calc(100% - 300px);
+        left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
     }
 
     /* 3. 메인 컨텐츠 밀기 */
     .content-wrapper {
+        margin-left: var(--mini-sidebar-width);
         transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     body.sidebar-open .content-wrapper {
-        margin-left: 300px;
+        margin-left: var(--sidebar-width);
     }
     
     /* 4. 입력창(Composer) 및 그라데이션 밀기 */
     .composer, .composer-gradient-overlay {
+        left: var(--mini-sidebar-width);
+        width: calc(100% - var(--mini-sidebar-width));
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s, opacity 0.3s;
     }
 
     body.sidebar-open .composer {
-        left: 300px;
-        width: calc(100% - 300px);
+        left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
     }
     
     body.sidebar-open .composer-gradient-overlay {
-        left: 300px;
-        width: calc(100% - 300px);
+        left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
     }
 
-    /* 5. 🌟 스크롤 버튼 중앙 위치 보정 */
-    /* 사이드바가 열리면 입력창의 중앙도 오른쪽으로 이동하므로 버튼도 이동 */
-    body.sidebar-open #scroll-to-bottom-container {
-        /* 기존 50%에서 + 150px (사이드바 절반) 만큼 이동 */
-        left: calc(50% + 150px);
+    /* 5. 스크롤 버튼 중앙 위치 보정 */
+    #scroll-to-bottom-container {
+        /* 미니 사이드바(60)의 절반(30) 만큼 이동 */
+        left: calc(50% + 30px);
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body.sidebar-open #scroll-to-bottom-container {
+        /* 사이드바(300)의 절반(150) 만큼 이동 */
+        left: calc(50% + 150px);
     }
 }
