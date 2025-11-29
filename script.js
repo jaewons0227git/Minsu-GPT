@@ -562,11 +562,10 @@ function autoResizeTextarea() {
     inputContainer.style.minHeight = `${inputContainerHeight}px`;
 
     const composerHeight = composer.offsetHeight;
-    if(scrollDownButton) {
-        // 스크롤 버튼 위치 조정 (CSS에서 제어하지만 JS에서 보조 가능 시 사용)
-        // 현재는 CSS fixed로 제어함
-    }
-    chatMessages.style.paddingBottom = `${composerHeight + 20}px`;
+    
+    // 🌟 [수정] 하단 여백 대폭 증가 (전송 시 내용이 위로 올라가 보이도록)
+    // 기존 20px -> composerHeight + 80px 정도로 넉넉하게 잡음
+    chatMessages.style.paddingBottom = `${composerHeight + 80}px`;
 }
 
 function appendUserMessage(content, animate = true) {
