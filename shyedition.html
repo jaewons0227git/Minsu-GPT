@@ -26,12 +26,6 @@
   </script>
   
   <style>
-    /* .phone은 relative로 설정하여 absolute 자식 요소들의 기준이 되도록 합니다. */
-    .phone {
-        position: relative; 
-        overflow: hidden; 
-    }
-    
     .chat-background-image {
         position: absolute;
         top: 0;
@@ -41,43 +35,38 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 0; /* 메인 콘텐츠 뒤에 위치 */
-        pointer-events: none;
-        
-        /* 메인 콘텐츠의 움직임과 동기화하기 위한 transition 설정 */
-        transition: transform 0.3s ease; 
+        /* content-wrapper의 배경색에 가려지지 않도록 z-index 설정 */
+        z-index: 1; 
+        pointer-events: none; /* 이미지 클릭 방지 */
     }
-    
     .chat-background-image img {
         /* 이미지 원본 크기 유지 */
         width: auto;
         height: auto;
         max-width: none;
         max-height: none;
-        /* 투명도 적용 */
+        /* 투명도 적용 (0.3은 예시, 필요에 따라 조정 가능) */
         opacity: 0.3; 
     }
-    
-    /* 콘텐츠 영역의 배경을 투명하게 설정하여 배경 이미지가 보이도록 함 */
-    #content-wrapper, .header, .composer-gradient-overlay, .composer {
-        position: relative; /* z-index를 가지기 위해 */
-        z-index: 10;
+    /* content-wrapper가 배경색으로 이미지를 가리지 않도록 배경 투명하게 설정 */
+    #content-wrapper {
+        position: relative;
+        z-index: 2; /* 컨텐츠가 이미지 위에 보이도록 설정 */
         background-color: transparent !important; 
-        /* 메인 콘텐츠 이동 시 부드럽게 움직이도록 transition 추가 */
-        transition: transform 0.3s ease;
     }
-    
-    /* 사이드바가 열렸을 때 (CSS에서 메인 콘텐츠를 이동시키는 스타일을 가정) */
-    /* 현재 파일에 해당 CSS가 없으므로, JS에서 직접 transform 값을 변경합니다. */
+    /* #chat-messages 컨테이너의 배경색도 투명하게 설정하여 이미지 보이게 함 (만약 #chat-messages에 배경색이 있다면) */
+    #chat-messages {
+        background-color: transparent !important;
+    }
+    /* .phone 자체에 배경색이 있다면, 그 배경색 위로 이미지가 보이게 하려면 .phone의 배경색을 투명하게 하거나, .chat-background-image를 .phone 바로 아래에 두어야 합니다. 현재 코드 구조를 유지하기 위해, .chat-background-image를 .content-wrapper 밖에 둡니다. */
+    .phone {
+        position: relative; /* 자식 요소의 absolute 위치 기준 */
+    }
   </style>
   
 </head>
 <body>
   <div class="phone" role="application" aria-label="채팅 UI">
-    
-    <div class="chat-background-image" id="chat-bg-img">
-        <img src="https://i.postimg.cc/7LpD27CJ/shy.png" alt="채팅 배경 이미지">
-    </div>
     
     <aside class="mini-sidebar">
         <div class="mini-sidebar-icon" id="mini-new-chat" title="새 채팅">
@@ -128,7 +117,7 @@
         </aside>
     </div>
 
-    <header class="header" id="header-content">
+    <header class="header">
         <div class="header-left-group">
              <div class="header-icon menu-icon" id="menu-button">
                 <span class="material-symbols-rounded">menu</span>
@@ -152,6 +141,10 @@
     <div id="scroll-to-bottom-container">
         <button id="scrollDownButton" class="hidden" aria-label="맨 아래로 스크롤">
         </button>
+    </div>
+
+    <div class="chat-background-image">
+        <img src="https://i.postimg.cc/7LpD27CJ/shy.png" alt="채팅 배경 이미지">
     </div>
 
     <main id="content-wrapper" class="content-wrapper">
@@ -187,7 +180,7 @@
         <div id="bottom-spacer" style="height: 60px;"></div>
     </main>
 
-    <div class="composer-gradient-overlay" id="composer-overlay"></div>
+    <div class="composer-gradient-overlay"></div>
 
     <div id="composer" class="composer style-default">
       <div class="composer-inner">
@@ -371,97 +364,6 @@
 
   </div>
 
-  <script src="script.js"></script>
-  
-  <script>
-    // ⚠️ 경고: 이 코드는 사용자의 기존 script.js 파일이 sidebar에 'active' 클래스를 토글하고,
-    // 메인 콘텐츠 요소들 (header, main, composer 등)에 동일한 transform: translateX(250px)를 적용한다고 가정하고 작성되었습니다.
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const menuButton = document.getElementById('menu-button');
-        const sidebar = document.getElementById('sidebar');
-        const chatBgImg = document.getElementById('chat-bg-img');
-        
-        // 메인 콘텐츠 이동 대상 요소들을 배열로 정의
-        const mainElements = [
-            document.getElementById('header-content'), // header에 id 추가
-            document.getElementById('content-wrapper'),
-            document.getElementById('composer-overlay'), // overlay에 id 추가
-            document.getElementById('composer')
-        ].filter(el => el != null); // null이 아닌 요소만 필터링
-
-        // sidebar.classList.contains('active')가 사이드바 열림 상태를 나타낸다고 가정
-        
-        const OBSERVER_CONFIG = { attributes: true, attributeFilter: ['style', 'class'] };
-        const SHIFT_DISTANCE = '250px'; // 사이드바 너비(이동 거리)를 250px로 가정
-
-        // 1. 사이드바 열림/닫힘 상태에 따른 배경 이미지 이동 (기존 JS 로직에 종속)
-        function updateBackgroundImagePosition() {
-             const isSidebarOpen = sidebar.classList.contains('active');
-             
-             if (isSidebarOpen) {
-                 // 사이드바가 열리면 배경 이미지도 오른쪽으로 이동
-                 chatBgImg.style.transform = `translateX(${SHIFT_DISTANCE})`;
-             } else {
-                 // 사이드바가 닫히면 원래 위치로 복귀
-                 chatBgImg.style.transform = 'translateX(0)';
-             }
-        }
-        
-        // 2. 만약 사이드바가 열릴 때 메인 콘텐츠의 'style' 속성(transform)이 변경된다면,
-        // MutationObserver를 사용하여 변화를 감지하고 배경 이미지를 똑같이 움직입니다.
-        // 이 방법이 '텍스트가 움직인 걸 감지해서' 똑같은 거리만큼 움직이는 가장 확실한 방법입니다.
-
-        const contentObserver = new MutationObserver((mutationsList, observer) => {
-            for(const mutation of mutationsList) {
-                if (mutation.type === 'attributes' && (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
-                    // 메인 콘텐츠 요소 중 하나를 기준으로 이동 거리를 확인
-                    const mainContentTransform = window.getComputedStyle(mainElements[0]).transform;
-                    
-                    // transform 행렬에서 X축 이동 값 추출
-                    if (mainContentTransform && mainContentTransform !== 'none') {
-                        const matrix = mainContentTransform.match(/matrix.*\((.+)\)/)[1].split(', ');
-                        const translateX = matrix[4]; // matrix(a, b, c, d, tx, ty)에서 tx는 인덱스 4
-                        
-                        // 배경 이미지에 동일한 transform 적용
-                        chatBgImg.style.transform = `translateX(${translateX}px)`;
-                    } else {
-                        // transform이 없으면 0으로 설정
-                        chatBgImg.style.transform = 'translateX(0)';
-                    }
-                    return;
-                }
-            }
-        });
-
-        // 메인 콘텐츠 요소들(header, content-wrapper, composer 등)에 옵저버 연결
-        mainElements.forEach(el => {
-            contentObserver.observe(el, OBSERVER_CONFIG);
-        });
-        
-        // 만약 menu-button 클릭 시 클래스 토글 방식이라면 (위의 1번 로직)
-        if (menuButton) {
-            menuButton.addEventListener('click', () => {
-                // 사이드바의 활성화 상태가 변경될 때마다 배경 이미지 위치 업데이트
-                // (실제 script.js에서 사이드바 토글 후 딜레이를 주거나,
-                // 토글 로직 내에서 이 함수를 호출해야 가장 정확합니다.)
-                
-                // 임시로 클릭 후 50ms 뒤에 상태 확인 (기존 JS의 애니메이션 시간 고려)
-                setTimeout(updateBackgroundImagePosition, 50); 
-            });
-        }
-        
-        // 사이드바 닫기 버튼에도 연결
-        const sidebarClose = document.getElementById('sidebar-close');
-        if (sidebarClose) {
-             sidebarClose.addEventListener('click', () => {
-                setTimeout(updateBackgroundImagePosition, 50); 
-            });
-        }
-        
-        // **최적의 방식: 기존 script.js 파일에서 메인 콘텐츠 이동(transform) 코드를 찾아
-        // 그 코드가 실행될 때 chatBgImg.style.transform을 함께 설정하는 것입니다.**
-    });
-  </script>
+  <script src="jsshy.js"></script>
 </body>
 </html>
