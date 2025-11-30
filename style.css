@@ -521,7 +521,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .composer.style-default .composer-inner {
     max-width: 768px;
     border-radius: 35px;
-    padding: 8px 12px 8px 8px; 
+    padding: 8px 9px 8px 8px; 
     box-shadow: var(--composer-shadow);
     gap: 4px; flex-direction: row;
     align-items: flex-end; 
