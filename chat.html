@@ -149,6 +149,8 @@
                 <span><span class="material-symbols-rounded" style="font-size: 18px;">auto_fix_high</span> 이미지 생성 모드</span>
                 <span class="material-symbols-rounded close-image-mode" id="close-image-mode" style="font-size: 18px;">close</span>
             </div>
+            
+            <div id="attachment-preview-area" class="attachment-preview-area" style="display:none;"></div>
 
             <div id="input-container" class="input-container">
               <textarea id="message-input" placeholder="MinsuGPT에게 물어보기" rows="1"></textarea>
@@ -274,6 +276,9 @@
     </div>
 
     <input type="file" id="import-file-input" style="display: none;" accept=".json">
+
+    <input type="file" id="camera-trigger" accept="image/*" capture="environment" style="display: none;">
+    <input type="file" id="file-trigger" accept="image/*" multiple style="display: none;">
     
     <div id="about-modal-backdrop" class="modal-backdrop">
         <div id="about-modal" class="modal">
