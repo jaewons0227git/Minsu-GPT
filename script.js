@@ -60,6 +60,9 @@ const miniSidebarNewChat = document.getElementById('mini-new-chat');
 const miniSidebarSearch = document.getElementById('mini-search');
 const miniSidebarDeleteAll = document.getElementById('mini-delete-all');
 
+// 🌟 [추가] 상단바 새 채팅 및 업데이트 링크 요소
+const headerNewChat = document.getElementById('header-new-chat');
+const headerUpdateLink = document.getElementById('header-update-link');
 
 // 🌟 [신규] 모달 관련 요소 정의
 const renameModalBackdrop = document.getElementById('rename-modal-backdrop');
@@ -929,7 +932,7 @@ async function sendMessage(userMessageOverride = null, isRegenerate = false) {
     
     if (userBubbleElement) {
         setTimeout(() => {
-            const headerHeight = 56; 
+            const headerHeight = 64; // 헤더 높이 수정 반영
             const offset = userBubbleElement.offsetTop - headerHeight - 10; 
             contentWrapper.scrollTo({ top: offset, behavior: 'smooth' });
         }, 50);
@@ -1137,6 +1140,16 @@ if (hiddenFileInput) hiddenFileInput.addEventListener('change', handleFileSelect
 if(miniSidebarNewChat) miniSidebarNewChat.addEventListener('click', () => { startNewChat(); });
 if(miniSidebarSearch) miniSidebarSearch.addEventListener('click', () => { toggleSidebar(true); setTimeout(() => document.getElementById('sidebar-search-input').focus(), 300); });
 if(miniSidebarDeleteAll) miniSidebarDeleteAll.addEventListener('click', resetAllChats);
+
+// 🌟 [추가] 상단바 버튼 이벤트 리스너
+if(headerNewChat) {
+    headerNewChat.addEventListener('click', () => startNewChat());
+}
+if(headerUpdateLink) {
+    headerUpdateLink.addEventListener('click', () => {
+        window.open('https://minsugpt.kro.kr/app/update', '_blank');
+    });
+}
 
 
 renameCancelBtn.addEventListener('click', closeCustomModals);
