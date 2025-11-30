@@ -28,6 +28,9 @@
   
   --sidebar-width: 300px;
   --mini-sidebar-width: 60px; /* PC 미니 사이드바 너비 */
+  
+  /* 헤더 버튼 배경 */
+  --header-btn-bg: #f1f4f9;
 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -51,6 +54,9 @@
 
   --composer-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   --modal-overlay: rgba(0, 0, 0, 0.8);
+  
+  /* 다크모드 헤더 버튼 배경 (이미지와 비슷하게 어둡게) */
+  --header-btn-bg: #2c2c2c;
 }
 
 /* 폰트 설정 */
@@ -99,24 +105,58 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
   overflow: hidden; 
 }
 
-/* Header */
+/* 🌟 [수정] Header 스타일 변경 (로고 제거, 커스텀 스타일 적용) */
 .header{
-  display:flex; justify-content:space-between; align-items:center; padding:10px 16px; height:56px; border-bottom:none; 
+  display:flex; justify-content:space-between; align-items:center; padding:10px 16px; height:64px; border-bottom:none; 
   position: fixed; top: 0; left: 0; right: 0; z-index: 100; 
   background: var(--bg-color); 
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+  /* box-shadow 제거 */
+  box-shadow: none; 
   transition: background-color 0.3s ease, left 0.3s ease, width 0.3s ease; 
 }
-[data-theme="dark"] .header { box-shadow: 0 1px 3px rgba(255,255,255, 0.05); }
 
-.header-icon{
-  width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--text-color); cursor: pointer; flex-shrink: 0; 
+/* 왼쪽 원형 메뉴 버튼 */
+.header-btn-circle {
+    width: 44px; height: 44px;
+    background-color: var(--header-btn-bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: background-color 0.2s;
 }
-.header-left-group { display: flex; align-items: center; }
-.header-logo { width: 24px; height: 24px; margin-left: 8px; flex-shrink: 0; }
-.header-logo img { width: 100%; height: 100%; object-fit: contain; }
-.header-title { font-size: 18px; font-weight: 600; color: var(--text-color); margin-left: 8px; flex-shrink: 0; }
-.header-center { text-align: left; display: flex; justify-content: flex-start; align-items: center; margin-left: 10px; }
+.header-btn-circle:hover {
+    filter: brightness(0.95);
+}
+[data-theme="dark"] .header-btn-circle:hover { filter: brightness(1.1); }
+
+/* 오른쪽 알약 모양 그룹 */
+.header-pill-group {
+    display: flex;
+    align-items: center;
+    background-color: var(--header-btn-bg);
+    border-radius: 30px;
+    padding: 4px 6px;
+    gap: 2px;
+}
+
+.header-icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-color);
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+.header-icon:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+[data-theme="dark"] .header-icon:hover { background-color: rgba(255,255,255,0.1); }
+
+.header-icon .material-symbols-rounded { font-size: 22px; }
+
+/* 기존 스타일 유지 */
 .plus-btn{
   background-color: #f1f4ff; color: #1d6fef; font-weight:600; padding:4px 10px; border-radius:16px; display:flex; align-items:center; gap:4px; font-size:12px; cursor: pointer; line-height: 1.2;
 }
@@ -134,7 +174,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     flex-grow:1; display:flex; flex-direction:column; 
     overflow-y: auto; 
     padding-bottom: 0; position: relative;
-    padding-top: 56px; /* Header Height */
+    padding-top: 64px; /* Header Height 증가에 따른 수정 */
     opacity: 0; transform: translateY(20px); 
     transition: opacity 0.5s ease-out, transform 0.5s ease-out, margin-left 0.3s ease; 
     scroll-behavior: auto; 
