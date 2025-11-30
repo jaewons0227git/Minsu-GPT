@@ -168,8 +168,8 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 @media (min-width: 769px) { 
     .chat-messages { 
         max-width: 860px; /* PC에서 너무 넓어지지 않도록 최대폭 설정 */
-        padding-left: 60px; 
-        padding-right: 60px; 
+        padding-left: 30px; 
+        padding-right: 30px; 
     } 
 }
 
