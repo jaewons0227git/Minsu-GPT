@@ -150,6 +150,10 @@
                 <span class="material-symbols-rounded close-image-mode" id="close-image-mode" style="font-size: 18px;">close</span>
             </div>
 
+            <div id="attachment-area" class="attachment-area">
+                <div id="attachment-preview-list" class="attachment-preview-list"></div>
+            </div>
+
             <div id="input-container" class="input-container">
               <textarea id="message-input" placeholder="MinsuGPT에게 물어보기" rows="1"></textarea>
             </div>
@@ -274,6 +278,9 @@
     </div>
 
     <input type="file" id="import-file-input" style="display: none;" accept=".json">
+    
+    <input type="file" id="hidden-camera-input" style="display: none;" accept="image/*" capture="environment">
+    <input type="file" id="hidden-file-input" style="display: none;" accept="image/*" multiple>
     
     <div id="about-modal-backdrop" class="modal-backdrop">
         <div id="about-modal" class="modal">
