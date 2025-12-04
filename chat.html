@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko" data-theme="light">
-<head> 
+<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
   <meta name="theme-color" content="#ffffff" id="meta-theme-color">
@@ -26,8 +26,6 @@
   </script>
 </head>
 <body>
-
-
 
 <style>
   #snow-canvas {
@@ -239,31 +237,8 @@
         
         <div id="initial-content">
             <div class="main-question">안녕하세요! 반가워요</div>
-            <div class="sub-brand">MinsuGPT</div>
-            
-            <div class="quick-actions">
-                <div class="action-btn new-green" data-prompt="텍스트와 함께 대화하기">
-                    <span class="material-symbols-rounded">chat</span>
-                    텍스트와 함께 대화하기
-                </div>
-                <div class="action-btn" data-prompt="브레인스토밍 시작">
-                    <div class="icon-light">💡</div>
-                    브레인스토밍
-                </div>
-                <div class="action-btn new-blue" data-prompt="글 쓰기 예시 요청">
-                    <span class="material-symbols-rounded">edit</span>
-                    글 쓰기
-                </div>
-                <div class="action-btn orange" data-prompt="텍스트 요약 방법 알려주기">
-                    <span class="material-symbols-rounded">description</span>
-                    텍스트 요약
-                </div>
-                <div class="action-btn" data-prompt="도움말">
-                    <div style="font-size:18px;">...</div>
-                    더 보기
-                </div>
+            <div class="sub-branding">MinsuGPT</div>
             </div>
-        </div>
 
         <div id="chat-messages" class="chat-messages"></div>
         
@@ -278,23 +253,6 @@
             <span class="material-symbols-rounded">add</span>
         </div>
 
-        <div class="bottom-controls">
-            <div class="simple-tools">
-                <div class="tool-btn" id="tool-attach">
-                    <span class="material-symbols-rounded">attach_file</span>
-                    첨부
-                </div>
-                <div class="tool-btn" id="tool-image">
-                    <span class="material-symbols-rounded">language</span>
-                    검색
-                </div>
-                <div class="tool-btn" id="tool-study">
-                    <span class="material-symbols-rounded">auto_stories</span>
-                    학습하기
-                </div>
-            </div>
-        </div>
-
         <div class="input-area-wrapper">
             <div id="image-mode-indicator" class="image-mode-indicator">
                 <span><span class="material-symbols-rounded" style="font-size: 18px;">auto_fix_high</span> 이미지 생성 모드</span>
@@ -306,27 +264,43 @@
             </div>
 
             <div id="input-container" class="input-container">
-              <textarea id="message-input" placeholder="무엇이든 물어보세요" rows="1"></textarea>
+              <textarea id="message-input" placeholder="MinsuGPT에게 물어보기" rows="1"></textarea>
             </div>
         </div>
 
-        <div class="bottom-controls right-controls">
-             <div class="mic-voice-container">
-                <div id="mic-icon" class="mic-icon">
-                    <span class="material-symbols-rounded">graphic_eq</span>
+        <div class="bottom-controls">
+            <div class="simple-tools">
+                <div class="tool-btn" id="tool-attach">
+                    <span class="material-symbols-rounded">attach_file</span>
+                    첨부
                 </div>
-                
-                <div id="action-button-container">
-                    <div id="send-button" class="send-btn">
-                      <span class="material-symbols-rounded">arrow_upward</span>
-                    </div>
-                    <div id="stop-button" class="stop-btn" style="display:none;">
-                        <span class="stop-icon"></span>
-                    </div>
+                <div class="tool-btn" id="tool-image">
+                    <span class="material-symbols-rounded">image</span>
+                    이미지
                 </div>
-              </div>
+                <div class="tool-btn" id="tool-study">
+                    <span class="material-symbols-rounded">auto_stories</span>
+                    학습하기
+                </div>
+            </div>
+            
+            <div class="right-controls">
+                 <div class="mic-voice-container">
+                    <div id="mic-icon" class="mic-icon">
+                        <span class="material-symbols-rounded">mic</span>
+                    </div>
+                    
+                    <div id="action-button-container">
+                        <div id="send-button" class="send-btn">
+                          <span class="material-symbols-rounded">arrow_upward</span>
+                        </div>
+                        <div id="stop-button" class="stop-btn" style="display:none;">
+                            <span class="stop-icon"></span>
+                        </div>
+                    </div>
+                  </div>
+            </div>
         </div>
-
       </div>
     </div>
     
@@ -368,13 +342,13 @@
             <div class="ui-style-selector">
                 <span class="ui-style-label">입력창 스타일</span>
                 <div class="ui-style-options">
+                     <button class="ui-style-btn active" data-style="simple">
+                        <span class="material-symbols-rounded preview-icon">horizontal_rule</span>
+                        심플 (바형)
+                    </button>
                     <button class="ui-style-btn" data-style="default">
                         <span class="material-symbols-rounded preview-icon">check_circle</span>
                         기본 (둥근형)
-                    </button>
-                    <button class="ui-style-btn active" data-style="simple">
-                        <span class="material-symbols-rounded preview-icon">horizontal_rule</span>
-                        심플 (바형)
                     </button>
                 </div>
             </div>
