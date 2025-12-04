@@ -452,14 +452,13 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
 .composer.style-simple .composer-inner {
     max-width: 768px;
-    border-radius: 28px;       
+    border-radius: 35px; /* 더 둥글게 수정 */
     padding: 12px 16px 12px 20px; 
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column; 
     align-items: flex-start; 
     position: relative;
-    /* 🌟 높이 애니메이션 추가 */
     transition: height 0.3s ease, padding 0.3s ease; 
 }
 [data-theme="dark"] .composer.style-simple .composer-inner { box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
@@ -482,9 +481,11 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
 .simple-tools { display: flex; gap: 8px; margin-top: 0; flex-shrink: 0; }
 
+/* [수정 후] */
 .tool-btn {
     display: flex; align-items: center; justify-content: center; gap: 4px;
-    padding: 4px 10px 4px 8px; 
+    height: 38px; /* 전송 버튼과 높이 동일하게 설정 */
+    padding: 0 14px 0 10px; /* 내부 여백 조절 */
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: 20px;
@@ -513,6 +514,11 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .composer.style-simple .send-btn .material-symbols-rounded { color: var(--send-button-icon); }
 .composer.style-simple .send-btn:not(.active) { background-color: var(--send-button-disabled); }
 
+/* ▼▼▼ [새로 추가할 코드: 중지 버튼 위치 보정] ▼▼▼ */
+.composer.style-simple .stop-btn {
+    margin-right: 0;       /* 전송 버튼과 동일하게 우측 여백 제거 */
+    align-self: center;    /* 수직 중앙 정렬 */
+}
 
 /* 📌 스타일 2: 기본 (Default) */
 .composer.style-default {
