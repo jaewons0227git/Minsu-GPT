@@ -1,5 +1,5 @@
 /* 🌟🌟🌟 CSS 변수 시스템 🌟🌟🌟 */
-:root { 
+:root {
   --bg-color: #ffffff;
   --text-color: #111827;
   --text-sub: #4b5563;
@@ -181,35 +181,34 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 }
 .content-wrapper.loaded { opacity: 1; transform: translateY(0); }
 
-/* 🌟 [수정] 초기 콘텐츠 중앙 정렬 및 스타일 변경 */
 #initial-content{
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
   width: 100%; max-width: 400px; 
-  display:flex; flex-direction:column; align-items:center; justify-content: center; /* 완전 중앙 정렬 */
+  display:flex; flex-direction:column; align-items:center; justify-content: center; /* 🌟 완전 중앙 정렬 */
   text-align:center; padding: 0 16px; 
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 
-/* 🌟 [수정] 메인 텍스트 그라데이션 적용 */
+/* 🌟 [수정] 메인 질문 텍스트 그라데이션 및 중앙 정렬 */
 .main-question{ 
-    font-size:26px; font-weight:700; margin-bottom: 10px;
-    background: linear-gradient(135deg, #1d6fef, #60a5fa); 
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; 
-    color: transparent; /* fallback */
-    line-height: 1.3;
+    font-size: 24px; 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    background: linear-gradient(135deg, #1d6fef 0%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
 }
 
-/* 🌟 [신규] 서브 브랜드 텍스트 */
-.sub-brand {
+/* 🌟 [신규] 서브 브랜딩 텍스트 */
+.sub-branding {
     font-size: 14px;
     color: var(--text-sub);
     font-weight: 500;
     opacity: 0.8;
 }
 
-/* 🌟 [수정] 퀵 액션 숨김 (요청사항) */
-.quick-actions{ display: none; }
+.quick-actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; max-width:400px; }
 .action-btn{
   display:flex; align-items:center; justify-content:center; padding:10px 16px; 
   border:1px solid var(--border-color); background-color: var(--surface-color);
@@ -462,11 +461,10 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .send-btn.active { background-color: var(--send-button-enabled); pointer-events: auto; }
 .send-btn .material-symbols-rounded { color: var(--send-button-icon); font-size: 20px; }
 
-.mic-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #9ca3af; }
-.mic-icon .material-symbols-rounded { font-size: 20px; }
+.mic-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #9ca3af; cursor: pointer; }
+.mic-icon .material-symbols-rounded { font-size: 24px; }
 
-
-/* 🌟🌟🌟 [수정] 스타일 1: 심플 (Simple) - 스크린샷과 동일하게 변경 */
+/* 📌 스타일 1: 심플 (Simple) - 이제 기본 바(Bar) 스타일 */
 .composer.style-simple {
     background: var(--bg-color);
     padding: 0 16px 24px 16px;
@@ -476,112 +474,73 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
 .composer.style-simple .composer-inner {
     max-width: 768px;
-    border-radius: 50px; /* 완전 둥근 형태 */
-    padding: 6px 6px 6px 12px; 
-    /* 스크린샷의 다크 배경 색상 적용 (어두운 회색/검정) */
-    background-color: #2f2f2f; 
-    border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 35px; /* 완전히 둥근 캡슐 형태 */
+    padding: 6px 8px 6px 16px; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     display: flex;
-    flex-direction: row; /* 가로 배치 */
-    align-items: center; /* 중앙 정렬 */
+    flex-direction: row; /* 가로 정렬 */
+    align-items: center; /* 수직 중앙 */
     position: relative;
-    transition: height 0.3s ease, padding 0.3s ease; 
+    transition: all 0.3s ease;
 }
-/* 다크모드 대응 */
-[data-theme="dark"] .composer.style-simple .composer-inner { background-color: #2f2f2f; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+[data-theme="dark"] .composer.style-simple .composer-inner { box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-
-/* 심플 모드 레이아웃 */
+/* 입력 영역 */
 .composer.style-simple .input-area-wrapper {
-    flex: 1;
+    flex: 1; 
     margin-bottom: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
+/* 텍스트 입력 컨테이너 */
 .composer.style-simple .input-container {
-    border: none; background: transparent; padding: 0 10px; border-radius: 0; max-height: 150px; min-height: 24px; width: 100%;
+    border: none; background: transparent; padding: 0; border-radius: 0; 
+    max-height: 150px; min-height: 24px; width: 100%;
+    margin-right: 8px;
 }
 
-.composer.style-simple .input-container textarea { 
-    font-size: 16px; 
-    padding: 12px 0; 
-    color: #e5e5e5; /* 텍스트는 밝게 */
-    caret-color: #fff;
-}
-.composer.style-simple .input-container textarea::placeholder { color: #9ca3af; }
+.composer.style-simple .input-container textarea { font-size: 16px; padding: 0; }
 
-.composer.style-simple .plus { display: none; }
+/* 기존 tools 숨기기 (사진처럼 깔끔하게) */
+.composer.style-simple .simple-tools { display: none; }
 
-/* 하단 컨트롤 영역이 아닌, 왼쪽 칩 영역으로 사용 */
+/* 하단 컨트롤 영역 (오른쪽 버튼들) */
 .composer.style-simple .bottom-controls {
-    display: contents; /* flex 아이템으로 만들기 위해 contents 사용 */
+    display: flex; align-items: flex-end; justify-content: flex-end; width: auto;
 }
+.composer.style-simple .right-controls { display: flex; align-items: center; margin: 0; }
 
-/* 툴 버튼 (칩 스타일) */
-.composer.style-simple .simple-tools { 
-    display: flex; 
-    gap: 6px; 
-    margin-top: 0; 
-    flex-shrink: 0;
-    align-items: center;
-}
-
-.composer.style-simple .tool-btn {
-    display: flex; align-items: center; justify-content: center; gap: 4px;
-    padding: 8px 14px; 
-    /* 스크린샷과 유사한 어두운 칩 배경 */
-    background-color: #424242; 
-    border: none;
-    border-radius: 50px;
-    font-size: 13px; font-weight: 500; 
-    color: #e5e5e5;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    white-space: nowrap; line-height: 1.2;
-}
-.composer.style-simple .tool-btn:hover { background-color: #525252; }
-.composer.style-simple .tool-btn .material-symbols-rounded { font-size: 16px; color: #e5e5e5; }
-
-/* 오른쪽 컨트롤 (마이크/전송) */
-.composer.style-simple .right-controls { 
-    display: flex; align-items: center; margin-left: 4px; margin-bottom: 0; 
-    padding-right: 2px;
-}
-
-/* 심플 모드에서는 마이크가 기본적으로 보임 */
+/* 🌟 [핵심] Simple 모드에서 음성/전송 버튼 스왑 로직 (JS와 연동) */
+/* 기본적으로 둘 다 flex일 수 있으나 JS에서 display를 제어함. CSS에서는 기본값만 설정 */
 .composer.style-simple .mic-icon { 
-    display: flex; 
-    width: 44px; height: 44px;
-    background-color: #424242;
-    border-radius: 50%;
-    color: #e5e5e5;
-    margin-right: 0;
-    cursor: pointer;
-} 
-.composer.style-simple .mic-icon:hover { background-color: #525252; }
-
-/* 전송 버튼 스타일 조정 (심플 모드용) */
-.composer.style-simple .send-btn { 
-    width: 44px; height: 44px;
-    background-color: #e5e5e5; 
-    margin-right: 0; 
-    align-self: center; 
-    color: #121212;
+    display: flex; /* 기본 보임 */
+    color: var(--text-color);
 }
-.composer.style-simple .send-btn .material-symbols-rounded { color: #121212; }
-.composer.style-simple .send-btn:not(.active) { background-color: #424242; color: #777; }
+.composer.style-simple .send-btn { 
+    /* 기본적으로 숨김, JS가 active 클래스와 함께 display를 flex로 바꿀 것임 */
+    display: none; 
+    background-color: var(--send-button-enabled); 
+    margin-right: 0; 
+}
+.composer.style-simple .send-btn .material-symbols-rounded { color: var(--send-button-icon); }
+
+/* + 버튼 */
+.composer.style-simple .plus {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--surface-secondary);
+    border: none;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
+    margin-right: 8px;
+    cursor: pointer; color: var(--text-sub);
+}
 
 
-/* 📌 스타일 2: 기본 (Default) */
+/* 📌 스타일 2: 기본 (Default) -> 이제 보조 옵션 */
 .composer.style-default {
     background: var(--bg-color); padding: 0 16px 24px 16px; border: none;
 }
 .composer.style-default .composer-inner {
     max-width: 768px;
-    border-radius: 35px;
+    border-radius: 24px;
     padding: 8px 9px 8px 8px; 
     box-shadow: var(--composer-shadow);
     gap: 4px; flex-direction: row;
@@ -599,7 +558,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     display: flex; align-items: center;
     min-height: 38px; 
 }
-.composer.style-default .mic-icon { display: none; }
+.composer.style-default .mic-icon { display: none !important; } /* Default 모드에선 마이크 숨김 (기존 유지) */
 
 .composer.style-default .plus {
     width: 36px; height: 36px; border-radius: 50%;
@@ -619,6 +578,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     display: flex; 
     align-items: center;
 }
+.composer.style-default .send-btn { display: flex !important; }
 
 /* ============================================ */
 
@@ -1032,4 +992,4 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         /* 사이드바(300)의 절반(150) 만큼 이동 */
         left: calc(50% + 150px);
     }
-                                                               }
+      }
