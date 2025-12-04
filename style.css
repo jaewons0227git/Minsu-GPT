@@ -57,6 +57,16 @@
   
   /* 다크모드 헤더 버튼 배경 (이미지와 비슷하게 어둡게) */
   --header-btn-bg: #2c2c2c;
+
+  /* ▼▼▼ [새로 추가할 코드: 정지 버튼 색상 - 다크 모드] ▼▼▼ */
+    .stop-btn {
+        /* 배경 색상: 다크 모드에서 흰색 */
+        background-color: var(--surface-color); 
+    }
+    .stop-btn .material-symbols-rounded {
+        /* 아이콘 색상: 다크 모드에서 검은색 */
+        color: var(--text-color); 
+    }
 }
 
 /* 폰트 설정 */
@@ -468,8 +478,12 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     margin-bottom: 10px;
 }
 
+/* [수정 후] */
 .composer.style-simple .input-container {
-    border: none; background: transparent; padding: 0; border-radius: 0; max-height: 150px; min-height: 24px; width: 100%;
+    flex: 1; /* 이 부분이 핵심입니다. 남은 공간을 모두 차지하되, 필요하면 줄어들 수 있게 함 */
+    border: none; background: transparent; padding: 0; border-radius: 0; 
+    max-height: 150px; min-height: 24px; 
+    min-width: 0; /* Flexbox 내에서 컨테이너가 축소될 수 있도록 최소 너비 0 설정 */
 }
 
 .composer.style-simple .input-container textarea { font-size: 17px; padding: 0; }
@@ -479,7 +493,12 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     width: 100%; display: flex; justify-content: space-between; align-items: center;
 }
 
-.simple-tools { display: flex; gap: 8px; margin-top: 0; flex-shrink: 0; }
+/* [수정 후] */
+.simple-tools { 
+    display: flex; gap: 8px; margin-top: 0; 
+    flex-shrink: 1; /* ✅ 공간이 부족할 때 그룹 전체가 축소되도록 허용 */
+    min-width: 0;  /* ✅ Flexbox 내에서 축소를 더 잘 처리하기 위해 추가 */
+}
 
 /* [수정 후] */
 .tool-btn {
@@ -518,6 +537,18 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 .composer.style-simple .stop-btn {
     margin-right: 0;       /* 전송 버튼과 동일하게 우측 여백 제거 */
     align-self: center;    /* 수직 중앙 정렬 */
+}
+
+/* ▼▼▼ [새로 추가할 코드: 정지 버튼 색상 - 화이트 모드] ▼▼▼ */
+.stop-btn {
+    /* 배경 색상: 화이트 모드에서 검은색 */
+    background-color: var(--accent-color); 
+    /* 아이콘 색상: 흰색 (검은색 배경에 대비) */
+    color: white; 
+}
+.stop-btn .material-symbols-rounded {
+    /* 아이콘 색상 명시 */
+    color: white; 
 }
 
 /* 📌 스타일 2: 기본 (Default) */
