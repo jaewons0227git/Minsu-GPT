@@ -1045,11 +1045,15 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 }
 
 /* =========================================== */
-/* 9. 로그인 모달 스타일 수정 (위치, 블러, 디자인 및 색상 보강) */
+/* 9. 로그인 모달 스타일 수정 (전체 재정의) */
 /* =========================================== */
 
-/* 1. Backdrop (배경) 스타일: 화면 전체를 덮고 중앙 정렬 및 블러 적용 */
+/* 1. Backdrop (배경) 스타일: 화면 중앙 고정 및 블러 적용 */
 .login-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    
     /* 중앙 정렬 */
     display: flex !important; 
     align-items: center;
@@ -1058,30 +1062,28 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     /* 블러 효과 적용 */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    background-color: var(--modal-overlay); /* 배경 오버레이 색상 */
     
-    /* 기존 속성 유지 및 보강 */
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
+    /* 강제 표시 (JS가 닫기 전까지) */
     visibility: visible !important;
     opacity: 1 !important;
-    background-color: var(--modal-overlay); 
     transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
 
 /* 2. Modal Content (로그인 창 본체) 스타일 */
 .login-modal-content {
-    /* 안쪽 디자인 유지 */
+    /* 모달 자체의 크기와 모양 */
     max-width: 320px;
-    width: 90%; 
+    width: 90%; /* 모바일 대응 */
     background: var(--surface-color);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     
     border-radius: 12px !important;
     padding: 24px !important;
+    
+    /* 중앙 정렬을 위해 transform은 0으로 유지 */
     transform: translateY(0) !important;
-    transition: none;
 }
 
 /* 로고 스타일 */
@@ -1103,14 +1105,14 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 .login-confirm-btn {
     width: 100%; 
     height: 48px;
-    /* 검은색 배경 */
+    /* 검은색 배경, 흰색 텍스트 (색상 강제 고정으로 시인성 확보) */
     background: #000000 !important; 
-    /* ✅ 수정: 버튼 글씨색을 강제 흰색으로 고정하여 보이게 함 */
     color: #ffffff !important; 
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     border: none;
+    /* 양쪽 끝을 반원으로 */
     border-radius: 9999px !important; 
     padding: 0 24px;
     transition: background-color 0.3s;
@@ -1139,18 +1141,15 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 /* 텍스트박스 스타일 */
 .floating-input {
     width: 100%;
-    padding: 18px 12px 6px 12px;
+    padding: 18px 12px 6px 12px; 
+    /* 배경 제거 */
     background: transparent; 
-    
-    /* ✅ 수정: 테두리 색상을 var(--border-color)로 명확히 지정하고, 
-       다크모드일 때 var(--text-color)가 너무 어두워 검은색으로 보이는 문제를 
-       해결하기 위해 var(--border-color)를 사용합니다. */
-    border: 1px solid var(--border-color); 
-    
+    /* 테두리 색상: var(--border-color) 사용으로 테마에 따라 변경되지만, 시인성 확보 */
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     outline: none;
     font-size: 16px;
-    color: var(--text-color); /* 텍스트 색상은 테마에 따라 자동 변경 */
+    color: var(--text-color);
     transition: border-color 0.2s;
 }
 
@@ -1176,13 +1175,12 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 /* 포커스되거나 내용이 있을 때 라벨 스타일 (위로 올라감) */
 .floating-input:focus + .floating-label,
-.floating-input:not(:placeholder-shown) + .floating-label,
-/* required 속성을 사용하여 초기 상태를 처리합니다. */
-.floating-input:valid + .floating-label {
+.floating-input:not(:placeholder-shown) + .floating-label {
     top: 4px;
     font-size: 12px;
     color: var(--primary-blue);
     transform: translateY(0);
+    /* 라벨이 올라갈 때 테두리를 덮기 위한 배경 */
     background: var(--surface-color); 
     padding: 0 4px;
     margin-left: -4px;
