@@ -31,6 +31,7 @@
   
   /* 헤더 버튼 배경 */
   --header-btn-bg: #f1f4f9;
+  --modal-overlay-blur: rgba(255, 255, 255, 0.7); /* 새로 추가: 라이트 모드 블러 배경색 */
 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -54,6 +55,8 @@
 
   --composer-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   --modal-overlay: rgba(0, 0, 0, 0.8);
+
+  --modal-overlay-blur: rgba(0, 0, 0, 0.6); /* 새로 추가: 다크 모드 블러 배경색 */
   
   /* 다크모드 헤더 버튼 배경 (이미지와 비슷하게 어둡게) */
   --header-btn-bg: #2c2c2c;
@@ -1039,4 +1042,13 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     .composer.style-simple .right-controls {
         flex-shrink: 0; 
     }
+}
+
+
+/* style.css 파일 하단에 추가 */
+.login-modal-backdrop {
+    /* 배경 블러 효과 적용 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); /* Safari 지원 */
+    background-color: var(--modal-overlay-blur); /* 오버레이 색상 적용 */
 }
