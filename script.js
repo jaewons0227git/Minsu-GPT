@@ -50,18 +50,36 @@ async function handleLoginCheck() {
 
         if (result.success) {
             // ✅ 로그인 성공
-            accessModalBackdrop.style.opacity = '0'; // 부드럽게 사라지기 효과
-            accessModalBackdrop.style.visibility = 'hidden';
+            // CSS의 !important를 덮어쓰기 위해 style.setProperty에 'important' priority를 사용했습니다.
+            accessModalBackdrop.style.setProperty('opacity', '0', 'important');
+            accessModalBackdrop.style.setProperty('visibility', 'hidden', 'important');
+            
             setTimeout(() => {
-                accessModalBackdrop.style.display = 'none';
+                // display: none도 !important로 강제하여 완전히 숨김 처리
+                accessModalBackdrop.style.setProperty('display', 'none', 'important');
             }, 500);
             
-            // 입력창 초기화 및 포커스 이동
-            accessIdInput.value = '';
-            accessPwInput.value = '';
-            document.getElementById('message-input').focus(); 
-            console.log("서비스 로그인 성공!");
+            // 로그인 정보를 localStorage에 저장 (선택적)
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userId', inputId);
+
+            // 채팅 시작 로직 호출 (이미 window.onload에서 호출되지만, 명시적으로)
+            loadTheme();
+            loadUIStyle(); 
+            loadSessions(); 
+            startNewChat(false); 
+            toggleSendButton();
+            autoResizeTextarea();
+            
+            if (isPC()) {
+                setTimeout(() => {
+                    toggleSidebar(true);
+                }, 100);
+            }
+            
         } else {
+            // ❌ 로그인 실패
+// ... (이 아래 코드는 수정할 필요 없음)
             // ❌ 로그인 실패
             accessError.textContent = result.message || "아이디 또는 비밀번호가 잘못되었습니다.";
             accessError.style.display = 'block';
