@@ -12,7 +12,7 @@ document.onkeydown = function(e) {
 
 
 
-// script.js 파일 상단 (1. DOM 요소 및 상수 정의 섹션) 수정/교체
+// script.js 상단 부분 수정
 
 const accessModalBackdrop = document.getElementById('access-modal-backdrop');
 const accessIdInput = document.getElementById('access-id-input'); 
@@ -25,47 +25,59 @@ async function handleLoginCheck() {
     const inputId = accessIdInput.value.trim();
     const inputPw = accessPwInput.value.trim(); 
     
+    // 입력값 검증
     if (!inputId || !inputPw) {
         accessError.textContent = "아이디와 비밀번호를 모두 입력해 주세요.";
         accessError.style.display = 'block';
         return;
     }
     
+    // 버튼 로딩 상태 변경
+    const originalBtnText = accessConfirmBtn.textContent;
     accessConfirmBtn.disabled = true;
-    accessConfirmBtn.textContent = '로그인 중...';
+    accessConfirmBtn.textContent = '확인 중...';
 
     try {
-        const response = await fetch('/check-access', { 
+        // 백엔드로 요청 전송 (경로는 실제 서버 주소에 맞게 수정 필요)
+        // 예: https://jaewondev.pythonanywhere.com/check-access
+        const response = await fetch('https://jaewondev2.pythonanywhere.com/check-access', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: inputId, password: inputPw }) // ID와 PW 전송
+            body: JSON.stringify({ id: inputId, password: inputPw }) 
         });
 
         const result = await response.json();
 
         if (result.success) {
             // ✅ 로그인 성공
-            accessModalBackdrop.style.display = 'none';
-            inputField.focus(); 
+            accessModalBackdrop.style.opacity = '0'; // 부드럽게 사라지기 효과
+            setTimeout(() => {
+                accessModalBackdrop.style.display = 'none';
+            }, 300);
+            
+            // 입력창 초기화 및 포커스 이동
+            accessIdInput.value = '';
+            accessPwInput.value = '';
+            document.getElementById('message-input').focus(); 
             console.log("서비스 로그인 성공!");
         } else {
             // ❌ 로그인 실패
             accessError.textContent = result.message || "아이디 또는 비밀번호가 잘못되었습니다.";
             accessError.style.display = 'block';
-            accessPwInput.value = ''; // 비밀번호 필드 초기화
-            accessIdInput.focus(); 
+            accessPwInput.value = ''; // 비밀번호만 초기화
+            accessPwInput.focus();
         }
 
     } catch (error) {
         console.error('로그인 확인 중 오류 발생:', error);
-        accessError.textContent = "네트워크 오류가 발생했습니다. 다시 시도해 주세요.";
+        accessError.textContent = "서버 연결에 실패했습니다.";
         accessError.style.display = 'block';
     } finally {
+        // 버튼 상태 복구
         accessConfirmBtn.disabled = false;
-        accessConfirmBtn.textContent = '로그인';
+        accessConfirmBtn.textContent = originalBtnText;
     }
 }
-
 
 
 
@@ -1371,30 +1383,29 @@ importFileInput.addEventListener('change', importChats);
 
 // script.js 파일 하단 (7. 초기화 섹션) 내 window.onload 함수 내부 수정/교체
 
+// script.js 하단 window.onload 내부
+
 window.onload = function() {
+    // ... 기존 코드들 ...
+
+    // ✅ 로그인 버튼 이벤트 연결
+    if(accessConfirmBtn) {
+        accessConfirmBtn.addEventListener('click', handleLoginCheck);
+    }
     
-    // ✅ 로그인 이벤트 리스너 설정
-    accessConfirmBtn.addEventListener('click', handleLoginCheck);
-    
-    // Enter 키로 작동하도록 설정
-    accessIdInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleLoginCheck();
-        }
-    });
-    accessPwInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleLoginCheck();
-        }
-    });
-    
-    // ... 나머지 기존 초기화 코드 ...
-    
-    loadTheme();
-    loadUIStyle(); 
-    loadSessions(); 
+    // 엔터키 입력 시 로그인 시도
+    if(accessIdInput && accessPwInput) {
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleLoginCheck();
+            }
+        };
+        accessIdInput.addEventListener('keypress', handleEnter);
+        accessPwInput.addEventListener('keypress', handleEnter);
+    }
+
+    // ... 나머지 초기화 코드들 ...
     // ... 나머지 기존 코드 ...
     loadTheme();
     loadUIStyle(); 
