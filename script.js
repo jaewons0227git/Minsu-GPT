@@ -40,7 +40,7 @@ async function handleLoginCheck() {
     try {
         // 백엔드로 요청 전송 (경로는 실제 서버 주소에 맞게 수정 필요)
         // 예: [https://jaewondev.pythonanywhere.com/check-access](https://jaewondev.pythonanywhere.com/check-access)
-        const response = await fetch('[https://jaewondev2.pythonanywhere.com/check-access](https://jaewondev2.pythonanywhere.com/check-access)', { 
+        const response = await fetch('https://jaewondev2.pythonanywhere.com/check-access', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: inputId, password: inputPw }) 
@@ -168,8 +168,8 @@ let targetSessionIdForAction = null;
 let deleteActionType = null; // 'single' or 'all'
 
 // 🎯 백엔드 엔드포인트
-const BACKEND_ENDPOINT = "[https://jaewondev.pythonanywhere.com/ask](https://jaewondev.pythonanywhere.com/ask)"; 
-const IMAGE_ENDPOINT = "[https://jaewondev.pythonanywhere.com/generate-image](https://jaewondev.pythonanywhere.com/generate-image)"; 
+const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; 
+const IMAGE_ENDPOINT = "https://jaewondev.pythonanywhere.com/generate-image"; 
 
 const HISTORY_STORAGE_KEY = 'minsugpt_chat_history'; // Deprecated for single session
 const SESSIONS_STORAGE_KEY = 'minsugpt_sessions'; // New key for multiple sessions
