@@ -554,51 +554,119 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     color: white; 
 }
 
-/* 📌 스타일 2: 기본 (Default) */
+/* 📌 스타일 2: 최종 수정본 (텍스트 쏠림 해결) */
 .composer.style-default {
-    background: var(--bg-color); padding: 0 16px 24px 16px; border: none;
+    background: var(--bg-color); 
+    padding: 0 16px 24px 16px; 
+    border: none;
 }
+
 .composer.style-default .composer-inner {
     max-width: 768px;
-    border-radius: 35px;
-    padding: 8px 9px 8px 8px; 
+    border-radius: 27px;
+    
+    /* 패딩 설정 */
+    padding: 0 4px 0 16px !important;
+    
     box-shadow: var(--composer-shadow);
-    gap: 4px; flex-direction: row;
-    align-items: flex-end; 
+    gap: 8px; 
+    flex-direction: row;
+    
+    /* 👇 버튼들을 바닥에 붙이기 위해 flex-end 유지 */
+    align-items: flex-end !important; 
+
+    margin-left: 68px !important; 
+    min-height: 52px !important;
+    
+    position: relative; 
+    overflow: visible; 
 }
+
+/* 👇 [핵심 수정] 입력창 감싸는 박스를 강제로 중앙 정렬시킴 */
 .composer.style-default .input-area-wrapper { 
-    flex: 1; margin-bottom: 0; 
+    flex: 1; 
+    margin-bottom: 0; 
     padding-bottom: 0; 
+    min-width: 0; 
+    
+    /* 부모는 바닥 정렬이지만, '나 자신'은 높이를 꽉 채우고 내부를 중앙 정렬함 */
+    display: flex !important;
+    align-items: center !important; 
+    min-height: 52px !important;
 }
+
 .composer.style-default .simple-tools { display: none; }
 .composer.style-default .bottom-controls { display: contents; }
 
 .composer.style-default .input-container {
-    background: transparent; border: none; padding: 4px 8px; max-height: 150px;
-    display: flex; align-items: center;
-    min-height: 38px; 
+    background: transparent; border: none; padding: 0; 
+    
+    /* 입력 컨테이너도 중앙 정렬 */
+    display: flex !important; 
+    align-items: center !important;
+    width: 100%;
+    min-height: 52px !important;
+}
+
+/* 👇 [핵심 수정] 텍스트 에디터 패딩을 줄여서 중앙 배치 유도 */
+.composer.style-default .prosemirror-editor {
+    /* Flex 중앙 정렬이 적용되므로 패딩은 최소한의 여백만 줌 */
+    padding: 10px 0 !important; 
+    
+    margin: 0 !important;
+    max-height: 150px;
+    width: 100%;
+}
+
+.composer.style-default .prosemirror-editor p {
+    margin: 0 !important;
 }
 .composer.style-default .mic-icon { display: none; }
 
+
+/* 📌 왼쪽 플러스 버튼 (다크모드 색상 변수 적용) */
 .composer.style-default .plus {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--surface-secondary);
-    border: none;
+    width: 52px !important; 
+    height: 52px !important;
+    border-radius: 50%;
+    
+    /* 👇 배경색을 사이트 기본 배경 변수로 변경 (다크모드 자동 적용) */
+    background: var(--surface-primary, var(--bg-color)) !important; 
+    border: 1px solid var(--border-color) !important; 
+    color: var(--text-sub) !important;
+    
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
-    align-self: flex-end; 
-    margin-bottom: 5px; 
-    cursor: pointer; color: var(--text-sub);
+    cursor: pointer;
+    
+    position: absolute;
+    left: -64px !important;   
+    
+    /* 👇 바닥 고정 */
+    bottom: 0; 
+    margin-bottom: 0 !important; 
+    
+    box-shadow: var(--composer-shadow);
+    z-index: 10;
 }
-.composer.style-default .plus .material-symbols-rounded { font-size: 20px; }
 
+.composer.style-default .plus .material-symbols-rounded { 
+    font-size: 26px !important; 
+}
+
+
+/* 📌 오른쪽 컨트롤 영역 (전송 버튼) */
 .composer.style-default .right-controls {
-    align-self: flex-end; 
-    margin-bottom: 5px; 
-    height: 38px; 
-    display: flex; 
-    align-items: center;
+    /* 높이 고정 및 바닥 정렬 */
+    height: 52px !important;
+    min-height: 52px !important;
+    margin-bottom: 0 !important;
+    
+    display: flex; align-items: center; justify-content: flex-end;
 }
 
+.composer.style-default .right-controls button {
+    margin: 0;
+}
 /* ============================================ */
 
 /* Snackbar */
