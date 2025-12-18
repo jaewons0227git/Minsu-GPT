@@ -35,8 +35,9 @@ function formatMessageContent(text) {
 
     // 3. 통합된 생각 박스를 HTML 상단에 배치 (새로고침 시에도 동일하게 렌더링)
     if (combinedThought) {
+        // ✨ [수정] details 태그에서 'open'을 삭제하여 기본적으로 닫힘 상태로 렌더링
         const thoughtHtml = `
-            <details class="thought-dropdown" open>
+            <details class="thought-dropdown">
                 <summary>
                     <span class="material-symbols-rounded dropdown-icon">chevron_right</span>
                     추론 과정 (생각 보기)
@@ -48,7 +49,7 @@ function formatMessageContent(text) {
         `;
         renderedHtml = thoughtHtml + renderedHtml;
     }
-
+  
     // 4. [TOOL] 태그 처리 (웹 검색 출처 카드)
     const toolRegex = /\[TOOL\]web_search: (\{.*?\})/g;
     const cards = [];
@@ -694,7 +695,23 @@ function renderChatMessages() {
                     
                     // 여기서 변환 함수를 호출하여 [THOUGHT] 태그 등을 처리합니다.
                     streamingBlock.innerHTML = formatMessageContent(message.content);
-                    
+
+
+
+                    // ✨ [추가] 새로고침 시에도 링크를 버튼으로 변환하는 로직
+    const links = streamingBlock.querySelectorAll('p > a, li > a');
+    links.forEach(link => {
+        // 텍스트가 http로 시작하거나 href와 같은 경우 버튼으로 변환
+        if (link.innerText.trim().startsWith('http') || link.innerText.trim() === link.href.trim()) {
+            link.classList.add('link-button');
+            link.innerHTML = `<span>링크 접속하기</span>`;
+            link.target = '_blank';
+        }
+    });
+
+
+
+                  
                     botMessageContainer.appendChild(streamingBlock);
 
                     // 피드백 버튼 등 액션 아이콘 추가
@@ -1186,11 +1203,16 @@ streamInterval = setInterval(() => {
         displayedResponse += chunkToAdd;
         fullResponse = displayedResponse; 
 
-        // 💡 [핵심 수정] 모든 복잡한 정규식 로직을 공통 함수 하나로 대체
-        // 이렇게 해야 새로고침 시와 실시간 출력 시 UI가 동일해집니다.
+        // [핵심] 공통 함수로 렌더링
         streamingBlockElement.innerHTML = formatMessageContent(displayedResponse);
 
-        // 링크 버튼 처리 (기존 로직 유지)
+        // ✨ [추가] 답변 생성 중에는 추론 과정(details)을 강제로 펼침
+        const details = streamingBlockElement.querySelector('.thought-dropdown');
+        if (details) {
+            details.open = true;
+        }
+
+        // 링크 버튼 처리
         const links = streamingBlockElement.querySelectorAll('p > a, li > a');
         links.forEach(link => {
             if (link.innerText.trim().startsWith('http') || link.innerText.trim() === link.href.trim()) {
@@ -1206,6 +1228,12 @@ streamInterval = setInterval(() => {
         // 스트리밍 종료 처리
         clearInterval(streamInterval);
         streamInterval = null;
+
+        // ✨ [추가] 답변이 완료되면 추론 과정을 자동으로 닫음
+        const details = streamingBlockElement.querySelector('.thought-dropdown');
+        if (details) {
+            details.open = false;
+        }
         
         // 원본 텍스트(태그 포함)를 히스토리에 저장
         history.push({ 
