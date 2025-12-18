@@ -528,7 +528,22 @@ function startNewChat(skipRender = false) {
     history = [];
     currentAttachments = []; // 새 채팅 시 첨부파일 초기화
     renderAttachments(); // UI 초기화
+
+
+    // ✨ [추가] 새 채팅 시 화면 초기화 로직
+    if (chatMessages) chatMessages.innerHTML = ''; // 메시지창 비우기
+    if (chatMessages) chatMessages.style.display = 'none'; // 메시지창 숨김
     
+    if (initialContent) {
+        initialContent.style.display = 'flex';     // 초기 화면 보이기
+        initialContent.style.opacity = '1';
+        initialContent.style.visibility = 'visible';
+    }
+
+
+
+
+  
     const newSession = {
         id: currentSessionId,
         title: '새로운 채팅',
