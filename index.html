@@ -408,6 +408,22 @@
         </div>
       
         <div class="header-pill-group">
+            <div class="header-model-wrapper" style="position: relative;">
+                <div class="header-model-pill" id="header-model-select">
+                    <span id="header-model-text">G-5 Pro</span>
+                    <span class="material-symbols-rounded">expand_more</span>
+                </div>
+                <div class="model-dropdown-menu header-style" id="header-model-dropdown">
+                    <div class="model-option-item selected" data-model="g5-pro">
+                        <span>G-5 Pro</span>
+                        <span class="material-symbols-rounded check-icon">check</span>
+                    </div>
+                    <div class="model-option-item" data-model="g4">
+                        <span>G-4</span>
+                        <span class="material-symbols-rounded check-icon">check</span>
+                    </div>
+                </div>
+            </div>
             <div class="header-icon" id="header-new-chat" aria-label="새 채팅">
                 <span class="material-symbols-rounded">edit_square</span>
             </div>
@@ -471,11 +487,25 @@
                     <span class="material-symbols-rounded">image</span>
                     이미지
                 </div>
-                <div class="tool-btn" id="tool-study">
-                    <span class="material-symbols-rounded">auto_stories</span>
-                    학습하기
+                
+                <div class="tool-wrapper" style="position: relative;">
+                    <div class="tool-btn" id="tool-model-selector">
+                        <span class="material-symbols-rounded">smart_toy</span>
+                        <span id="simple-model-text">G-5 Pro</span>
+                    </div>
+                    
+                    <div class="model-dropdown-menu simple-style" id="simple-model-dropdown">
+                        <div class="model-option-item selected" data-model="g5-pro">
+                            <span>G-5 Pro</span>
+                            <span class="material-symbols-rounded check-icon">check</span>
+                        </div>
+                        <div class="model-option-item" data-model="g4">
+                            <span>G-4</span>
+                            <span class="material-symbols-rounded check-icon">check</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
+                </div>
             
             <div class="right-controls">
                  <div class="mic-voice-container">
@@ -622,12 +652,6 @@
 
   </div>
 
-
-
-
-
-
-  
   <script src="script.js"></script>
 </body>
-</html>
+              </html>
