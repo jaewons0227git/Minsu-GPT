@@ -254,7 +254,11 @@ let targetSessionIdForAction = null;
 let deleteActionType = null; // 'single' or 'all'
 
 // 🎯 백엔드 엔드포인트
-const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; 
+const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/ask"; // 기본 (G-5 Pro)
+const BACKEND_ENDPOINT_G4 = "https://jaewondev.pythonanywhere.com/g4ask"; // [신규] G-4용
+
+let currentModel = 'g5-pro'; // [신규] 현재 모델 상태 ('g5-pro' or 'g4')
+
 const IMAGE_ENDPOINT = "https://jaewondev.pythonanywhere.com/generate-image"; 
 
 const HISTORY_STORAGE_KEY = 'minsugpt_chat_history'; // Deprecated for single session
@@ -1630,3 +1634,80 @@ window.onload = function() {
     setTimeout(() => scrollToBottom(true), 100);
     animateUIOnLoad();
 };
+
+
+
+
+
+// ===========================================
+// [신규] 3. 모델 선택 UI 제어 및 이벤트 리스너 (파일 하단에 추가)
+// ===========================================
+
+// 요소 선택
+const headerModelSelect = document.getElementById('header-model-select');
+const headerModelDropdown = document.getElementById('header-model-dropdown');
+const headerModelText = document.getElementById('header-model-text');
+
+const simpleModelBtn = document.getElementById('tool-model-selector');
+const simpleModelDropdown = document.getElementById('simple-model-dropdown');
+const simpleModelText = document.getElementById('simple-model-text');
+
+// 드롭다운 닫기 함수
+function closeAllDropdowns() {
+    if(headerModelDropdown) headerModelDropdown.classList.remove('show');
+    if(simpleModelDropdown) simpleModelDropdown.classList.remove('show');
+}
+
+// 모델 변경 처리 함수
+function setModel(model) {
+    currentModel = model;
+    const displayText = (model === 'g4') ? 'G-4' : 'G-5 Pro';
+
+    // 1. 텍스트 업데이트 (헤더 & 심플툴바 모두)
+    if(headerModelText) headerModelText.textContent = displayText;
+    if(simpleModelText) simpleModelText.textContent = displayText;
+
+    // 2. 선택 상태(체크표시/색상) 업데이트
+    const allOptions = document.querySelectorAll('.model-option-item');
+    allOptions.forEach(opt => {
+        if(opt.dataset.model === model) opt.classList.add('selected');
+        else opt.classList.remove('selected');
+    });
+
+    // 3. 드롭다운 닫기
+    closeAllDropdowns();
+}
+
+// 이벤트 리스너: 헤더 모델 선택 클릭
+if(headerModelSelect) {
+    headerModelSelect.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isShow = headerModelDropdown.classList.contains('show');
+        closeAllDropdowns();
+        if(!isShow) headerModelDropdown.classList.add('show');
+    });
+}
+
+// 이벤트 리스너: 심플 툴바 모델 선택 클릭
+if(simpleModelBtn) {
+    simpleModelBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isShow = simpleModelDropdown.classList.contains('show');
+        closeAllDropdowns();
+        if(!isShow) simpleModelDropdown.classList.add('show');
+    });
+}
+
+// 이벤트 리스너: 드롭다운 아이템 클릭 (옵션 선택)
+document.querySelectorAll('.model-option-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const selectedModel = item.dataset.model;
+        setModel(selectedModel);
+    });
+});
+
+// 이벤트 리스너: 외부 클릭 시 닫기
+document.addEventListener('click', () => {
+    closeAllDropdowns();
+});
