@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   
   <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/MKBHwqWk/logogogo.png">
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/kg01fcVG/logop.png">
   <link rel="stylesheet" href="style.css"> 
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -29,7 +29,7 @@
     const isAllowed = ALLOWED_REFERRERS.some(url => referrer.startsWith(url));
 
     if (referrer === '' || !isAllowed) {
-        window.location.replace(REDIRECT_URL);
+      window.location.replace(REDIRECT_URL);
     }
 </script>
 </head>
@@ -443,12 +443,13 @@
 
     <main id="content-wrapper" class="content-wrapper">
         
-      <div id="initial-content">
-    <div class="intro-text-container">
-        <div class="intro-hello">안녕하세요</div>
-        <div class="intro-ask">무엇을 도와드릴까요?</div>
+       <div id="initial-content">
+    <div class="greeting-header">
+        <img src="https://i.postimg.cc/zDxzLLMK/21313213.png" alt="Greeting Icon" class="greeting-icon">
+        <div class="greeting-sub">안녕하세요</div>
     </div>
-      </div>
+    <div class="greeting-main">무엇을 도와드릴까요?</div>
+</div>
 
         <div id="chat-messages" class="chat-messages"></div>
         
