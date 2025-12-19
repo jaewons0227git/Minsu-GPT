@@ -1679,73 +1679,55 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 
 /* ========================================================= */
-/* 🛠️ [긴급 수정] UI 깨짐 방지 + 전체 스크롤 고정 (Safe Mode) */
+/* 🚀 [최종 해결] UI 유지 + 전체 스크롤 차단 + 위치 보정 */
 /* ========================================================= */
 
-/* 1. 화면 전체 틀 고정 (배경 스크롤 원천 차단) */
+/* 1. 바깥쪽 전체 스크롤을 완전히 잠금 */
 html, body {
-    position: fixed !important;      /* 화면을 핀으로 고정한 효과 */
-    width: 100% !important;
+    overflow: hidden !important;
     height: 100% !important;
-    overflow: hidden !important;     /* 화면 밖으로 나가는 요소 숨김 */
-    overscroll-behavior: none;       /* 아이폰 튕김 효과 제거 */
-    touch-action: none;              /* 기본 터치 동작 무시 */
+    width: 100% !important;
+    position: fixed !important; /* 전체가 끌려 올라가는 현상 방지 */
+    touch-action: none; /* 브라우저 기본 제스처 차단 */
 }
 
-/* 2. 앱 컨테이너 (.phone) 크기 강제 */
+/* 2. 메인 컨테이너 설정 */
 .phone {
-    width: 100% !important;
-    height: 100dvh !important;       /* 모바일 주소창 고려한 실제 높이 */
-    overflow: hidden !important;     /* 여기서도 스크롤 차단 */
-    position: relative !important;   /* 내부 요소들의 기준점 */
+    height: 100dvh !important; /* 주소창 제외한 실제 화면 높이 */
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* 3. 실제 내용 영역 (.content-wrapper)만 스크롤 되게 설정 */
+/* 3. 채팅 영역만 개별 스크롤 (가장 중요) */
 .content-wrapper {
-    /* 높이를 화면 전체로 잡되, 헤더/입력창 패딩은 기존 CSS 유지 */
-    height: 100% !important; 
-    width: 100% !important;
-    
-    /* 🔥 여기가 핵심: 이 영역 내부에서만 스크롤 발생 */
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    
-    /* 부드러운 스크롤 */
+    flex: 1 !important;
+    overflow-y: auto !important; /* 이 영역 안에서만 스크롤 가능 */
     -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important; /* 수직 스크롤 허용 */
+    touch-action: pan-y !important; /* 세로 스크롤만 허용 */
     
-    /* 스크롤바 숨기기 (선택사항, 깔끔하게 보이려면 유지) */
-    scrollbar-width: none; 
-}
-.content-wrapper::-webkit-scrollbar {
-    display: none; 
-}
-
-/* 4. 헤더 (.header) 위치 사수 */
-/* Flex로 바꾸지 않고 기존 Fixed/Absolute 속성 유지 */
-.header {
-    position: absolute !important; /* 상단 고정 */
-    top: 0 !important;
-    left: 0 !important;
+    /* 기존 레이아웃 유지를 위해 높이/너비 강제 */
+    height: 100% !important;
     width: 100% !important;
-    z-index: 50 !important;
 }
 
-/* 5. 입력창 (.composer) 위치 사수 */
+/* 4. 입력창 위치가 튀는 현상 방지 */
 .composer {
-    position: absolute !important; /* 하단 고정 */
+    /* 기존 스타일을 유지하되 하단에 딱 붙도록 고정 */
+    position: sticky !important; 
     bottom: 0 !important;
     left: 0 !important;
-    width: 100% !important;
-    z-index: 100 !important;
+    z-index: 100;
     
-    /* 아이폰 홈바 대응 */
-    padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+    /* 메뉴(사이드바)가 열릴 때 script.js의 좌표 이동이 먹히도록 설정 */
+    transform: none !important; 
+    transition: left 0.3s ease, width 0.3s ease;
+    
+    /* 모바일 하단 여백 최적화 */
+    padding-bottom: env(safe-area-inset-bottom, 12px) !important;
 }
 
-/* 6. PC 사이드바가 열려있을 때 깨짐 방지 */
-body.sidebar-open .header,
-body.sidebar-open .composer {
-    /* 사이드바 열림 시 script.js가 left 값을 조정하므로 transition 유지 */
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease !important;
+/* 5. 메뉴(사이드바) 열릴 때 배경 밀림 방지 */
+body.sidebar-open .phone {
+    position: relative;
 }
