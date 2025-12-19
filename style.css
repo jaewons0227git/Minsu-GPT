@@ -1679,80 +1679,73 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 
 /* ========================================================= */
-/* 🔒 [최종 강력 고정] 전체 페이지 스크롤 및 튕김 방지 */
+/* 🛠️ [긴급 수정] UI 깨짐 방지 + 전체 스크롤 고정 (Safe Mode) */
 /* ========================================================= */
 
-/* 1. 최상위 html, body를 화면에 못 박듯이 고정 */
+/* 1. 화면 전체 틀 고정 (배경 스크롤 원천 차단) */
 html, body {
-    position: fixed !important; /* 화면 위치 고정 (핵심) */
-    overflow: hidden !important; /* 넘치는 부분 잘라냄 */
+    position: fixed !important;      /* 화면을 핀으로 고정한 효과 */
     width: 100% !important;
     height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overscroll-behavior: none !important; /* 맥/iOS의 튕김 효과 제거 */
-    touch-action: none; /* 기본 터치 동작 차단 (확대 등) */
+    overflow: hidden !important;     /* 화면 밖으로 나가는 요소 숨김 */
+    overscroll-behavior: none;       /* 아이폰 튕김 효과 제거 */
+    touch-action: none;              /* 기본 터치 동작 무시 */
 }
 
-/* 2. 앱 전체 컨테이너 (.phone) */
+/* 2. 앱 컨테이너 (.phone) 크기 강제 */
 .phone {
     width: 100% !important;
-    height: 100dvh !important; /* 모바일 브라우저 실제 높이 맞춤 */
-    min-height: 100dvh !important;
-    
-    display: flex !important;
-    flex-direction: column !important; /* 세로 정렬 */
-    overflow: hidden !important; /* 여기서도 스크롤 차단 */
-    
-    position: relative !important;
-    background-color: var(--bg-color);
+    height: 100dvh !important;       /* 모바일 주소창 고려한 실제 높이 */
+    overflow: hidden !important;     /* 여기서도 스크롤 차단 */
+    position: relative !important;   /* 내부 요소들의 기준점 */
 }
 
-/* 3. 상단 헤더 고정 */
-.header {
-    flex-shrink: 0 !important; /* 공간 축소 방지 */
-    position: relative !important; /* absolute 제거하고 flex 흐름에 태움 */
-    z-index: 50;
-}
-
-/* 4. 채팅 메시지 영역 (이 부분만 스크롤 됨) */
+/* 3. 실제 내용 영역 (.content-wrapper)만 스크롤 되게 설정 */
 .content-wrapper {
-    flex: 1 1 auto !important; /* 남은 빈 공간을 꽉 채움 */
-    display: flex !important;
-    flex-direction: column !important;
+    /* 높이를 화면 전체로 잡되, 헤더/입력창 패딩은 기존 CSS 유지 */
+    height: 100% !important; 
+    width: 100% !important;
     
-    overflow-y: auto !important; /* 🔥 오직 여기만 세로 스크롤 허용 */
+    /* 🔥 여기가 핵심: 이 영역 내부에서만 스크롤 발생 */
+    overflow-y: auto !important;
     overflow-x: hidden !important;
     
     /* 부드러운 스크롤 */
     -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important; /* 세로 스크롤 제스처 허용 */
+    touch-action: pan-y !important; /* 수직 스크롤 허용 */
     
-    padding-bottom: 20px !important; /* 하단 여백 */
-    
-    /* 중요: 앱처럼 보이게 하기 위해 높이 강제 제한 */
-    height: 100% !important; 
+    /* 스크롤바 숨기기 (선택사항, 깔끔하게 보이려면 유지) */
+    scrollbar-width: none; 
+}
+.content-wrapper::-webkit-scrollbar {
+    display: none; 
 }
 
-/* 5. 하단 입력창 (.composer) */
-.composer {
-    flex-shrink: 0 !important; /* 공간 축소 방지 */
-    position: relative !important; /* fixed 대신 relative로 흐름에 태움 */
-    bottom: auto !important;
-    left: auto !important;
+/* 4. 헤더 (.header) 위치 사수 */
+/* Flex로 바꾸지 않고 기존 Fixed/Absolute 속성 유지 */
+.header {
+    position: absolute !important; /* 상단 고정 */
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
-    z-index: 100;
-    
-    /* 아이폰 하단 홈 바 영역 확보 */
-    padding-bottom: env(safe-area-inset-bottom, 20px) !important;
-    background-color: var(--bg-color);
-    transform: none !important; /* 애니메이션 충돌 방지 */
+    z-index: 50 !important;
 }
 
-/* 6. 모바일에서 키보드 올라왔을 때 깨짐 방지 */
-@media (max-width: 768px) {
-    .phone {
-        /* 키보드가 올라오면 뷰포트가 줄어들므로 flex 레이아웃이 자동으로 반응함 */
-        height: 100dvh !important; 
-    }
+/* 5. 입력창 (.composer) 위치 사수 */
+.composer {
+    position: absolute !important; /* 하단 고정 */
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 100 !important;
+    
+    /* 아이폰 홈바 대응 */
+    padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+}
+
+/* 6. PC 사이드바가 열려있을 때 깨짐 방지 */
+body.sidebar-open .header,
+body.sidebar-open .composer {
+    /* 사이드바 열림 시 script.js가 left 값을 조정하므로 transition 유지 */
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease !important;
 }
