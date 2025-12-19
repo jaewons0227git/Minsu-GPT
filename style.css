@@ -1579,7 +1579,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 #content-wrapper {
     height: 100dvh;
     overflow-y: auto;
-    padding-top: 80px !important; /* 상단바(Header) 아래 여백 확보 */
+    padding-top: 80px !important;
     display: flex;
     flex-direction: column;
 }
@@ -1591,19 +1591,24 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     justify-content: flex-start !important;
     align-items: flex-start !important;
     text-align: left !important;
+    
+    /* PC 기준 왼쪽 여백 10% (입력창과 라인 맞춤) */
     padding-left: 10%;
+    
     position: absolute;
-    top: 20dvh; /* 위에서부터의 위치 */
     left: 0;
     width: 100%;
     z-index: 5;
+
+    /* ▼ [PC 변경] 위치를 20dvh에서 25dvh로 약간 내림 */
+    top: 25dvh; 
     transform: none !important;
 }
 
 .intro-text-container {
     display: flex;
     flex-direction: column;
-    gap: 2px; /* 텍스트 간격 좁힘 */
+    gap: 2px;
 }
 
 .intro-hello {
@@ -1625,35 +1630,48 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     /* 초기 상태: 텍스트 바로 아래 위치 */
     body:not(.chat-started) .composer {
         position: absolute;
-        top: calc(20dvh + 95px); /* 텍스트 위치(20dvh) + 텍스트 높이 + 아주 약간의 간격 */
+        
+        /* ▼ [PC 변경] 텍스트 위치(25dvh)에 맞춰 입력창 위치도 조정 */
+        top: calc(25dvh + 95px); 
         bottom: auto;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 85%;
+
+        /* ▼ [PC 변경] 중앙 정렬 해제하고 텍스트 시작점(10%)과 맞춤 */
+        left: 10%; 
+        transform: none; /* 기존 translateX(-50%) 제거 */
+        
+        /* 오른쪽 여백도 10%를 남겨 균형 맞춤 (100% - 10% - 10% = 80%) */
+        width: 80%; 
         max-width: 800px;
+        
         transition: left 0.3s ease, width 0.3s ease, top 0.3s ease;
     }
 
-    /* 대화 시작 후: 하단 고정 */
+    /* 대화 시작 후: 하단 고정 (기존 중앙 정렬 유지) */
     body.chat-started .composer {
         position: fixed;
         bottom: 24px;
         top: auto;
         left: 50%;
         transform: translateX(-50%);
+        width: 85%; /* 대화 중에는 다시 넓게 */
     }
 
-    /* ⭐ 사이드바가 열렸을 때 입력창을 오른쪽으로 밀기 (가려짐 방지) */
+    /* 사이드바 열림: 초기 상태에서도 밀리지 않도록 조정하거나, 필요 시 수정 */
     body.sidebar-open .composer {
-        left: calc(50% + (var(--sidebar-width) / 2));
-        width: calc(85% - var(--sidebar-width));
+        /* 사이드바가 열려도 왼쪽 기준점 유지 혹은 사이드바 너비만큼 밀기 */
+        /* 여기서는 심플하게 유지하되, 필요하면 left: calc(10% + var(--sidebar-width)); 로 변경 가능 */
+        left: 10%; 
+        width: 80%;
     }
 }
 
 /* --- 4. 모바일 세부 조정 --- */
 @media (max-width: 768px) {
     #initial-content {
-        top: 12dvh; /* 모바일에서 위치를 더 위로 올림 */
+        /* ▼ [모바일 변경] 화면 정중앙 배치 */
+        top: 50%; 
+        transform: translateY(-50%) !important; /* Y축 기준 중앙 정렬 */
+        
         padding-left: 24px;
     }
     
