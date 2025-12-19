@@ -88,6 +88,14 @@ const accessPwInput = document.getElementById('access-pw-input');
 const accessConfirmBtn = document.getElementById('access-confirm-btn');
 const accessError = document.getElementById('access-error');
 
+const fakeImageProgress = [
+    "이미지를 생성 중입니다.",
+    "구도를 잡는 중입니다..",
+    "색감을 조정하는 중입니다...",
+    "디테일을 추가하는 중입니다....",
+    "마무리 작업 중입니다....."
+];
+
 // 로그인 처리 함수
 async function handleLoginCheck() { 
     const inputId = accessIdInput.value.trim();
@@ -769,6 +777,11 @@ function executeResetAllChats() {
     if (!isPC()) toggleSidebar(false);
 }
 
+
+
+
+
+
 // ===========================================
 // 4. 입력창 및 메시지 UI 관련 함수
 // ===========================================
@@ -1267,6 +1280,55 @@ streamInterval = setInterval(() => {
 }, 10);
 // --- streamInterval 부분 교체 종료 ---
     
+
+if (targetUrl.includes("/generate-image")) {
+
+    // 🔹 fake streaming 시작
+    let idx = 0;
+    streamQueue = "";
+    isNetworkFinished = false;
+
+    streamInterval = setInterval(() => {
+        if (isNetworkFinished) {
+            clearInterval(streamInterval);
+            return;
+        }
+        streamQueue += fakeImageProgress[idx % fakeImageProgress.length] + "\n";
+        idx++;
+    }, 700);
+
+    // 🔹 실제 요청
+    const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+        signal
+    });
+
+    if (!response.ok) {
+        clearInterval(streamInterval);
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json(); // ⭐ 여기 중요
+
+    // 🔹 fake streaming 종료
+    isNetworkFinished = true;
+    clearInterval(streamInterval);
+
+    // 🔹 텍스트 영역 정리
+    streamQueue += "\n[이미지 생성 완료]\n";
+
+    // 🔹 이미지 표시
+    imageElement.src = data.image_base64;
+
+    return;
+}
+
+
+
+
+
     try {
         if (isImageMode) {
             const response = await fetch(IMAGE_ENDPOINT, {
