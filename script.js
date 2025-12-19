@@ -1298,6 +1298,11 @@ streamInterval = setInterval(() => {
             }
 
         } else {
+           const targetUrl = (currentModel === 'g4') ? BACKEND_ENDPOINT_G4 : BACKEND_ENDPOINT;
+
+
+
+          
             const requestBody = { 
                 message: userMessage, 
                 history: [PRE_PROMPT, ...history],
@@ -1308,8 +1313,10 @@ streamInterval = setInterval(() => {
                 requestBody.images = lastUserMsg.images;
             }
 
-            const response = await fetch(BACKEND_ENDPOINT, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', },
+            // [수정] fetch 요청 시 targetUrl 사용
+            const response = await fetch(targetUrl, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify(requestBody), 
                 signal: signal 
             });
