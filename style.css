@@ -1820,20 +1820,10 @@ html, body {
     -webkit-overflow-scrolling: touch; /* 부드러운 스크롤 */
     
     /* 입력창 높이만큼 하단에 여백을 주어 메시지가 안 가려지게 함 */
-    padding-top: 64px; 
-    padding-bottom: 100px; 
+  
 }
 
-/* 4. 입력창을 하단에 단단히 고정 */
-.composer {
-    position: absolute; /* .phone 하단에 고정 */
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-    background-color: var(--bg-color);
-    padding-bottom: env(safe-area-inset-bottom); /* 아이폰 하단 바 대응 */
-}
+
 
 /* 5. 모바일에서 메시지 박스 너비 조절 */
 .chat-messages {
