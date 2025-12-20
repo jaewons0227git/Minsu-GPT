@@ -1823,14 +1823,5 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     }
 
     /* 4. 입력창: 채팅 영역 아래에 위치하도록 설정 */
-    .composer {
-        position: relative; /* absolute 대신 relative나 flex의 일부로 사용 */
-        bottom: 0;
-        width: 100%;
-        background: var(--bg-color);
-        z-index: 100;
-        /* 하단 세이프 영역 대응 (아이폰 등) */
-        padding-bottom: env(safe-area-inset-bottom);
-        border-top: 1px solid var(--border-color); /* 구분선 추가(선택) */
-    }
+    
 }
