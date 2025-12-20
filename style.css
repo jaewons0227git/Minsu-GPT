@@ -1877,14 +1877,30 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
    최종 통합: 멀티 글로우 + 텍스트 효과 + 스크롤바
    ========================================= */
 
-/* --- 스크롤바 (다크모드) --- */
+/* --- [추가] 다크모드 스크롤바 --- */
 [data-theme="dark"] ::-webkit-scrollbar { width: 10px; height: 10px; }
 [data-theme="dark"] ::-webkit-scrollbar-track { background: #000; }
 [data-theme="dark"] ::-webkit-scrollbar-thumb { 
     background: #444; border-radius: 10px; border: 2px solid #000; 
 }
 
-/* --- 애니메이션 정의 --- */
+/* --- 애니메이션: 움직임 반경 대폭 확대 --- */
+@keyframes glowMovement {
+    0% { 
+        opacity: 0; 
+        transform: translate(0, 0) scale(0.7); 
+    }
+    30% { opacity: 1; }
+    50% { 
+        /* 더 멀리, 더 크게 움직여서 티가 나게 수정 */
+        transform: translate(100px, -80px) scale(1.2); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50px, 40px) scale(1.5); 
+    }
+}
+
 @keyframes fadeInUpLong {
     0% { opacity: 0; transform: translateY(50px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -1895,39 +1911,31 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     100% { background-position: -200% center; }
 }
 
-/* 글로우 움직임: 시작 위치에서 살짝씩 떠다니는 효과 */
-@keyframes glowMovement {
-    0% { opacity: 0; transform: scale(0.8) translate(0, 0); }
-    30% { opacity: 1; }
-    50% { transform: scale(1.1) translate(-30px, 20px); }
-    100% { opacity: 0; transform: scale(1.3) translate(20px, -10px); }
-}
-
-/* --- 글로우 스타일 --- */
+/* --- 글로우 스타일 설정 --- */
 .glow-particle {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
+    filter: blur(100px); /* 블러를 더 키워 부드럽게 */
     z-index: -1;
     opacity: 0;
     pointer-events: none;
-    /* 고정 위치 제거: JS에서 할당함 */
+    /* 중앙 정렬 기준점 설정 */
+    transform-origin: center center;
 }
 
-/* 라이트/다크 모드별 색상 */
 [data-theme="light"] .glow-particle {
-    background: radial-gradient(circle, rgba(255, 105, 180, 0.45) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%);
+    background: radial-gradient(circle, rgba(255, 105, 180, 0.5) 0%, rgba(139, 92, 246, 0.3) 50%, transparent 70%);
 }
 [data-theme="dark"] .glow-particle {
-    background: radial-gradient(circle, rgba(255, 126, 179, 0.2) 0%, rgba(139, 92, 246, 0.1) 50%, transparent 75%);
+    background: radial-gradient(circle, rgba(255, 126, 179, 0.3) 0%, rgba(139, 92, 246, 0.15) 50%, transparent 70%);
 }
 
-/* 글로우 크기만 설정 */
-.glow-1 { width: 450px; height: 450px; }
-.glow-2 { width: 550px; height: 550px; }
-.glow-3 { width: 400px; height: 400px; }
+/* 글로우 크기 확대 */
+.glow-1 { width: 600px; height: 600px; }
+.glow-2 { width: 700px; height: 700px; }
+.glow-3 { width: 550px; height: 550px; }
 
-/* 메인 텍스트 */
+/* 메인 텍스트 레이어 */
 .greeting-main {
     background: linear-gradient(90deg, #ff7eb3, #8b5cf6, #ff7eb3);
     background-size: 200% auto;
@@ -1941,10 +1949,10 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     z-index: 10;
 }
 
-/* --- 실행 클래스 --- */
-.start-anim .glow-1 { animation: glowMovement 6s ease-in-out forwards; }
-.start-anim .glow-2 { animation: glowMovement 7s ease-in-out forwards; animation-delay: 0.4s; }
-.start-anim .glow-3 { animation: glowMovement 6.5s ease-in-out forwards; animation-delay: 0.8s; }
+/* 실행 클래스 */
+.start-anim .glow-1 { animation: glowMovement 7s ease-in-out forwards; }
+.start-anim .glow-2 { animation: glowMovement 8s ease-in-out forwards; animation-delay: 0.3s; }
+.start-anim .glow-3 { animation: glowMovement 7.5s ease-in-out forwards; animation-delay: 0.6s; }
 
 .start-anim .greeting-icon, .start-anim .greeting-sub {
     animation: fadeInUpLong 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
