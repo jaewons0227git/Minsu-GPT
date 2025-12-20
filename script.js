@@ -312,6 +312,64 @@ if (typeof marked !== 'undefined') {
 
 
 
+
+// ===========================================
+// Marked 라이브러리 커스텀 설정 (링크버튼, 이미지 다운로드)
+// ===========================================
+const renderer = new marked.Renderer();
+
+// 1. 링크([Text](URL))를 버튼으로 변환
+renderer.link = function(href, title, text) {
+    return `<a href="${href}" class="chat-link-btn" target="_blank" title="${title || ''}">${text}</a>`;
+};
+
+// 2. 이미지를 둥글게 + 크기제한 + 다운로드 버튼 추가
+renderer.image = function(href, title, text) {
+    // 이미지 다운로드를 위한 고유 ID 생성 (선택 사항이나 안전을 위해)
+    const fileName = text || 'downloaded-image';
+    
+    // HTML 구조 반환: 이미지 + 다운로드 버튼
+    return `
+        <div class="chat-img-wrapper">
+            <img src="${href}" alt="${text}" loading="lazy">
+            <button class="img-download-btn" onclick="downloadImage('${href}', '${fileName}')">
+                <span class="material-symbols-rounded">download</span> 다운로드
+            </button>
+        </div>
+    `;
+};
+
+// Marked에 설정 적용
+marked.setOptions({
+    renderer: renderer,
+    breaks: true // 줄바꿈 허용
+});
+
+// 이미지 다운로드 헬퍼 함수
+function downloadImage(url, fileName) {
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            // 확장자가 없으면 .png 기본값
+            a.download = fileName.includes('.') ? fileName : `${fileName}.png`; 
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blobUrl);
+            document.body.removeChild(a);
+        })
+        .catch(err => {
+            console.error('이미지 다운로드 실패:', err);
+            // CORS 등으로 fetch 실패 시 새 창 띄우기로 대체
+            window.open(url, '_blank');
+        });
+}
+
+
+
 // ===========================================
 // 2. UI 및 설정 (테마, 스타일, 모달) 관련 함수
 // ===========================================
