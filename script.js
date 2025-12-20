@@ -443,7 +443,7 @@ function applyTheme(theme) {
 }
 
 function loadUIStyle() {
-    const savedStyle = localStorage.getItem(UI_STYLE_KEY) || 'default'; 
+    const savedStyle = localStorage.getItem(UI_STYLE_KEY) || 'simple'; 
     applyUIStyle(savedStyle);
 }
 
