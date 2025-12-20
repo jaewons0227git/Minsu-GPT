@@ -1791,41 +1791,53 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 
 
-/* 모바일 화면 최적화: 채팅창이 화면 밖으로 나가지 않게 설정 */
-@media (max-width: 768px) {
-    /* 1. 전체 높이를 모바일 화면에 딱 맞게 고정 */
-    .phone {
-        height: 100vh;
-        height: 100dvh; /* 주소창 제외 실제 높이 적용 */
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
+/* --- 모바일 화면 고정 및 주소창 꿀렁임 방지 최종 코드 --- */
 
-    /* 2. 헤더와 입력창 사이의 메시지 영역이 남은 공간을 차지하도록 설정 */
-    .content-wrapper {
-        flex: 1;
-        overflow-y: auto; /* 이 영역 안에서만 스크롤 발생 */
-        padding-top: 64px; /* 헤더 높이만큼 여백 */
-        /* 입력창 스타일(Simple/Default)에 따라 하단 여백 조절 */
-        padding-bottom: 90px; 
-        -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-    }
+/* 1. 브라우저 전체 스크롤을 차단하여 주소창 고정 */
+html, body {
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
 
-    /* 3. 입력창이 항상 화면 하단에 위치하도록 보정 */
-    .composer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: var(--bg-color); /* 배경을 불투명하게 하여 메시지가 겹쳐 보이지 않게 함 */
-        z-index: 100;
-    }
+/* 2. 메인 컨테이너가 화면 전체를 채우도록 설정 */
+.phone {
+    height: 100vh;
+    height: 100dvh; /* 실제 가시 화면 높이에 맞춤 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
 
-    /* 4. 메시지 박스가 너무 커서 화면을 뚫고 나가는 현상 방지 */
-    .chat-messages {
-        padding-bottom: 20px;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
+/* 3. 메시지 영역만 내부에서 스크롤되도록 설정 */
+.content-wrapper {
+    flex: 1; /* 헤더와 입력창 사이 남은 공간 전부 차지 */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch; /* 부드러운 스크롤 */
+    
+    /* 입력창 높이만큼 하단에 여백을 주어 메시지가 안 가려지게 함 */
+    padding-top: 64px; 
+    padding-bottom: 100px; 
+}
+
+/* 4. 입력창을 하단에 단단히 고정 */
+.composer {
+    position: absolute; /* .phone 하단에 고정 */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: var(--bg-color);
+    padding-bottom: env(safe-area-inset-bottom); /* 아이폰 하단 바 대응 */
+}
+
+/* 5. 모바일에서 메시지 박스 너비 조절 */
+.chat-messages {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
