@@ -1863,7 +1863,7 @@ document.addEventListener('click', () => {
 // ===========================================
 // [추가] 랜덤 환영 문구 및 애니메이션 로직
 // ===========================================
-const greetingMessages = ["오늘은 기분이 어떠신가요?", "무엇을 도와드릴까요?", "오늘도 힘내세요", "어디서부터 시작할까요?", "오늘도 만나서 반가워요!"];
+const greetingMessages = ["오늘은 기분이 어떠신가요?", "무엇을 도와드릴까요?", "오늘도 힘내세요", "어디서부터 시작할까요?"];
 
 function playIntroAnimation() {
     const container = document.getElementById('initial-content');
@@ -1874,17 +1874,20 @@ function playIntroAnimation() {
         // 1. 텍스트 랜덤 변경
         textElement.textContent = greetingMessages[Math.floor(Math.random() * greetingMessages.length)];
 
-        // 2. 글로우 위치를 중앙 부근(30% ~ 60% 사이)으로 랜덤하게 배치
+        // 2. 글로우 위치 랜덤 배치 (화면 중앙 텍스트 주변으로 한정)
         particles.forEach(p => {
-            const randomTop = Math.floor(Math.random() * 30) + 25;  // 25% ~ 55% 사이
-            const randomLeft = Math.floor(Math.random() * 40) + 30; // 30% ~ 70% 사이
+            // 중앙(50%)을 기준으로 ±15% 내외에서 시작하게 설정
+            const randomTop = Math.floor(Math.random() * 30) + 20;  // 20% ~ 50% 영역 (상단 기준)
+            const randomLeft = Math.floor(Math.random() * 40) + 10; // 10% ~ 50% 영역 (중앙 근처)
+            
+            // translate(-50%, -50%)를 고려하여 텍스트 뒤에 배치
             p.style.top = randomTop + '%';
             p.style.left = randomLeft + '%';
         });
 
         // 3. 애니메이션 초기화 및 재시작
         container.classList.remove('start-anim');
-        void container.offsetWidth; // 리플로우
+        void container.offsetWidth; 
         container.classList.add('start-anim');
     }
 }
