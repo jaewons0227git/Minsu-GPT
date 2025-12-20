@@ -1877,28 +1877,14 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
    최종 통합: 멀티 글로우 + 텍스트 효과 + 스크롤바
    ========================================= */
 
-/* --- 1. 다크모드 스크롤바 제어 (요청하신 부분) --- */
-/* 웹킷 브라우저 (Chrome, Safari, Edge) */
-[data-theme="dark"] ::-webkit-scrollbar {
-    width: 10px; 
-    height: 10px;
+/* --- 스크롤바 (다크모드) --- */
+[data-theme="dark"] ::-webkit-scrollbar { width: 10px; }
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #000; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { 
+    background: #444; border-radius: 10px; border: 2px solid #000; 
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-track {
-    background: #000000; /* 스크롤바 배경: 검정 */
-}
-
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
-    background: #444444; /* 스크롤바 막대: 회색 */
-    border-radius: 10px;
-    border: 2px solid #000000; /* 배경과 구분되는 테두리 */
-}
-
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-    background: #555555;
-}
-
-/* --- 2. 애니메이션 정의 --- */
+/* --- 애니메이션 정의 --- */
 @keyframes fadeInUpLong {
     0% { opacity: 0; transform: translateY(50px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -1909,58 +1895,59 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     100% { background-position: -200% center; }
 }
 
-/* 글로우 이동 및 페이드 */
+/* 글로우 애니메이션 (자바스크립트에서 CSS 변수로 움직임 조절 가능) */
 @keyframes glowMovement {
-    0% { opacity: 0; transform: translate(0, 0) scale(0.8); }
-    30% { opacity: 1; }
-    50% { transform: translate(40px, -30px) scale(1.1); }
-    100% { opacity: 0; transform: translate(-30px, 20px) scale(1.4); }
+    0% { opacity: 0; transform: scale(0.6); }
+    40% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--move-x), var(--move-y)) scale(1.5); }
 }
 
-/* --- 3. 글로우 및 텍스트 스타일 --- */
-#initial-content { position: relative; overflow: visible; z-index: 1; }
+#initial-content {
+    position: relative;
+    overflow: hidden; /* 글로우가 밖으로 나가지 않게 함 */
+    z-index: 1;
+    width: 100%;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
 .glow-particle {
     position: absolute;
+    top: 50%; /* 중앙 기준 */
+    left: 50%;
     border-radius: 50%;
     filter: blur(80px);
     z-index: -1;
     opacity: 0;
     pointer-events: none;
+    transform: translate(-50%, -50%); /* 정확히 가운데 정렬 */
 }
 
-/* 라이트 모드 (더 진하게) */
+/* 라이트/다크 모드 색상 */
 [data-theme="light"] .glow-particle {
     background: radial-gradient(circle, rgba(255, 105, 180, 0.45) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%);
 }
-
-/* 다크 모드 (은은하게) */
 [data-theme="dark"] .glow-particle {
-    background: radial-gradient(circle, rgba(255, 126, 179, 0.2) 0%, rgba(139, 92, 246, 0.1) 50%, transparent 75%);
+    background: radial-gradient(circle, rgba(255, 126, 179, 0.25) 0%, rgba(139, 92, 246, 0.1) 50%, transparent 75%);
 }
 
-.glow-1 { width: 550px; height: 550px; top: -10%; left: 5%; }
-.glow-2 { width: 650px; height: 650px; top: 30%; left: 45%; }
-.glow-3 { width: 500px; height: 500px; top: 10%; left: 75%; }
-
+/* 메인 텍스트 */
 .greeting-main {
     background: linear-gradient(90deg, #ff7eb3, #8b5cf6, #ff7eb3);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    display: inline-block;
-    opacity: 0;
     font-weight: 700;
+    opacity: 0;
     position: relative;
     z-index: 10;
 }
 
-/* --- 4. 애니메이션 트리거 --- */
-.start-anim .glow-1 { animation: glowMovement 5.5s ease-in-out forwards; }
-.start-anim .glow-2 { animation: glowMovement 6.5s ease-in-out forwards; animation-delay: 0.4s; }
-.start-anim .glow-3 { animation: glowMovement 6s ease-in-out forwards; animation-delay: 0.8s; }
-
+/* 애니메이션 실행 클래스 */
 .start-anim .greeting-icon,
 .start-anim .greeting-sub {
     animation: fadeInUpLong 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
