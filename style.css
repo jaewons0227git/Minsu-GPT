@@ -2107,31 +2107,3 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 
 
-/* 2. 새 채팅 화면 위치 조정 */
-#initial-content {
-    top: 45% !important;
-    transform: translate(-50%, -50%) !important;
-}
-
-/* 3. [핵심] 새 채팅에서 첫 메시지가 올라올 때만 상단 여백 강제 부여 */
-/* initial-content가 active 상태(보이는 상태)이거나, 
-   메시지가 하나도 없다가 막 생기는 시점의 컨테이너를 제어합니다. */
-#initial-content:not([style*="display: none"]) ~ #chat-messages,
-.chat-messages:empty + #initial-content,
-.content-wrapper:has(#initial-content:not([style*="display: none"])) .chat-messages {
-    padding-top: 90px !important; 
-}
-
-/* 4. 모바일 최적화 (이전 채팅은 좁게, 새 채팅 첫발은 넓게) */
-@media (max-width: 768px) {
-    .chat-messages {
-        /* 이전 대화방들은 상단바(64px)보다 살짝만 더 여유 있게 */
-        padding-top: 75px !important; 
-        padding-bottom: 100px !important;
-    }
-
-    /* 새 채팅에서 첫 메시지를 보낼 때 가려짐 방지 */
-    #initial-content:not([style*="display: none"]) ~ .chat-messages {
-        padding-top: 90px !important;
-    }
-}
