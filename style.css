@@ -236,7 +236,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
     /* 🌟 [상단 여백] */
     /* 헤더 높이(64px) + 추가 여백(26px) = 90px */
-    padding-top: 70px;
+    padding-top: 80px;
 
     /* 🌟 [하단 여백] */
     /* 입력창 기본 높이 + 추가 여백 (JS가 동적으로 조절하지만 기본값 설정) */
@@ -255,7 +255,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
         padding-right: 16px;
         
         /* 상단 여백은 동일하게 유지하거나 필요 시 조정 */
-        padding-top: 84px; 
+        padding-top: 90px; 
     }
 }
 
@@ -312,7 +312,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     margin: 0 auto; 
     
     /* ✨ 핵심: 상하 여백 재설정 */
-    padding-top: 0px;      /* Header Height + 20px 이거말이여 */
+    padding-top: 0px;      /* Header Height + 20px  이거말이여 */
     padding-bottom: 100px;  /* Composer Height + 40px (기본값) */
     padding-left: 16px;     /* 좌우 여백 */
     padding-right: 16px;
@@ -2104,8 +2104,20 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 /* ================================================= */
 /* ✨ 새 채팅 첫 메시지 가려짐 방지 전용 로직 */
 /* ================================================= */
-/* 새 채팅일 때(아무것도 없을 때) 첫 번째 메시지에만 여백 추가 */
-/* 이전 채팅 로드 시에는 보통 내부 구조가 달라지므로 이 방식이 더 정확할 수 있습니다 */
-.chat-messages > .message-wrapper:first-child {
-    margin-top: 64px !important;
+
+
+/* ========================================= */
+/* 🌟 [수정] 새 채팅 전용 상단 여백 (84px)   */
+/* ========================================= */
+
+/* 새 채팅일 때만 적용되는 여백 (헤더 64px + 여유 20px = 84px) */
+.chat-messages.new-chat-mode {
+    padding-top: 84px !important; 
+}
+
+/* 모바일에서도 동일하게 84px 적용 (필요 시 조정 가능) */
+@media (max-width: 768px) {
+    .chat-messages.new-chat-mode {
+        padding-top: 84px !important;
+    }
 }
