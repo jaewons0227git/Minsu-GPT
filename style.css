@@ -1997,17 +1997,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     }
 
     /* 5. 입력창(Composer) 모바일 위치 및 너비 고정 */
-    .composer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        padding: 8px 12px;
-        background-color: var(--bg-color);
-        box-sizing: border-box;
-        z-index: 1000;
-    }
+    
 
     /* 6. 입력창 내부 컨테이너 설정 */
     .input-container {
