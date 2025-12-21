@@ -1946,68 +1946,73 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 
 
-/* 1. 가로 스크롤 방지 및 전체 너비 설정 */
-body, .phone, .content-wrapper {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden; /* 가로 스크롤 절대 방지 */
-    margin: 0;
-    padding: 0;
-}
 
-/* 2. 채팅 메시지 영역 모바일 최적화 */
-.chat-messages {
-    width: 100% !important;
-    padding: 10px 12px; /* 좌우 여백을 살짝 줄여 더 넓게 사용 */
-    box-sizing: border-box;
-}
 
-/* 3. 메시지 버블 너비 조정 */
-.message-bubble {
-    max-width: 90% !important; /* 기존 80%에서 90%로 확장하여 가독성 향상 */
-}
 
-.bot-message {
-    width: 100% !important;
-}
 
-/* 4. 코드 블록 가로 넘침 방지 */
-.streaming-block pre {
-    max-width: 100%;
-    overflow-x: auto; /* 코드만 내부에서 스크롤되게 함 */
-    white-space: pre-wrap; /* 긴 줄은 자동 줄바꿈 */
-    word-break: break-all;
-}
 
-/* 5. 입력창(Composer) 모바일 위치 및 너비 고정 */
-.composer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    padding: 8px 12px;
-    background-color: var(--bg-color);
-    box-sizing: border-box;
-    z-index: 1000;
-}
 
-/* 6. 입력창 내부 컨테이너가 화면을 나가지 않도록 설정 */
-.input-container {
-    width: 100%;
-    max-width: 100%; /* 화면 너비를 초과하지 않도록 제한 */
-    margin: 0 auto;
-}
-
-/* 모바일 전용 추가 미디어 쿼리 */
+/* ============================================ */
+/* 📱 모바일 전용 최적화 (화면 너비 768px 이하) */
+/* ============================================ */
 @media (max-width: 768px) {
-    .chat-messages {
-        padding-bottom: 80px; /* 입력창 높이만큼 하단 여백 확보하여 메시지가 가려지지 않게 함 */
+    /* 1. 가로 스크롤 방지 및 전체 너비 설정 */
+    body, .phone, .content-wrapper {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden; /* 가로 스크롤 절대 방지 */
+        margin: 0;
+        padding: 0;
     }
-    
-    /* 폰트 크기 미세 조정으로 가독성 확보 */
+
+    /* 2. 채팅 메시지 영역 모바일 최적화 */
+    .chat-messages {
+        width: 100% !important;
+        padding: 10px 12px 100px 12px !important; /* 하단 여백(100px)을 충분히 주어 입력창에 가려지지 않게 함 */
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 3. 메시지 버블 너비 조정 및 폰트 최적화 */
+    .message-bubble {
+        max-width: 90% !important; /* 기존 80%에서 90%로 확장 */
+    }
+
+    .bot-message {
+        width: 100% !important;
+    }
+
     .message-text {
         font-size: 14px;
         word-break: break-word;
+    }
+
+    /* 4. 코드 블록 가로 넘침 방지 */
+    .streaming-block pre {
+        max-width: 100%;
+        overflow-x: auto; /* 코드만 내부에서 스크롤 */
+        white-space: pre-wrap; /* 긴 줄 자동 줄바꿈 */
+        word-break: break-all;
+    }
+
+    /* 5. 입력창(Composer) 모바일 위치 및 너비 고정 */
+    .composer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        padding: 8px 12px;
+        background-color: var(--bg-color);
+        box-sizing: border-box;
+        z-index: 1000;
+    }
+
+    /* 6. 입력창 내부 컨테이너 설정 */
+    .input-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
     }
 }
