@@ -219,43 +219,78 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 /* 🌟 채팅창 상하 여백 재설정 (Clean Logic) */
 /* ========================================= */
 
-.content-wrapper {
-    /* 레이아웃 컨테이너는 패딩 없이 공간만 차지 */
-    padding: 0;
+/* ========================================= */
+/* 🌟 [수정] 채팅창 고정 및 여백 제거 로직 */
+/* ========================================= */
+
+/* 1. 전체 스크롤 방지 (채팅창 내부만 스크롤) */
+body {
+    overflow: hidden !important; 
 }
 
+/* 2. Content Wrapper: 헤더와 입력창 사이에 고정 */
+.content-wrapper {
+    position: fixed !important;
+    top: 64px; /* 헤더 높이만큼 띄움 */
+    left: var(--mini-sidebar-width); /* 기본 위치 (미니 사이드바 옆) */
+    
+    /* bottom은 JS(script.js)가 입력창 높이에 따라 자동으로 결정합니다. */
+    bottom: 80px; 
+    
+    width: calc(100% - var(--mini-sidebar-width));
+    
+    overflow-y: auto; /* 내부 스크롤 허용 */
+    overflow-x: hidden; /* 가로 스크롤 방지 */
+    
+    /* 기존의 불필요한 패딩/마진 초기화 */
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    background: var(--bg-color);
+    
+    /* 부드러운 위치 이동 애니메이션 */
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                bottom 0.2s ease-out; 
+
+    /* 스크롤바 디자인 (크롬, 사파리 등) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-sub) transparent;
+}
+
+/* 사이드바가 열렸을 때 위치 조정 */
+body.sidebar-open .content-wrapper {
+    left: var(--sidebar-width) !important;
+    width: calc(100% - var(--sidebar-width)) !important;
+    margin-left: 0 !important;
+}
+
+/* 3. Chat Messages: 상하 여백 제거 (wrapper가 잡아주므로 0으로 설정) */
 .chat-messages {
     width: 100%;
-    max-width: 860px; /* PC에서 너무 넓어지는 것 방지 */
-    margin: 0 auto;   /* 중앙 정렬 */
+    max-width: 860px;
+    margin: 0 auto;
     
-    display: none;    /* 기본 숨김, JS가 flex로 변경 */
+    display: none; /* JS에 의해 flex로 변경됨 */
     flex-direction: column;
     gap: 10px;
-    box-sizing: border-box;
-
-    /* 🌟 [상단 여백] */
-    /* 헤더 높이(64px) + 추가 여백(26px) = 90px */
-    padding-top: 80px;
-
-    /* 🌟 [하단 여백] */
-    /* 입력창 기본 높이 + 추가 여백 (JS가 동적으로 조절하지만 기본값 설정) */
-    padding-bottom: 120px;
-
-    /* [좌우 여백] */
+    
+    /* 🌟 핵심: 위아래 패딩을 최소화 (필요하면 조금 줘도 되지만 0 추천) */
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
     padding-left: 20px;
     padding-right: 20px;
 }
 
-/* 모바일 전용 미세 조정 (필요 시) */
+/* 모바일 대응 */
 @media (max-width: 768px) {
+    .content-wrapper {
+        left: 0 !important;
+        width: 100% !important;
+    }
     .chat-messages {
-        /* 모바일에서는 좌우 여백을 조금 줄임 */
         padding-left: 16px;
         padding-right: 16px;
-        
-        /* 상단 여백은 동일하게 유지하거나 필요 시 조정 */
-        padding-top: 90px; 
     }
 }
 
