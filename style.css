@@ -265,35 +265,48 @@ body.sidebar-open .content-wrapper {
     margin-left: 0 !important;
 }
 
-/* 3. Chat Messages: 상하 여백 제거 (wrapper가 잡아주므로 0으로 설정) */
+/* ========================================= */
+/* 🌟 [수정] 채팅 메시지 컨테이너 여백 최적화 */
+/* ========================================= */
+
 .chat-messages {
     width: 100%;
-    max-width: 860px;
-    margin: 0 auto;
+    max-width: 860px; /* PC 가독성 최대폭 */
+    margin: 0 auto;   /* 중앙 정렬 */
     
-    display: none; /* JS에 의해 flex로 변경됨 */
+    display: none;    /* JS에 의해 flex로 변경됨 */
     flex-direction: column;
-    gap: 10px;
+    gap: 10px;        /* 메시지 사이 간격 */
     
-    /* 🌟 핵심: 위아래 패딩을 최소화 (필요하면 조금 줘도 되지만 0 추천) */
-    padding-top: 20px !important;
-    padding-bottom: 20px !important;
+    /* 🌟 핵심: 상단 여백을 0 또는 아주 작게 설정 */
+    /* content-wrapper가 이미 헤더 높이만큼(64px) 내려와 있으므로 
+       여기서 패딩을 많이 줄 필요가 없습니다. */
+    padding-top: 10px !important; 
+    
+    /* 하단 여백은 스크롤 시 마지막 메시지 가림 방지용 (필요시 조절) */
+    padding-bottom: 20px !important; 
+    
+    /* 좌우 여백 */
     padding-left: 20px;
     padding-right: 20px;
 }
 
+/* 🌟 [수정] 새 채팅 모드일 때도 여백 강제 제거 (또는 필요시만 추가) */
+/* 만약 새 채팅 화면('무엇을 도와드릴까요?')이 중앙에 잘 뜬다면 
+   이 클래스의 padding-top도 줄여서 통일감을 줄 수 있습니다. */
+.chat-messages.new-chat-mode {
+    padding-top: 10px !important; 
+}
+
 /* 모바일 대응 */
 @media (max-width: 768px) {
-    .content-wrapper {
-        left: 0 !important;
-        width: 100% !important;
-    }
     .chat-messages {
         padding-left: 16px;
         padding-right: 16px;
+        /* 모바일에서도 동일하게 상단 여백 최소화 */
+        padding-top: 10px !important; 
     }
 }
-
 
 
 
