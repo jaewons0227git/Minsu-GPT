@@ -236,7 +236,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
     /* 🌟 [상단 여백] */
     /* 헤더 높이(64px) + 추가 여백(26px) = 90px */
-    padding-top: 90px;
+    padding-top: 70px;
 
     /* 🌟 [하단 여백] */
     /* 입력창 기본 높이 + 추가 여백 (JS가 동적으로 조절하지만 기본값 설정) */
@@ -312,7 +312,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     margin: 0 auto; 
     
     /* ✨ 핵심: 상하 여백 재설정 */
-    padding-top: 84px;      /* Header Height + 20px */
+    padding-top: 0px;      /* Header Height + 20px * 이거말이여/
     padding-bottom: 100px;  /* Composer Height + 40px (기본값) */
     padding-left: 16px;     /* 좌우 여백 */
     padding-right: 16px;
