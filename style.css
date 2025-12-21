@@ -223,7 +223,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
 
 /* Chat Messages */
 /* 🌟 [수정] 모바일에서는 기본 패딩 (10px 16px) */
-.chat-messages{ width: 100%; padding: 10px 16px; padding-top: 10px; display: none; flex-direction: column; justify-content: flex-start; gap: 10px; margin: 0 auto; box-sizing: border-box; }
+.chat-messages{ width: 100%; padding: 10px 16px; padding-top: 0px; display: none; flex-direction: column; justify-content: flex-start; gap: 10px; margin: 0 auto; box-sizing: border-box; }
 
 /* 🌟 [수정] PC 버전에서만 패딩을 넓게 설정 */
 @media (min-width: 769px) { 
