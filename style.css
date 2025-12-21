@@ -312,10 +312,17 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     margin: 0 auto; 
     
     /* ✨ 핵심: 상하 여백 재설정 */
-    padding-top: 84px;      /* Header Height + 20px * 이거말이여/
+    padding-top: 20px;      /* Header Height + 20px * 이거말이여/
     padding-bottom: 100px;  /* Composer Height + 40px (기본값) */
     padding-left: 16px;     /* 좌우 여백 */
     padding-right: 16px;
+
+    /* 2. 상단바(64px)만큼 아예 영역을 밑으로 밀어냅니다. */
+    margin-top: 64px; 
+    
+    /* 3. 전체 높이에서 상단바만큼 빼서 스크롤 영역을 맞춥니다. */
+    height: calc(100vh - 64px); 
+    overflow-y: auto;
 }
 
 /* 🌟 [수정] PC 버전에서만 패딩을 넓게 설정 */
