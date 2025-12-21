@@ -312,7 +312,7 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
     margin: 0 auto; 
     
     /* ✨ 핵심: 상하 여백 재설정 */
-    padding-top: 84px;      /* Header Height + 20px  이거말이여 */
+    padding-top: 0px;      /* Header Height + 20px  이거말이여 */
     padding-bottom: 100px;  /* Composer Height + 40px (기본값) */
     padding-left: 16px;     /* 좌우 여백 */
     padding-right: 16px;
