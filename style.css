@@ -1807,43 +1807,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         padding: 0;
     }
 
-    /* 2. 전체 컨테이너를 화면 크기에 딱 맞춤 */
-    .phone {
-        height: 100vh;
-        height: 100dvh; 
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* 3. 메시지 영역: 입력창에 가려지지 않도록 하단 여백 추가 */
-    .content-wrapper {
-        flex: 1;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-        
-        /* 헤더 높이만큼 상단 여백 */
-        padding-top: 64px; 
-        
-        /* [중요] 입력창 높이만큼 하단 여백을 주어 마지막 메시지가 보이게 함 */
-        /* 기본 80px + 여유공간 20px = 100px 정도가 적당합니다 */
-        padding-bottom: 100px !important; 
-        
-        box-sizing: border-box;
-    }
-
-    /* 4. 입력창 하단 고정 */
     
-
-    /* 5. 가로폭 넘침 방지 */
-    .chat-messages {
-        width: 100%;
-        max-width: 100%;
-        padding-left: 10px;
-        padding-right: 10px;
-        box-sizing: border-box;
-    }
 }
 
 
