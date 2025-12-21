@@ -2268,7 +2268,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 /* 6. 초기 화면 (Initial Content) 중앙 정렬 보정 */
 #initial-content {
     position: absolute !important; /* 채팅 영역 내에서 절대 위치 */
-    top: 45% !important;
+    top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     width: 100%;
