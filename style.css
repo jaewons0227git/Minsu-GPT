@@ -2345,7 +2345,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     /* 초기화면 로고 위치 보정 */
     #initial-content {
         position: absolute !important;
-        top: 45% !important;
+        top: 48% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
     }
