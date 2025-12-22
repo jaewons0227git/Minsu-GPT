@@ -2281,12 +2281,11 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 
 /* --- 모바일 레이아웃 최종 보정 (입력창 가림 및 초기화면 위치) --- */
-/* --- 모바일 레이아웃 최적화: 상단바-채팅창-입력창 구조 고정 --- */
-/* ============================================ */
-/* 📱 모바일 최적화: 툴바 가림 방지 및 스크롤 해결 */
-/* ============================================ */
+/* ============================================================ */
+/* 📱 모바일 최적화: 입력창 가림 방지 및 텍스트 스크롤 통합 솔루션 */
+/* ============================================================ */
 @media (max-width: 768px) {
-    /* 1. 사이드바: 최상단 고정 */
+    /* 1. 사이드바(메뉴탭): 화면 최상단 레이어로 설정 */
     .sidebar {
         z-index: 9999 !important;
         position: fixed !important;
@@ -2294,48 +2293,43 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         height: 100% !important;
     }
 
-    /* 2. 본문 컨테이너: 브라우저 툴바/주소창 밀림 방지 핵심 */
+    /* 2. 본문 컨테이너: 
+       'fixed'로 박지 않고, 가시 화면(svh/dvh)에 맞춰 유동적으로 변하게 설정 */
     .phone {
         display: flex !important;
         flex-direction: column !important;
+        position: relative !important; 
         
-        /* 💡 고정 위치를 사용하여 툴바 아래로 숨는 현상 방지 */
-        position: fixed !important; 
-        top: 0; 
-        left: 0; 
-        right: 0; 
-        bottom: 0;
+        /* 주소창 제외 실제 높이(svh)와 유동적 높이(dvh) 대응 */
+        height: 100svh !important; 
+        height: 100dvh !important; 
         
-        /* 💡 dvh 대신 100%와 fixed를 조합해 가시 영역 확보 */
-        height: 100% !important; 
         width: 100% !important;
-        
         padding-left: 0 !important;
         overflow: hidden !important;
         z-index: 1;
     }
 
-    /* 3. 상단바: 높이 고정 */
+    /* 3. 상단바: 높이 고정 및 밀림 방지 */
     .header {
         position: relative !important;
-        top: 0 !important;
         flex-shrink: 0 !important;
         z-index: 10;
-        height: 60px; /* 헤더 높이 명시적 고정 권장 */
+        height: 56px !important; /* 모바일 적정 높이 */
     }
 
-    /* 4. 채팅창: 중앙 영역 차지 및 스크롤 */
+    /* 4. 채팅창: 입력창을 제외한 모든 남은 공간을 차지 */
     .chat-messages {
-        flex: 1 1 auto !important; 
+        flex: 1 1 0% !important; /* 남는 공간을 동적으로 계산 */
         overflow-y: auto !important; 
-        height: auto !important;
-        padding-bottom: 20px !important;
+        -webkit-overflow-scrolling: touch; 
         display: flex;
         flex-direction: column;
-        -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+        padding-bottom: 10px !important;
     }
 
-    /* 5. 입력창: 항상 하단에 위치하도록 설정 */
+    /* 5. 입력창(Composer): 
+       고정(fixed)하지 않고 흐름에 두어 키보드가 올라올 때 자연스럽게 밀려 올라가게 함 */
     .composer {
         position: relative !important;
         bottom: 0 !important;
@@ -2344,32 +2338,35 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         border-top: 1px solid var(--border-color);
         z-index: 10;
         
-        /* 삼성 인터넷/사파리 홈바 영역 확보 */
-        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+        /* 모바일 하단 제스처 바/툴바 영역 확보 */
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
     }
 
-    /* 6. ✨ 텍스트 입력창 스크롤 해결 */
+    /* 6. 텍스트 박스 스크롤 해결 (요청사항 반영) */
     .input-container textarea {
-        /* 💡 내용이 많아지면 스크롤바 허용 */
+        /* 내용이 길어지면 내부에서 스크롤이 발생하도록 설정 */
         overflow-y: auto !important; 
-        /* 💡 일정 높이까지만 커지고 그 다음부터는 내부 스크롤 */
-        max-height: 150px !important; 
         
-        /* 스크롤바 스타일링 */
+        /* 글이 길어져도 입력창이 화면을 다 채우지 않도록 최대 높이 제한 */
+        max-height: 140px !important; 
+        
+        /* 터치 기기에서 스크롤이 끊기지 않도록 설정 */
+        overscroll-behavior: contain;
+        
+        /* 스크롤바 디자인 (얇게) */
         scrollbar-width: thin;
-        -ms-overflow-style: auto;
     }
     
-    /* 스크롤바가 안 보일 경우를 대비한 웹킷 설정 */
+    /* 스크롤바 커스텀 (웹킷 브라우저) */
     .input-container textarea::-webkit-scrollbar {
-        width: 4px;
+        width: 3px;
     }
     .input-container textarea::-webkit-scrollbar-thumb {
         background: var(--border-color);
         border-radius: 10px;
     }
 
-    /* 사이드바 오픈 시 배경 암전 */
+    /* 사이드바 오픈 시 배경 암전 처리 */
     body.sidebar-open .phone::after {
         content: "";
         position: absolute;
@@ -2378,12 +2375,13 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         z-index: 50;
     }
     
-    /* 초기 로고 위치 조정 */
+    /* 초기화면 로고/인사말 위치 최적화 */
     #initial-content {
         position: absolute !important;
-        top: 48% !important;
+        top: 48% !important; /* 키보드 대응을 위해 살짝 위로 배치 */
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         width: 100%;
+        text-align: center;
     }
 }
