@@ -2282,10 +2282,10 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 /* --- 모바일 레이아웃 최종 보정 (입력창 가림 및 초기화면 위치) --- */
 /* ============================================================ */
-/* 📱 모바일 최적화: 입력창 가림 방지 및 텍스트 스크롤 통합 솔루션 */
+/* 📱 모바일 최적화: 입력창 가림 방지 및 유동적 높이 조절 (전체) */
 /* ============================================================ */
 @media (max-width: 768px) {
-    /* 1. 사이드바(메뉴탭): 화면 최상단 레이어로 설정 */
+    /* 1. 사이드바(메뉴탭): 화면 맨 위에 고정 */
     .sidebar {
         z-index: 9999 !important;
         position: fixed !important;
@@ -2294,33 +2294,36 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     }
 
     /* 2. 본문 컨테이너: 
-       'fixed'로 박지 않고, 가시 화면(svh/dvh)에 맞춰 유동적으로 변하게 설정 */
+       전체를 fixed로 잡고 height를 100dvh로 설정하여 
+       브라우저 툴바가 변해도 화면 밖으로 나가지 않게 가둡니다. */
     .phone {
         display: flex !important;
         flex-direction: column !important;
-        position: relative !important; 
-        
-        /* 주소창 제외 실제 높이(svh)와 유동적 높이(dvh) 대응 */
-        height: 100svh !important; 
-        height: 100dvh !important; 
-        
+        position: fixed !important; 
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        height: 100dvh !important; /* 가시 화면 높이에 맞춤 */
         width: 100% !important;
         padding-left: 0 !important;
         overflow: hidden !important;
         z-index: 1;
     }
 
-    /* 3. 상단바: 높이 고정 및 밀림 방지 */
+    /* 3. 상단바: 높이를 유지하며 압축되지 않게 설정 */
     .header {
         position: relative !important;
         flex-shrink: 0 !important;
         z-index: 10;
-        height: 56px !important; /* 모바일 적정 높이 */
+        height: 60px !important;
     }
 
-    /* 4. 채팅창: 입력창을 제외한 모든 남은 공간을 차지 */
+    /* 4. 채팅창: 
+       flex: 1을 주어 입력창이 올라오면 자동으로 크기가 줄어듭니다. */
     .chat-messages {
-        flex: 1 1 0% !important; /* 남는 공간을 동적으로 계산 */
+        flex: 1 1 0% !important; /* 공간이 부족하면 줄어들게 설정 */
+        min-height: 0 !important; /* flex 박스 내 축소 허용 */
         overflow-y: auto !important; 
         -webkit-overflow-scrolling: touch; 
         display: flex;
@@ -2328,45 +2331,28 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         padding-bottom: 10px !important;
     }
 
-    /* 5. 입력창(Composer): 
-       고정(fixed)하지 않고 흐름에 두어 키보드가 올라올 때 자연스럽게 밀려 올라가게 함 */
+    /* 5. 입력창: 채팅창 바로 아래 위치 */
     .composer {
         position: relative !important;
         bottom: 0 !important;
-        flex-shrink: 0 !important;
+        flex-shrink: 0 !important; /* 입력창은 찌그러지지 않게 고정 */
         background: var(--bg-color);
         border-top: 1px solid var(--border-color);
         z-index: 10;
         
-        /* 모바일 하단 제스처 바/툴바 영역 확보 */
-        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
+        /* 삼성 인터넷/iOS 하단 제스처바 영역 확보 */
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
     }
 
-    /* 6. 텍스트 박스 스크롤 해결 (요청사항 반영) */
+    /* 6. 텍스트 박스: 내용이 많아지면 스크롤 발생 */
     .input-container textarea {
-        /* 내용이 길어지면 내부에서 스크롤이 발생하도록 설정 */
-        overflow-y: auto !important; 
-        
-        /* 글이 길어져도 입력창이 화면을 다 채우지 않도록 최대 높이 제한 */
-        max-height: 140px !important; 
-        
-        /* 터치 기기에서 스크롤이 끊기지 않도록 설정 */
-        overscroll-behavior: contain;
-        
-        /* 스크롤바 디자인 (얇게) */
+        overflow-y: auto !important; /* 내부 스크롤 허용 */
+        max-height: 150px !important; /* 최대 높이 고정 (이후부터 스크롤) */
         scrollbar-width: thin;
-    }
-    
-    /* 스크롤바 커스텀 (웹킷 브라우저) */
-    .input-container textarea::-webkit-scrollbar {
-        width: 3px;
-    }
-    .input-container textarea::-webkit-scrollbar-thumb {
-        background: var(--border-color);
-        border-radius: 10px;
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* 사이드바 오픈 시 배경 암전 처리 */
+    /* 사이드바가 열릴 때 배경을 어둡게 처리 */
     body.sidebar-open .phone::after {
         content: "";
         position: absolute;
@@ -2375,10 +2361,10 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         z-index: 50;
     }
     
-    /* 초기화면 로고/인사말 위치 최적화 */
+    /* 초기화면 로고 위치 보정 */
     #initial-content {
         position: absolute !important;
-        top: 48% !important; /* 키보드 대응을 위해 살짝 위로 배치 */
+        top: 45% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         width: 100%;
