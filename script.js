@@ -1895,25 +1895,14 @@ function playIntroAnimation() {
 
 
 
-// script.js 맨 아래에 추가
 if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
-        // 가시 영역(Visual Viewport)의 높이가 변하면(키보드 작동 등)
-        // 본문 높이를 그에 맞춰 즉시 변경하여 입력창을 노출시킴
-        const offset = window.innerHeight - window.visualViewport.height;
-        if (offset > 0) {
-            document.body.style.marginBottom = `${offset}px`;
-        } else {
-            document.body.style.marginBottom = '0';
+        // 키보드가 올라와서 가시 영역이 줄어들면, 
+        // .phone의 높이를 그만큼 줄여서 입력창을 강제로 끌어올립니다.
+        const phone = document.querySelector('.phone');
+        if (phone) {
+            phone.style.height = `${window.visualViewport.height}px`;
         }
         window.scrollTo(0, 0);
-    });
-}
-
-// 텍스트 입력 시 항상 마지막 줄을 보여주도록 스크롤 위치 보정
-const mobileTextarea = document.querySelector('.input-container textarea');
-if (mobileTextarea) {
-    mobileTextarea.addEventListener('input', function() {
-        this.scrollTop = this.scrollHeight;
     });
 }
