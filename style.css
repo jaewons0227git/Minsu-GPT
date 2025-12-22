@@ -2282,10 +2282,10 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
 
 /* --- 모바일 레이아웃 최종 보정 (입력창 가림 및 초기화면 위치) --- */
 /* ============================================================ */
-/* 📱 모바일 최적화: 입력창 가림 방지 및 유동적 높이 조절 (전체) */
+/* 📱 모바일 최적화: 툴바 가림 방지 및 채팅창 유동 높이 조절 */
 /* ============================================================ */
 @media (max-width: 768px) {
-    /* 1. 사이드바(메뉴탭): 화면 맨 위에 고정 */
+    /* 1. 사이드바(메뉴탭): 화면 최상단 고정 */
     .sidebar {
         z-index: 9999 !important;
         position: fixed !important;
@@ -2294,8 +2294,7 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
     }
 
     /* 2. 본문 컨테이너: 
-       전체를 fixed로 잡고 height를 100dvh로 설정하여 
-       브라우저 툴바가 변해도 화면 밖으로 나가지 않게 가둡니다. */
+       하단 툴바에 가려지지 않도록 fixed로 잡고 height를 유동적으로 설정 */
     .phone {
         display: flex !important;
         flex-direction: column !important;
@@ -2304,55 +2303,67 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
-        height: 100dvh !important; /* 가시 화면 높이에 맞춤 */
+        
+        /* 💡 dvh는 툴바 상태에 따라 변하는 동적 높이입니다. */
+        height: 100dvh !important; 
         width: 100% !important;
         padding-left: 0 !important;
         overflow: hidden !important;
         z-index: 1;
+        background: var(--bg-color);
     }
 
-    /* 3. 상단바: 높이를 유지하며 압축되지 않게 설정 */
+    /* 3. 상단바: 높이 고정 및 공간 확보 */
     .header {
         position: relative !important;
         flex-shrink: 0 !important;
         z-index: 10;
-        height: 60px !important;
+        height: 56px !important;
     }
 
-    /* 4. 채팅창: 
-       flex: 1을 주어 입력창이 올라오면 자동으로 크기가 줄어듭니다. */
+    /* 4. 채팅창 (메시지 영역): 
+       flex: 1을 통해 입력창이 올라오는 만큼 '자신'이 줄어듭니다. */
     .chat-messages {
-        flex: 1 1 0% !important; /* 공간이 부족하면 줄어들게 설정 */
-        min-height: 0 !important; /* flex 박스 내 축소 허용 */
+        flex: 1 1 0% !important; /* 남는 공간을 차지하되 최우선으로 줄어듦 */
+        min-height: 0 !important; /* 중요: flex 안에서 줄어들 수 있게 함 */
         overflow-y: auto !important; 
-        -webkit-overflow-scrolling: touch; 
         display: flex;
         flex-direction: column;
-        padding-bottom: 10px !important;
+        padding-bottom: 15px !important;
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* 5. 입력창: 채팅창 바로 아래 위치 */
+    /* 5. 입력창 (Composer): 툴바 바로 위에 배치 */
     .composer {
         position: relative !important;
         bottom: 0 !important;
-        flex-shrink: 0 !important; /* 입력창은 찌그러지지 않게 고정 */
+        flex-shrink: 0 !important; /* 입력창 높이는 보존 */
         background: var(--bg-color);
         border-top: 1px solid var(--border-color);
         z-index: 10;
         
-        /* 삼성 인터넷/iOS 하단 제스처바 영역 확보 */
+        /* 삼성 인터넷 하단 툴바 및 아이폰 홈바 영역 확보 */
         padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
     }
 
-    /* 6. 텍스트 박스: 내용이 많아지면 스크롤 발생 */
+    /* 6. 텍스트 박스: 내용 많아지면 내부 스크롤 (요청사항) */
     .input-container textarea {
-        overflow-y: auto !important; /* 내부 스크롤 허용 */
-        max-height: 150px !important; /* 최대 높이 고정 (이후부터 스크롤) */
+        overflow-y: auto !important; 
+        max-height: 150px !important; /* 이 높이 이후로는 위아래 스크롤 */
         scrollbar-width: thin;
-        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: auto;
+    }
+    
+    /* 텍스트박스 스크롤바 디자인 */
+    .input-container textarea::-webkit-scrollbar {
+        width: 4px;
+    }
+    .input-container textarea::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 10px;
     }
 
-    /* 사이드바가 열릴 때 배경을 어둡게 처리 */
+    /* 사이드바 오픈 시 배경 암전 */
     body.sidebar-open .phone::after {
         content: "";
         position: absolute;
@@ -2361,10 +2372,10 @@ hr.modal-divider { border: 0; border-top: 1px solid var(--border-color); margin:
         z-index: 50;
     }
     
-    /* 초기화면 로고 위치 보정 */
+    /* 초기화면 로고/인사말 위치 */
     #initial-content {
         position: absolute !important;
-        top: 45% !important;
+        top: 48% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         width: 100%;
