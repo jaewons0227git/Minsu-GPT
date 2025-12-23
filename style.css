@@ -118,9 +118,9 @@ body{ margin:0; background:var(--bg-color); color:var(--text-color); min-height:
   border-radius: 0; 
   border: none; 
   display: flex; 
-  flex-direction: column; 
-  min-height: 100vh; /* 구형 브라우저 호환용 */
+  flex-direction: column;  /* 구형 브라우저 호환용 */
   height: 100dvh;    /* 🌟 핵심: 모바일 주소창 고려한 동적 높이 */
+  height: calc(var(--vh, 1vh) * 100);
   position: relative; 
   margin: 0;
   transition: background-color 0.3s ease;
