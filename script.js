@@ -1921,3 +1921,16 @@ if (ta) {
         this.scrollTop = this.scrollHeight;
     });
 }
+
+
+
+
+
+// 브라우저 툴바를 제외한 실제 가용 높이 계산
+function setScreenSize() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+window.addEventListener('resize', setScreenSize);
+setScreenSize();
