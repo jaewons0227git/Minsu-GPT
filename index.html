@@ -1,765 +1,1143 @@
-<!doctype html>
-<html lang="ko" data-theme="light">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff" id="meta-theme-color">
-  <title>MinsuGPT</title> 
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  
-  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/kg01fcVG/logop.png">
-  <link rel="stylesheet" href="style.css"> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MinsuGPT</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --text-main: #212121;
+            --text-gray: #a0a0a0;
+            --input-border: #e5e5e5;
+            --btn-disabled: #f0f0f0;
+            --btn-disabled-icon: #cccccc;
+            --btn-active: #000000;
+            --user-msg-bg: #f2f2f2; 
+            --thought-bg: #f9f9f9;
+            --thought-border: #eee;
+            --font-en: "Outfit", sans-serif; 
+            --font-logo: "Elms Sans", sans-serif;
+            --font-ko: -apple-system, BlinkMacSystemFont, sans-serif;
+            --code-bg: #f6f8fa;
+            --mint-point: #20c997;
+            --error-red: #ef4444;
+            --btn-bg-soft: #f5f5f5;
+        }
 
- <script>
-    // 허용할 도메인 리스트
-    const ALLOWED_REFERRERS = [
-        'https://ai.minsugpt.kro.kr/',
-        'https://user.minsugpt.kro.kr/'
-    ];
-    const REDIRECT_URL = 'https://status.minsugpt.kro.kr';
-    const referrer = document.referrer;
+        html, body {
+            margin: 0; padding: 0; 
+            width: 100%; height: 100%; 
+            height: 100dvh; 
+            overflow: hidden; 
+            font-family: var(--font-en), var(--font-ko);
+            background-color: var(--bg-main); color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
 
-    // some() 함수를 사용하여 현재 referrer가 허용 리스트 중 하나로 시작하는지 확인합니다.
-    const isAllowed = ALLOWED_REFERRERS.some(url => referrer.startsWith(url));
+        #app { display: flex; flex-direction: column; height: 100%; position: relative; }
 
-    if (referrer === '' || !isAllowed) {
-      window.location.replace(REDIRECT_URL);
-    }
-</script>
+        @keyframes fadeInOnly {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
 
+        /* --- Header Styles --- */
+        header {
+            padding: 8px 20px; 
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--input-border); background: white; flex-shrink: 0; z-index: 10;
+        }
+        .header-left { display: flex; align-items: baseline; gap: 6px; }
+        
+        .logo-main { 
+            font-family: var(--font-logo); 
+            font-size: 1.1rem; font-weight: 300; letter-spacing: -0.03em; 
+        }
+        .logo-sub { 
+            font-family: var(--font-logo); 
+            font-size: 1.1rem; 
+            color: var(--text-gray); 
+            font-weight: 400; 
+        }
 
+        .header-right { display: flex; gap: 8px; }
+        
+        .icon-btn {
+            background-color: var(--btn-bg-soft); 
+            border: 1px solid transparent; 
+            cursor: pointer; 
+            color: var(--text-main);
+            width: 38px; height: 38px; padding: 0; 
+            border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .icon-btn:hover { background-color: #e8e8e8; }
+        .icon-btn:active { transform: scale(0.94); }
+        .icon-btn .material-symbols-rounded { 
+            font-size: 20px; 
+            font-variation-settings: 'wght' 300; 
+        }
 
+        #welcomeContainer {
+            position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
+            width: 92%; max-width: 720px; 
+            text-align: left; 
+            transition: opacity 0.3s ease; z-index: 5; 
+        }
+        
+        .welcome-text { 
+            font-size: clamp(1.5rem, 5vw, 2.0rem); 
+            font-weight: 500; 
+            letter-spacing: -0.03em; 
+            color: #1a1a1a; 
+            margin-bottom: 12px; 
+            margin-left: 4px;
+            animation: fadeInOnly 0.6s ease-out;
+        }
 
+        .suggestion-container {
+            display: flex;
+            width: 100%;
+            gap: 6px;
+            justify-content: flex-start;
+            flex-wrap: nowrap; 
+            overflow: hidden; 
+        }
 
+        .suggestion-btn {
+            background-color: white;
+            border: 1px solid var(--input-border);
+            border-radius: 9999px; 
+            flex: 0 1 auto; 
+            min-width: 0; 
+            padding: 10px clamp(8px, 2vw, 16px); 
+            font-size: clamp(11px, 3.2vw, 15px); 
+            color: var(--text-main);
+            cursor: pointer;
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+            overflow: hidden;
+            transition: all 0.2s ease; /* transform transition removed */
+            font-family: var(--font-ko);
+            letter-spacing: -0.03em; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            opacity: 0; 
+            animation: fadeInOnly 0.5s ease-out forwards; 
+        }
 
+        .suggestion-btn:nth-child(1) { animation-delay: 0.1s; }
+        .suggestion-btn:nth-child(2) { animation-delay: 0.2s; }
+        .suggestion-btn:nth-child(3) { animation-delay: 0.3s; }
 
+        .suggestion-btn:hover {
+            background-color: var(--btn-bg-soft);
+            border-color: #d0d0d0;
+            /* transform: translateY(-2px); <-- REMOVED per request */
+        }
+        .suggestion-btn:active { transform: scale(0.96); }
 
+        .suggestion-btn .material-symbols-rounded {
+            font-size: clamp(16px, 4vw, 18px);
+            font-variation-settings: 'wght' 500;
+            flex-shrink: 0;
+        }
 
+        .icon-joke { color: #2563eb; } 
+        .icon-talk { color: #9333ea; } 
+        .icon-write { color: #ef4444; } 
 
+        /* --- Chat Window --- */
+        .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
+        
+        .messages-container { 
+            width: 92%; max-width: 720px; 
+            display: flex; flex-direction: column; gap: 32px; 
+            padding: 20px 0; box-sizing: border-box; 
+        }
 
+        .msg { 
+            display: flex; flex-direction: column; width: 100%; 
+            animation: fadeInOnly 0.4s ease-out; 
+        }
+        .msg.bot { align-items: flex-start; }
+        
+        .bot-content { 
+            width: 100%; font-size: 1rem; line-height: 1.6; word-break: break-word; 
+            display: block; min-height: 1.2em;
+            font-family: var(--font-en), var(--font-ko); 
+        }
+        .bot-content p { margin: 0 0 10px 0; }
+        
+        .bot-content pre { 
+            background: var(--code-bg); padding: 12px; border-radius: 8px; 
+            overflow-x: auto; font-size: 0.9em; margin: 10px 0; 
+            position: relative !important;
+        }
+        .bot-content code { 
+            background: transparent; padding: 0; 
+            font-family: monospace; font-size: 0.9em; 
+        }
+        
+        .bot-content p code, .bot-content li code {
+            background: var(--code-bg); padding: 2px 4px; border-radius: 4px;
+        }
 
+        .code-copy-btn {
+            position: absolute; top: 6px; right: 6px;
+            background: rgba(255,255,255,0.9); 
+            border: 1px solid #ddd; border-radius: 6px;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; 
+            opacity: 1; 
+            transition: background 0.2s;
+            color: #555;
+            z-index: 10;
+        }
+        .code-copy-btn:hover { background: white; color: var(--text-main); }
+        .code-copy-btn .material-symbols-rounded { font-size: 16px; }
 
+        details.thought-details {
+            border: 1px solid var(--thought-border);
+            background: var(--thought-bg);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        summary.thought-summary {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #777;
+            font-weight: 500;
+            list-style: none;
+            display: flex; align-items: center; gap: 6px;
+            outline: none;
+            user-select: none;
+        }
+        summary.thought-summary::-webkit-details-marker { display: none; }
+        .thought-content {
+            padding: 10px 14px;
+            border-top: 1px solid var(--thought-border);
+            font-size: 0.9rem;
+            color: #555;
+            white-space: pre-wrap;
+            font-family: var(--font-ko);
+            background: white;
+            line-height: 1.5;
+        }
 
-  
+        .msg.user { align-items: flex-end; }
+        .user-bubble {
+            max-width: 80%; padding: 10px 18px; border-radius: 22px;
+            background-color: var(--user-msg-bg); color: var(--text-main); font-size: 0.95rem;
+            white-space: pre-wrap;
+            font-family: var(--font-en), var(--font-ko); 
+            line-height: 1.5;
+        }
+
+        .action-buttons { 
+            display: flex; gap: 6px; margin-top: 6px; opacity: 1; 
+            animation: slideInRight 0.3s ease-out; 
+        }
+        .action-btn {
+            background: none; border: none; color: var(--text-gray);
+            cursor: pointer; padding: 4px; display: flex; align-items: center;
+            transition: color 0.2s;
+        }
+        .action-btn:hover { color: var(--text-main); }
+        .action-btn.disabled { opacity: 0.2; pointer-events: none; }
+        .action-btn .material-symbols-rounded { font-size: 19px; font-variation-settings: 'wght' 300; }
+
+        /* --- Input Area Layout (Modified) --- */
+        .input-container { 
+            width: 100%; 
+            display: flex; 
+            justify-content: center; 
+            padding: 10px 0 25px 0; 
+            background: white; 
+            flex-shrink: 0; 
+            position: relative; 
+        }
+        
+        .input-group {
+            width: 92%; max-width: 720px;
+            display: flex; 
+            align-items: flex-end; /* Bottom align ensures plus button stays at bottom */
+            gap: 10px;
+            position: relative; 
+        }
+
+        /* 🌟 [수정됨] Plus Button: 48px로 확대하여 입력창 높이와 일치 */
+        .plus-btn {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: 1px solid var(--input-border);
+            background: white;
+            color: var(--text-main);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            margin-bottom: 0; /* 높이가 같으므로 margin 불필요 */
+        }
+        .plus-btn:hover { background-color: var(--btn-bg-soft); }
+        .plus-btn:active { transform: scale(0.94); }
+        .plus-btn .material-symbols-rounded { font-size: 24px; font-variation-settings: 'wght' 300; }
+        .plus-btn.active { background-color: #f0f0f0; transform: rotate(45deg); }
+
+        /* Attachment Menu (Modal) */
+        .attach-menu {
+            position: absolute;
+            bottom: 60px; 
+            left: 0;
+            background: white;
+            border: 1px solid var(--input-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            gap: 4px;
+            min-width: 160px;
+            opacity: 0; visibility: hidden; transform: translateY(10px) scale(0.95);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 50;
+        }
+        
+        .attach-menu.open {
+            opacity: 1; visibility: visible; transform: translateY(0) scale(1);
+        }
+
+        .menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: none; border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-family: var(--font-ko);
+            text-align: left;
+            transition: background 0.1s;
+        }
+        .menu-item:hover { background-color: var(--btn-bg-soft); }
+        .menu-item .material-symbols-rounded { font-size: 20px; color: #555; }
+
+        @media (max-width: 600px) {
+            .attach-menu {
+                bottom: 65px; left: 4px; 
+                min-width: 180px;
+            }
+            .menu-item { padding: 12px 14px; font-size: 1rem; } 
+        }
+
+        .input-wrapper {
+            flex: 1; 
+            display: flex; align-items: flex-end;
+            border: 1px solid var(--input-border); border-radius: 24px;
+            padding: 8px 8px 8px 16px; 
+            box-sizing: border-box;
+            background: white;
+            min-height: 48px; /* 입력창 기본 높이 */
+        }
+        
+        #userInput { 
+            flex: 1; border: none; outline: none; 
+            padding: 0; 
+            margin-bottom: 4px; 
+            font-size: 0.95rem; 
+            font-family: var(--font-en), var(--font-ko); 
+            resize: none; 
+            max-height: 150px; 
+            overflow-y: hidden; 
+            background: transparent;
+            line-height: 24px; 
+            height: 24px; 
+            box-sizing: border-box;
+        }
+        #userInput::placeholder { font-family: var(--font-en), var(--font-ko); opacity: 0.6; }
+
+        .send-btn {
+            background-color: var(--btn-disabled); color: var(--btn-disabled-icon); border: none; border-radius: 50%;
+            width: 32px; height: 32px; display: flex; justify-content: center; align-items: center;
+            cursor: default; transition: all 0.2s ease; pointer-events: none;
+            flex-shrink: 0; margin-left: 8px; margin-bottom: 0px; 
+        }
+        .send-btn.active { background-color: var(--btn-active); color: #ffffff; cursor: pointer; pointer-events: auto; }
+        .material-symbols-rounded.send-icon { font-variation-settings: 'wght' 300; font-size: 22px; }
+        
+        .thinking-indicator { 
+            color: var(--text-gray); font-size: 0.85rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; height: 32px;
+            animation: fadeInOnly 0.3s ease-out; 
+        }
+        .ui-load-glx { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
+        .ui-load-glx > .gbx { width: 18px; height: 18px; position: relative; transform: scale(1.0); }
+        .ui-load-glx > .gbx .bx { position: absolute; width: 100%; height: 100%; animation: rotateFull 1.0s linear infinite; }
+        .ui-load-glx > .gbx .bx i { position: absolute; width: 100%; height: 100%; animation: moveDistance 0.5s alternate infinite ease-in-out; }
+        .ui-load-glx > .gbx .bx i::before {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 4px; height: 4px; background: #0481ff; border-radius: 50%; content: "";
+        }
+        .ui-load-glx > .gbx .bx i:first-child::before { background: #00d593; }
+        .ui-load-glx > .gbx .bx i:nth-child(1) { --angle: 0deg; }
+        .ui-load-glx > .gbx .bx i:nth-child(2) { --angle: 90deg; }
+        .ui-load-glx > .gbx .bx i:nth-child(3) { --angle: 180deg; }
+        .ui-load-glx > .gbx .bx i:nth-child(4) { --angle: 270deg; }
+
+        @keyframes moveDistance {
+            0% { transform: rotate(var(--angle)) translateY(-4px); }
+            100% { transform: rotate(var(--angle)) translateY(-8px); }
+        }
+        @keyframes rotateFull {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Modal Animations & Styles --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100; 
+            display: flex;
+            align-items: center; justify-content: center; 
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+
+        .modal-overlay.open { 
+            opacity: 1; visibility: visible; pointer-events: auto; 
+        }
+        
+        .modal-box {
+            background: white; width: 90%; max-width: 400px; max-height: 80%;
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .modal-overlay.open .modal-box { 
+            transform: scale(1) translateY(0); 
+        }
+        
+        .modal-box.small-box { max-width: 320px; height: auto; padding: 24px; text-align: center; }
+        .confirm-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+        .confirm-msg { font-size: 0.95rem; color: #666; margin-bottom: 24px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; width: 100%; }
+        .modal-btn {
+            flex: 1; padding: 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 500; cursor: pointer; border: none;
+            transition: transform 0.1s;
+        }
+        .modal-btn:active { transform: scale(0.95); }
+        .btn-cancel { background: #f0f0f0; color: #333; }
+        .btn-delete { background: var(--error-red); color: white; }
+
+        @media (max-width: 600px) {
+            .modal-overlay:not(#confirmModal) { align-items: flex-end; }
+            .modal-box:not(.small-box) {
+                width: 100%; max-width: 100%; border-radius: 24px 24px 0 0; 
+                margin: 0; max-height: 85vh; 
+                transform: translateY(100%);
+                transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            .modal-overlay.open .modal-box:not(.small-box) {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-title { font-weight: 600; font-size: 1.1rem; }
+        .close-modal-btn { background: none; border: none; cursor: pointer; padding: 4px; }
+        .clear-all-btn {
+            font-size: 0.85rem; color: var(--error-red); background: none; border: none;
+            font-weight: 500; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+        }
+        .clear-all-btn:hover { background: #fee2e2; }
+
+        .history-list { overflow-y: auto; flex: 1; list-style: none; padding: 0; margin: 0; }
+        
+        .history-item {
+            padding: 12px; border-bottom: 1px solid #eee; transition: background 0.2s;
+            border-radius: 8px; margin-bottom: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+            animation: fadeInOnly 0.3s ease-out backwards; 
+        }
+        .history-item:hover { background: #f9f9f9; }
+        .history-info { flex: 1; overflow: hidden; cursor: pointer; }
+        .h-title { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .h-date { font-size: 0.75rem; color: #aaa; }
+        
+        .delete-chat-btn {
+            background: none; border: none; padding: 8px; cursor: pointer; color: #ccc;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+        }
+        .delete-chat-btn:hover { color: var(--error-red); background: #fff0f0; }
+        .delete-chat-btn .material-symbols-rounded { font-size: 20px; }
+
+        .empty-history { text-align: center; color: #aaa; padding: 20px; font-size: 0.9rem; }
+
+    </style>
 </head>
 <body>
 
-
-
-
-
-
-
-
-
-<div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999999; transition:opacity 0.5s ease; touch-action:none; pointer-events:all;">
-    <style>
-        /* 로고 크기를 모바일에서는 조금 더 작게, PC에서는 원래대로 조절 */
-        .custom-logo {
-            width: 30vw; /* 화면 너비의 30% */
-            max-width: 90px; /* 최대 150px */
-            min-width: 80px; /* 최소 100px */
-            aspect-ratio: 1/1;
-            margin-bottom: 20px;
-            background: linear-gradient(270deg, #FFB7CE, #B19CD9, #FFB7CE);
-            background-size: 200% 100%;
-            -webkit-mask: url('https://i.postimg.cc/kg01fcVG/logop.png') no-repeat center / contain;
-            mask: url('https://i.postimg.cc/kg01fcVG/logop.png') no-repeat center / contain;
-            animation: gradMove 2.5s linear infinite;
-        }
-
-        .custom-bar-bg {
-            width: 50%; /* 모바일에서 적절한 너비 */
-            max-width: 200px;
-            height: 5px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .custom-bar-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #FFB7CE, #B19CD9);
-            animation: loadFill 2s ease-in-out forwards;
-        }
-
-        @keyframes gradMove {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
-
-        @keyframes loadFill {
-            to { width: 100%; }
-        }
-    </style>
-
-    <div class="custom-logo"></div>
-    <div class="custom-bar-bg">
-        <div class="custom-bar-fill"></div>
-    </div>
-
-    <script>
-        window.addEventListener('load', function() {
-            const loader = document.getElementById('loading-overlay');
-            // 모바일 네트워크 속도를 고려하여 넉넉히 2.5초 후 제거
-            setTimeout(() => {
-                if (loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.remove(), 500);
-                }
-            }, 700);
-        });
-    </script>
-</div>
-
-
-
-
-
-
-  
-  
-
-<style>
-    /* 모달 전체 배경 */
-    #cheerModal.modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4); /* 배경 살짝 어둡게 처리하여 가독성 확보 */
-        display: none; /* 기본 숨김 */
-        justify-content: center;
-        align-items: center;
-        z-index: 10001; /* 눈 효과(9999)보다 높게 설정 */
-        
-        opacity: 0;
-        transition: opacity 0.3s ease-out; 
-    }
-
-    /* 화면에 보일 때 클래스 */
-    #cheerModal.modal-backdrop.is-visible {
-        opacity: 1;
-    }
-
-    /* 알림창 내용 컨테이너 */
-    #cheerModal .modal-content {
-        background-color: #ffffff;
-        padding: 25px; 
-        border-radius: 24px; /* 너무 둥근 50px에서 24px로 조정 */
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        max-width: 320px;
-        width: 85%; 
-        text-align: left; 
-        color: #000000;
-        transform: scale(0.9);
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 팝업 효과 */
-    }
-
-    #cheerModal.modal-backdrop.is-visible .modal-content {
-        transform: scale(1);
-    }
-
-    /* 텍스트 스타일 */
-    #cheerModal .cheer-message {
-        color: #000000;
-        margin: 0 0 10px 0;
-        font-size: 1.3em;
-        font-weight: 700;
-        line-height: 1.4;
-    }
-    
-    #cheerModal .modal-content p {
-        color: #444;
-        font-size: 0.95em;
-        margin: 0;
-        line-height: 1.5;
-    }
-    
-    /* 팁 메시지 스타일 */
-    #cheerModal .tip-content {
-        margin-top: 15px;
-        background-color: #f7f7f7;
-        border-radius: 12px;
-        color: #333;
-        font-size: 0.9em;
-        line-height: 1.5;
-        
-        max-height: 0; 
-        opacity: 0; 
-        overflow: hidden; 
-        padding: 0 15px;
-        
-        transition: all 0.3s ease;
-    }
-    
-    #cheerModal .tip-content.is-shown {
-        max-height: 300px; 
-        opacity: 1;
-        padding: 15px;
-        margin-bottom: 5px;
-    }
-
-    /* 버튼 그룹 (Flexbox로 변경하여 깨짐 방지) */
-    #cheerModal .button-group {
-        margin-top: 20px; 
-        display: flex;
-        gap: 10px;
-        width: 100%;
-    }
-
-    /* 버튼 공통 스타일 */
-    #cheerModal .confirm-button, 
-    #cheerModal .tip-button {
-        flex: 1; /* 동일한 너비 가짐 */
-        padding: 12px 0;
-        font-size: 0.95em;
-        font-weight: 600;
-        cursor: pointer;
-        border-radius: 12px;
-        border: none;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.1s;
-    }
-    
-    #cheerModal .confirm-button {
-        background-color: #000000;
-        color: #ffffff;
-    }
-    
-    #cheerModal .tip-button {
-        background-color: #f0f0f0;
-        color: #000000;
-    }
-
-    #cheerModal .confirm-button:active, 
-    #cheerModal .tip-button:active {
-        transform: scale(0.96);
-    }
-</style>
-
-<div id="cheerModal" class="modal-backdrop">
-    <div class="modal-content">
-        <h2 class="cheer-message">기말고사를 응원합니다! 🍀</h2>
-        <p>마지막까지 집중하세요. 노력한 만큼 좋은 결과가 있을 거예요.</p>
-        
-        <div id="tipContent" class="tip-content">
-            <span style="font-weight: 700;">💡 시험 잘 보는 팁</span><br><br>
-            1. 시험 시작 전 목차를 훑으며 내용을 <span style="font-weight: 700;">구조화</span>하세요.<br>
-            2. 모르는 문제는 과감히 넘기고 아는 것부터 푸세요.<br>
-            3. 답안 제출 전, 반드시 <span style="font-weight: 700;">마킹 실수</span>를 확인하세요.
+<div id="app">
+    <header>
+        <div class="header-left">
+            <span class="logo-main">MinsuGPT</span>
+            <span class="logo-sub">for mintalk</span>
         </div>
-
-        <div class="button-group">
-            <button id="closeButton" class="confirm-button">닫기</button>
-            <button id="tipButton" class="tip-button">꿀팁 보기</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // [설정] 여기서 true/false를 변경하여 모달을 켜고 끌 수 있습니다.
-        const SHOW_EXAM_CHEER = true; 
-
-        const modal = document.getElementById('cheerModal');
-        const closeButton = document.getElementById('closeButton');
-        const tipButton = document.getElementById('tipButton');
-        const tipContent = document.getElementById('tipContent');
-
-        if (SHOW_EXAM_CHEER) {
-            // 모달 표시 로직
-            modal.style.display = 'flex'; // 먼저 공간을 차지하게 함
-            
-            // 애니메이션을 위해 약간의 지연 후 클래스 추가
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    modal.classList.add('is-visible');
-                }, 50);
-            });
-
-            // '확인' 버튼 클릭 시
-            closeButton.addEventListener('click', () => {
-                modal.classList.remove('is-visible');
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                }, 300); // transition 시간과 맞춤
-            });
-
-            // '꿀팁 보기' 버튼 클릭 시
-            tipButton.addEventListener('click', () => {
-                const isShown = tipContent.classList.contains('is-shown');
-                if (isShown) {
-                    tipContent.classList.remove('is-shown');
-                    tipButton.textContent = '꿀팁 보기';
-                } else {
-                    tipContent.classList.add('is-shown');
-                    tipButton.textContent = '팁 접기';
-                }
-            });
-        } else {
-            // 설정이 꺼져있으면 아예 숨김
-            modal.style.display = 'none';
-        }
-    });
-</script>
-<style>
-  #snow-canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #snow-canvas { display: none; }
-  }
-</style>
-<canvas id="snow-canvas" aria-hidden="true"></canvas>
-
-<script>
-(() => {
-  const canvas = document.getElementById('snow-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d', { alpha: true });
-  let flakes = [];
-  let w = 0, h = 0;
-  let lastTime = performance.now();
-  let wind = 0;
-  const MAX_FLAKES = 5; // 눈송이 수
-
-  const DPR = Math.max(1, window.devicePixelRatio || 1);
-
-  function resize() {
-    w = canvas.clientWidth;
-    h = canvas.clientHeight;
-    canvas.width = Math.floor(w * DPR);
-    canvas.height = Math.floor(h * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-
-  function createFlake() {
-    const size = Math.random() * 2 + 2; // 2~4px
-    return {
-      x: Math.random() * w,
-      y: -10 - Math.random() * h * 0.3,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: 0.5 + Math.random() * 0.7,
-      size,
-      tilt: Math.random() * Math.PI * 2,
-      tiltSpeed: (Math.random() - 0.5) * 0.02,
-      opacity: 0.5 + Math.random() * 0.5,
-      color: `rgba(${50+Math.random()*50}, ${150+Math.random()*80}, 255, ${0.5 + Math.random()*0.5})`
-    };
-  }
-
-  function initFlakes(count = MAX_FLAKES) {
-    flakes = [];
-    for (let i = 0; i < count; i++) {
-      const f = createFlake();
-      f.y = Math.random() * h;
-      flakes.push(f);
-    }
-  }
-
-  function updateWind(dt) {
-    if (Math.random() < 0.002) wind += (Math.random() - 0.5) * 0.1;
-    wind *= 0.99;
-  }
-
-  function drawFlake(f) {
-    ctx.save();
-    ctx.globalAlpha = f.opacity;
-    ctx.translate(f.x, f.y);
-    ctx.rotate(Math.sin(f.tilt) * 0.2);
-    ctx.fillStyle = f.color;
-    ctx.beginPath();
-    ctx.arc(0, 0, f.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function step(now) {
-    const dt = now - lastTime;
-    lastTime = now;
-    updateWind(dt);
-
-    ctx.clearRect(0, 0, w, h);
-
-    for (let i = 0; i < flakes.length; i++) {
-      const f = flakes[i];
-      f.vx += wind * 0.02;
-      f.x += f.vx * (dt * 0.06);
-      f.y += f.vy * (dt * 0.06);
-      f.tilt += f.tiltSpeed * (dt * 0.06);
-
-      if (f.y - f.size > h) {
-        flakes[i] = createFlake();
-        flakes[i].x = Math.random() * w;
-        flakes[i].y = -5;
-      } else {
-        if (f.x < -50) f.x = w + 50;
-        if (f.x > w + 50) f.x = -50;
-        drawFlake(f);
-      }
-    }
-
-    requestAnimationFrame(step);
-  }
-
-  function setup() {
-    resize();
-    initFlakes();
-    requestAnimationFrame(step);
-  }
-
-  window.addEventListener('resize', () => {
-    setTimeout(() => {
-      resize();
-      const area = w*h;
-      const target = Math.round(Math.min(100, Math.max(10, (area/(1280*720)) * MAX_FLAKES)));
-      if (flakes.length < target) {
-        for (let i = flakes.length; i < target; i++) flakes.push(createFlake());
-      } else flakes.length = target;
-    }, 100);
-  });
-
-  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-  function handleReducedMotion() {
-    if (mq.matches) ctx.clearRect(0,0,w,h);
-    else setup();
-  }
-  mq.addEventListener ? mq.addEventListener('change', handleReducedMotion) : mq.addListener(handleReducedMotion);
-
-  setup();
-})();
-</script>
-<div class="phone" role="application" aria-label="채팅 UI">
-    
-    <aside class="mini-sidebar">
-        <div class="mini-sidebar-icon" id="mini-new-chat" title="새 채팅">
-            <span class="material-symbols-rounded">add_circle</span>
-        </div>
-        <div class="mini-sidebar-icon" id="mini-search" title="검색">
-            <span class="material-symbols-rounded">search</span>
-        </div>
-        <div class="mini-sidebar-icon delete-all" id="mini-delete-all" title="전체 삭제">
-            <span class="material-symbols-rounded">delete</span>
-        </div>
-    </aside>
-
-    <div id="sidebar-backdrop" class="modal-backdrop">
-        <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <div class="new-chat-btn" id="sidebar-new-chat">
-                    <span class="material-symbols-rounded">add</span>
-                    새 채팅
-                </div>
-                <div class="sidebar-close" id="sidebar-close">
-                    <span class="material-symbols-rounded">close</span>
-                </div>
-            </div>
-            
-            <div class="sidebar-search">
-                <input type="text" id="sidebar-search-input" placeholder="채팅 검색...">
-                <span class="material-symbols-rounded">search</span>
-            </div>
-
-            <div class="sidebar-list" id="sidebar-list">
-                </div>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-menu-item" id="sidebar-export">
-                    <span class="material-symbols-rounded">upload</span>
-                    내보내기
-                </div>
-                <div class="sidebar-menu-item" id="sidebar-import">
-                    <span class="material-symbols-rounded">download</span>
-                    가져오기
-                </div>
-                <div class="sidebar-menu-item delete-all" id="sidebar-delete-all">
-                    <span class="material-symbols-rounded">delete</span>
-                    전체 삭제
-                </div>
-            </div>
-        </aside>
-    </div>
-
-    <header class="header">
-        <div class="header-btn-circle" id="menu-button">
-            <span class="material-symbols-rounded">menu</span>
-        </div>
-      
-        <div class="header-pill-group">
-            <div class="header-model-wrapper" style="position: relative;">
-                <div class="header-model-pill" id="header-model-select">
-    <span id="header-model-text">G-Fast</span>
-    <span class="material-symbols-rounded">expand_more</span>
-</div>
-                <div class="model-dropdown-menu header-style" id="header-model-dropdown">
-                  <div class="model-option-item selected" data-model="g-fast">
-        <span>G-Fast</span>
-        <span class="material-symbols-rounded check-icon">check</span>
-    </div>
-                    <div class="model-option-item" data-model="g5-pro">
-                        <span>G-5 Pro</span>
-                        <span class="material-symbols-rounded check-icon">check</span>
-                    </div>
-                    <div class="model-option-item" data-model="g4">
-                        <span>G-4 beta</span>
-                        <span class="material-symbols-rounded check-icon">check</span>
-                    </div>
-                </div>
-
-              
-
-
-              
-            </div>
-            <div class="header-icon" id="header-new-chat" aria-label="새 채팅">
-                <span class="material-symbols-rounded">edit_square</span>
-            </div>
-            <div class="header-icon" id="header-update-link" aria-label="정보 및 업데이트">
-                <span class="material-symbols-rounded">info</span>
-            </div>
-            <div class="header-icon" id="settings-button" aria-label="설정"> 
-                <span class="material-symbols-rounded">more_vert</span>
-            </div>
+        <div class="header-right">
+            <button class="icon-btn" id="newChatBtn" title="새 채팅">
+                <span class="material-symbols-rounded">add</span>
+            </button>
+            <button class="icon-btn" id="historyBtn" title="채팅 기록">
+                <span class="material-symbols-rounded">history</span>
+            </button>
         </div>
     </header>
 
-    <div id="scroll-to-bottom-container">
-        <button id="scrollDownButton" class="hidden" aria-label="맨 아래로 스크롤">
-        </button>
+    <div id="welcomeContainer">
+        <div class="welcome-text">무엇을 도와드릴까요?</div>
+        <div class="suggestion-container">
+            <button class="suggestion-btn" onclick="sendMessage('농담해줘')">
+                <span class="material-symbols-rounded icon-joke">sentiment_very_satisfied</span>
+                농담하기
+            </button>
+            <button class="suggestion-btn" onclick="sendMessage('같이 이야기하자')">
+                <span class="material-symbols-rounded icon-talk">chat_bubble</span>
+                함께 이야기 하기
+            </button>
+            <button class="suggestion-btn" onclick="prepareWriteMode()">
+                <span class="material-symbols-rounded icon-write">edit_note</span>
+                글쓰기
+            </button>
+        </div>
     </div>
 
-    <main id="content-wrapper" class="content-wrapper">
-        
-       <div id="initial-content">
-         
-    <div class="greeting-header">
-        <img src="https://i.postimg.cc/zDxzLLMK/21313213.png" alt="Greeting Icon" class="greeting-icon">
-        <div class="greeting-sub">안녕하세요</div>
+    <div class="chat-window" id="chatWindow">
+        <div class="messages-container" id="chatMessages"></div>
     </div>
-    <div class="greeting-main" id="random-greeting">무엇을 도와드릴까요?</div>
-</div>
 
-        <div id="chat-messages" class="chat-messages"></div>
-        
-        <div id="bottom-spacer" style="height: 60px;"></div>
-    </main>
-
-    <div class="composer-gradient-overlay"></div>
-
-    <div id="composer" class="composer style-default">
-      <div class="composer-inner">
-        <div class="plus" id="plus-button" aria-label="파일 첨부">
-            <span class="material-symbols-rounded">add</span>
-        </div>
-
-        <div class="input-area-wrapper">
-            <div id="image-mode-indicator" class="image-mode-indicator">
-                <span><span class="material-symbols-rounded" style="font-size: 18px;">auto_fix_high</span> 이미지 생성 모드</span>
-                <span class="material-symbols-rounded close-image-mode" id="close-image-mode" style="font-size: 18px;">close</span>
-            </div>
-
-            <div id="attachment-area" class="attachment-area">
-                <div id="attachment-preview-list" class="attachment-preview-list"></div>
-            </div>
-
-            <div id="input-container" class="input-container">
-              <textarea id="message-input" placeholder="MinsuGPT에게 물어보기" rows="1"></textarea>
-            </div>
-        </div>
-
-        <div class="bottom-controls">
-            <div class="simple-tools">
-                <div class="tool-btn" id="tool-attach">
-                    <span class="material-symbols-rounded">attach_file</span>
-                    첨부
-                </div>
-                <div class="tool-btn" id="tool-image">
-                    <span class="material-symbols-rounded">image</span>
+    <div class="input-container">
+        <div class="input-group">
+            <button class="plus-btn" id="plusBtn" title="첨부">
+                <span class="material-symbols-rounded">add</span>
+            </button>
+            
+            <div class="attach-menu" id="attachMenu">
+                <button class="menu-item">
+                    <span class="material-symbols-rounded" style="color:#20c997">image</span>
                     이미지
-                </div>
-                
-                <div class="tool-wrapper" style="position: relative;">
-                    <div class="tool-btn" id="tool-model-selector">
-                        <span class="material-symbols-rounded">smart_toy</span>
-                        <span id="simple-model-text">G-Fast</span>
-                    </div>
-                    
-                    <div class="model-dropdown-menu simple-style" id="simple-model-dropdown">
-        <div class="model-option-item selected" data-model="g-fast">
-            <span>G-Fast</span>
-            <span class="material-symbols-rounded check-icon">check</span>
-        </div>
-        <div class="model-option-item" data-model="g5-pro">
-            <span>G-5 Pro</span>
-            <span class="material-symbols-rounded check-icon">check</span>
-        </div>
-        <div class="model-option-item" data-model="g4">
-            <span>G-4 beta</span>
-            <span class="material-symbols-rounded check-icon">check</span>
-        </div>
-    </div>
-</div>
-                </div>
-            
-            <div class="right-controls">
-                 <div class="mic-voice-container">
-                    <div id="mic-icon" class="mic-icon">
-                        <span class="material-symbols-rounded">mic</span>
-                    </div>
-                    
-                    <div id="action-button-container">
-                        <div id="send-button" class="send-btn">
-                          <span class="material-symbols-rounded">arrow_upward</span>
-                        </div>
-                        <div id="stop-button" class="stop-btn" style="display:none;">
-                            <span class="stop-icon"></span>
-                        </div>
-                    </div>
-                  </div>
-            </div>
-        </div>
-      </div>
-    </div>
-    
-    <div id="snackbar">메시지가 복사되었습니다.</div>
-    
-    <div id="plus-modal-backdrop" class="modal-backdrop">
-        <div id="plus-modal" class="modal">
-            <div class="modal-handle"></div>
-            <div class="modal-grid">
-                <div class="modal-grid-item" data-action="camera">
-                    <div class="modal-grid-icon"><span class="material-symbols-rounded">photo_camera</span></div>
-                    카메라
-                </div>
-                <div class="modal-grid-item" data-action="album">
-                    <div class="modal-grid-icon"><span class="material-symbols-rounded">image</span></div>
-                    앨범
-                </div>
-                <div class="modal-grid-item" data-action="file">
-                    <div class="modal-grid-icon"><span class="material-symbols-rounded">upload_file</span></div>
+                </button>
+                <button class="menu-item">
+                    <span class="material-symbols-rounded" style="color:#3b82f6">folder_open</span>
                     파일
-                </div>
+                </button>
+                <button class="menu-item">
+                    <span class="material-symbols-rounded" style="color:#ef4444">photo_camera</span>
+                    카메라
+                </button>
             </div>
-            <div class="modal-option" id="menu-create-image">
-                <div class="modal-option-icon"><span class="material-symbols-rounded">auto_fix_high</span></div>
-                이미지 만들기
-            </div>
-            <div class="modal-option" data-action="set-reminder">
-                <div class="modal-option-icon"><span class="material-symbols-rounded">notifications</span></div>
-                리마인더 등록하기
+
+            <div class="input-wrapper">
+                <textarea id="userInput" rows="1" placeholder="MinsuGPT에게 물어보기" autocomplete="off"></textarea>
+                <button class="send-btn" id="sendBtn">
+                    <span class="material-symbols-rounded send-icon" id="sendIcon">arrow_upward</span>
+                </button>
             </div>
         </div>
-    </div>
-    
-    <div id="settings-modal-backdrop" class="modal-backdrop">
-        <div id="settings-modal" class="modal">
-            <div class="modal-handle"></div>
-            <h3>설정</h3>
-            
-            <div class="ui-style-selector">
-                <span class="ui-style-label">입력창 스타일</span>
-                <div class="ui-style-options">
-
-
-
-                  
-                    <button class="ui-style-btn" data-style="simple">
-                        <span class="material-symbols-rounded preview-icon">horizontal_rule</span>
-                        심플 (바형)
-                    </button>
-                </div>
-            </div>
-            
-            <div class="ui-style-selector">
-                <span class="ui-style-label">화면 테마</span>
-                <div class="theme-btn-group">
-                    <div class="theme-btn active" data-theme-val="auto">자동</div>
-                    <div class="theme-btn" data-theme-val="light">라이트</div>
-                    <div class="theme-btn" data-theme-val="dark">다크</div>
-                </div>
-            </div>
-
-            <hr class="modal-divider">
-            
-            <div class="modal-option" id="about-button">
-                <div class="modal-option-icon"><span class="material-symbols-rounded">info</span></div>
-                MinsuGPT 정보
-            </div>
-
-            <div class="modal-option" id="reset-chat-button">
-                대화 초기화
-            </div>
-        </div>
-    </div>
-    
-    <div id="reset-confirm-modal-backdrop" class="modal-backdrop">
-        <div id="reset-confirm-modal" class="modal">
-            <h3>대화 초기화</h3>
-            <p>모든 대화 기록이 삭제되며, 이 작업은 되돌릴 수 없습니다.</p>
-            <div class="confirm-actions">
-                <button id="confirm-cancel-btn">취소</button>
-                <button id="confirm-reset-btn">초기화</button>
-            </div>
-        </div>
-    </div>
-
-    <input type="file" id="import-file-input" style="display: none;" accept=".json">
-    
-    <input type="file" id="hidden-camera-input" style="display: none;" accept="image/*" capture="environment">
-    <input type="file" id="hidden-file-input" style="display: none;" accept="image/*" multiple>
-    
-<div id="about-modal-backdrop" class="modal-backdrop">
-    <div id="about-modal" class="modal">
-        <div class="modal-handle"></div>
-        
-        <img src="https://i.postimg.cc/nzXrCKYQ/1000019657-removebg.png" 
-             alt="MinsuGPT 정보 화면" 
-             style="width: 100%; height: auto; display: block; margin-bottom: 10px;">
-        
-        <div class="copyright-text">Copyright 2025. CorerepubliX all rights reserved.</div>
     </div>
 </div>
 
-    <div id="rename-modal-backdrop" class="modal-backdrop" style="align-items: center; z-index: 1050;">
-        <div id="rename-modal" class="modal" style="transform: translateY(0); max-width: 320px; border-radius: 12px; padding: 24px;">
-            <h3>이름 변경</h3>
-            <input type="text" id="rename-input" placeholder="새로운 채팅 이름" style="width: 100%; padding: 10px; margin: 10px 0 20px 0; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-secondary); color: var(--text-color); outline: none;">
-            <div class="confirm-actions">
-                <button id="rename-cancel-btn">취소</button>
-                <button id="rename-confirm-btn" style="background-color: var(--primary-blue); color: white;">변경</button>
+<div class="modal-overlay" id="historyModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">채팅 기록</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button class="clear-all-btn" id="clearAllBtn">전체 삭제</button>
+                <button class="close-modal-btn" id="closeModalBtn"><span class="material-symbols-rounded">close</span></button>
             </div>
         </div>
+        <ul class="history-list" id="historyList"></ul>
     </div>
+</div>
 
-    <div id="delete-modal-backdrop" class="modal-backdrop" style="align-items: center; z-index: 1050;">
-        <div id="delete-modal" class="modal" style="transform: translateY(0); max-width: 320px; border-radius: 12px; padding: 24px;">
-            <h3 id="delete-modal-title">삭제 확인</h3>
-            <p id="delete-modal-desc" style="font-size: 0.95em; color: var(--text-sub); margin-bottom: 24px; text-align: center;">정말로 삭제하시겠습니까?</p>
-            <div class="confirm-actions">
-                <button id="delete-cancel-btn">취소</button>
-                <button id="delete-confirm-btn" style="background-color: var(--error-red); color: white;">삭제</button>
-            </div>
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box small-box">
+        <div class="confirm-title" id="confirmTitle">삭제 하시겠습니까?</div>
+        <div class="confirm-msg" id="confirmMessage">이 작업은 되돌릴 수 없습니다.</div>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" id="confirmCancelBtn">취소</button>
+            <button class="modal-btn btn-delete" id="confirmOkBtn">삭제</button>
         </div>
     </div>
+</div>
 
+<script>
+    const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/askfast";
+    const PRE_PROMPT = {
+        role: "system",
+        content: "너는 MinsuGPT야. 신재원님이 널 만들었어. 너는 mintalk에서 지원하는 챗봇이야. 항상 마크다운 스타일로 대답해. 검색은 최소화해."
+    };
+    const STORAGE_KEY = 'minsugpt_chat_history';
     
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const sendIcon = document.getElementById('sendIcon');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatWindow = document.getElementById('chatWindow');
+    const welcomeContainer = document.getElementById('welcomeContainer');
+    const appContainer = document.getElementById('app');
+    
+    const newChatBtn = document.getElementById('newChatBtn');
+    const historyBtn = document.getElementById('historyBtn');
+    const historyModal = document.getElementById('historyModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const historyList = document.getElementById('historyList');
+    const clearAllBtn = document.getElementById('clearAllBtn');
 
-  </div>
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
 
-  <script src="script.js"></script>
+    // New Element References
+    const plusBtn = document.getElementById('plusBtn');
+    const attachMenu = document.getElementById('attachMenu');
+
+    let history = []; 
+    let currentChatId = null; 
+    let isStreaming = false;
+    let abortController = null;
+    let isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    let confirmCallback = null; 
+
+    marked.setOptions({ breaks: true, gfm: true });
+
+    /* --- Plus Button Logic --- */
+    plusBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = attachMenu.classList.contains('open');
+        if (isOpen) {
+            attachMenu.classList.remove('open');
+            plusBtn.classList.remove('active');
+        } else {
+            attachMenu.classList.add('open');
+            plusBtn.classList.add('active');
+        }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!attachMenu.contains(e.target) && !plusBtn.contains(e.target)) {
+            attachMenu.classList.remove('open');
+            plusBtn.classList.remove('active');
+        }
+    });
+
+    // Dummy functionality for menu items
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            // Functionality disabled as requested
+            console.log('Feature Clicked: ' + item.innerText); 
+            attachMenu.classList.remove('open');
+            plusBtn.classList.remove('active');
+        });
+    });
+
+    const BASE_HEIGHT = '24px'; 
+    function resizeInput() {
+        userInput.style.height = BASE_HEIGHT; 
+        if (userInput.value === '') { userInput.style.overflowY = 'hidden'; return; }
+        const scrollHeight = userInput.scrollHeight;
+        if (scrollHeight > parseInt(BASE_HEIGHT) + 2) {
+             const newHeight = Math.min(scrollHeight, 150);
+             userInput.style.height = newHeight + 'px';
+             userInput.style.overflowY = newHeight >= 150 ? 'auto' : 'hidden';
+        } else { userInput.style.overflowY = 'hidden'; }
+    }
+
+    userInput.addEventListener('input', () => {
+        resizeInput();
+        if (!isStreaming) sendBtn.classList.toggle('active', userInput.value.trim() !== "");
+    });
+
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            if (!isMobile && !e.shiftKey) {
+                e.preventDefault(); 
+                if(userInput.value.trim() !== "" && !isStreaming) sendMessage();
+            }
+        }
+    });
+
+    sendBtn.addEventListener('click', () => {
+        if (isStreaming) stopResponse();
+        else sendMessage();
+    });
+
+    newChatBtn.addEventListener('click', startNewChat);
+    
+    historyBtn.addEventListener('click', openHistoryModal);
+    closeModalBtn.addEventListener('click', closeHistoryModal);
+    historyModal.addEventListener('click', (e) => {
+        if (e.target === historyModal) closeHistoryModal();
+    });
+    
+    clearAllBtn.addEventListener('click', () => {
+        showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?<br>이 작업은 되돌릴 수 없습니다.", () => {
+            localStorage.removeItem(STORAGE_KEY);
+            renderHistoryList();
+            startNewChat();
+        });
+    });
+
+    function showConfirmModal(title, msg, onConfirm) {
+        confirmTitle.innerText = title;
+        confirmMessage.innerHTML = msg;
+        confirmCallback = onConfirm;
+        confirmModal.classList.add('open');
+    }
+
+    function closeConfirmModal() {
+        confirmModal.classList.remove('open');
+        confirmCallback = null;
+    }
+
+    confirmCancelBtn.addEventListener('click', closeConfirmModal);
+    confirmOkBtn.addEventListener('click', () => {
+        if (confirmCallback) confirmCallback();
+        closeConfirmModal();
+    });
+    confirmModal.addEventListener('click', (e) => {
+        if (e.target === confirmModal) closeConfirmModal();
+    });
+
+    function startNewChat() {
+        if (isStreaming) stopResponse();
+        currentChatId = null;
+        history = [];
+        chatMessages.innerHTML = '';
+        welcomeContainer.style.display = 'block';
+        setTimeout(() => welcomeContainer.style.opacity = '1', 10);
+        userInput.value = '';
+        resizeInput(); 
+        sendBtn.classList.remove('active');
+        userInput.focus();
+        
+        const originalContent = welcomeContainer.innerHTML;
+        welcomeContainer.innerHTML = '';
+        void welcomeContainer.offsetWidth; 
+        welcomeContainer.innerHTML = originalContent;
+    }
+
+    function prepareWriteMode() {
+        const text = "아래 내용대로 글을 써줘\n";
+        userInput.value = text;
+        resizeInput(); 
+        userInput.focus(); 
+        sendBtn.classList.add('active'); 
+    }
+
+    function openHistoryModal() {
+        renderHistoryList();
+        historyModal.classList.add('open');
+    }
+
+    function closeHistoryModal() {
+        historyModal.classList.remove('open');
+    }
+
+    function getSavedChats() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function saveChatToLocal() {
+        if (!currentChatId) currentChatId = Date.now().toString();
+        let chats = getSavedChats();
+        const existingIndex = chats.findIndex(c => c.id === currentChatId);
+        const firstUserMsg = history.find(m => m.role === 'user');
+        let title = "새로운 채팅";
+        if (firstUserMsg) title = firstUserMsg.content.length > 20 ? firstUserMsg.content.substring(0, 20) + "..." : firstUserMsg.content;
+        const chatData = { id: currentChatId, title: existingIndex !== -1 ? chats[existingIndex].title : title, messages: history, timestamp: Date.now() };
+        if (existingIndex !== -1) chats[existingIndex] = chatData;
+        else chats.unshift(chatData); 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+    }
+
+    function loadChat(id) {
+        const chats = getSavedChats();
+        const chat = chats.find(c => c.id === id);
+        if (!chat) return;
+        startNewChat(); 
+        welcomeContainer.style.display = 'none';
+        welcomeContainer.style.opacity = '0';
+        currentChatId = chat.id;
+        history = chat.messages; 
+        history.forEach(msg => {
+            if (msg.role === 'user') renderMessage(msg.content, 'user');
+            else if (msg.role === 'model') {
+                const msgDiv = renderMessage(msg.content, 'bot');
+                const contentDiv = msgDiv.querySelector('.bot-content');
+                addCodeCopyButtons(contentDiv);
+                appendActionButtons(msgDiv, msg.content); 
+            }
+        });
+        closeHistoryModal();
+        setTimeout(scrollToBottom, 100);
+    }
+
+    function renderHistoryList() {
+        const chats = getSavedChats();
+        historyList.innerHTML = '';
+        if (chats.length === 0) {
+            historyList.innerHTML = '<li class="empty-history">기록된 채팅이 없습니다.</li>';
+            clearAllBtn.style.display = 'none'; 
+            return;
+        }
+        clearAllBtn.style.display = 'block'; 
+
+        chats.forEach((chat, index) => {
+            const date = new Date(chat.timestamp).toLocaleDateString();
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.style.animationDelay = `${index * 0.05}s`;
+            
+            li.innerHTML = `
+                <div class="history-info">
+                    <div class="h-title">${chat.title}</div>
+                    <div class="h-date">${date}</div>
+                </div>
+                <button class="delete-chat-btn" title="삭제">
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
+            `;
+            
+            li.querySelector('.history-info').addEventListener('click', () => loadChat(chat.id));
+            li.querySelector('.delete-chat-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                showConfirmModal("기록 삭제", "이 채팅 기록을 삭제하시겠습니까?", () => {
+                    deleteChat(chat.id);
+                });
+            });
+            historyList.appendChild(li);
+        });
+    }
+
+    function deleteChat(id) {
+        let chats = getSavedChats();
+        chats = chats.filter(c => c.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+        renderHistoryList(); 
+        
+        if (currentChatId === id) {
+            startNewChat();
+        }
+    }
+
+    function formatMessageContent(text) {
+        if (!text) return "";
+        let html = text;
+        
+        const thoughtRegex = /\[THOUGHT\]([\s\S]*?)(?:\[\/THOUGHT\]|$)/;
+        const match = html.match(thoughtRegex);
+        
+        let combinedThought = "";
+        let finalAnswerText = html;
+
+        if (match) {
+            combinedThought = match[1].trim();
+            finalAnswerText = html.replace(thoughtRegex, '').trim();
+        }
+
+        let renderedHtml = marked.parse(finalAnswerText);
+        
+        if (combinedThought) {
+            const thoughtHtml = `
+                <details class="thought-details">
+                    <summary class="thought-summary">
+                        <span class="material-symbols-rounded" style="font-size:18px;">psychology</span>
+                        생각 과정 (클릭하여 보기)
+                    </summary>
+                    <div class="thought-content">${combinedThought}</div>
+                </details>`;
+            renderedHtml = thoughtHtml + renderedHtml;
+        }
+        return renderedHtml;
+    }
+
+    function getCleanText(msgDiv) {
+        const contentDiv = msgDiv.querySelector('.bot-content');
+        const clone = contentDiv.cloneNode(true);
+        clone.querySelectorAll('.thought-details').forEach(t => t.remove()); 
+        clone.querySelectorAll('.code-copy-btn').forEach(b => b.remove());
+        return clone.innerText.trim();
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        textArea.setAttribute('readonly', ''); 
+        
+        document.body.appendChild(textArea);
+        
+        var range = document.createRange();
+        range.selectNodeContents(textArea);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        textArea.setSelectionRange(0, 999999); 
+
+        try {
+            textArea.contentEditable = true;
+            textArea.readOnly = false;
+            var successful = document.execCommand('copy');
+            if (!successful) throw new Error('Copy command failed');
+        } catch (err) {
+            console.error('Fallback: Unable to copy', err);
+        } finally {
+            document.body.removeChild(textArea);
+            selection.removeAllRanges(); 
+        }
+    }
+
+    function addCodeCopyButtons(container) {
+        container.querySelectorAll('pre').forEach(pre => {
+            if (pre.querySelector('.code-copy-btn')) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.title = '코드 복사';
+            btn.innerHTML = '<span class="material-symbols-rounded">content_copy</span>';
+            
+            btn.addEventListener('click', () => {
+                const code = pre.querySelector('code')?.innerText || pre.innerText;
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(code).then(() => {
+                        showCopySuccess(btn);
+                    }).catch(() => {
+                        fallbackCopyTextToClipboard(code);
+                        showCopySuccess(btn);
+                    });
+                } else {
+                    fallbackCopyTextToClipboard(code);
+                    showCopySuccess(btn);
+                }
+            });
+            
+            pre.appendChild(btn);
+        });
+    }
+
+    function showCopySuccess(btn) {
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--mint-point)">check</span>';
+        setTimeout(() => btn.innerHTML = originalIcon, 1500);
+    }
+
+    async function sendMessage(userMessageOverride = null, isRegenerate = false) {
+        const text = userMessageOverride !== null ? userMessageOverride : userInput.value.trim();
+        if (!text && !isRegenerate) return;
+        if (welcomeContainer.style.display !== 'none') {
+            welcomeContainer.style.opacity = '0';
+            setTimeout(() => welcomeContainer.style.display = 'none', 500);
+        }
+        if (!isRegenerate) {
+            renderMessage(text, 'user');
+            history.push({ role: "user", content: text });
+            userInput.value = ''; resizeInput(); setStreamingState(true); saveChatToLocal();
+        }
+        scrollToBottom();
+        const botMsgDiv = renderMessage('', 'bot', true); 
+        const contentDiv = botMsgDiv.querySelector('.bot-content');
+        setTimeout(scrollToBottom, 50);
+        abortController = new AbortController();
+        const signal = abortController.signal;
+        
+        let fullResponseBuffer = ""; let displayedResponse = ""; let typingInterval = null;   
+        try {
+            const response = await fetch(BACKEND_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, history: [PRE_PROMPT, ...history] }),
+                signal: signal
+            });
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            
+            typingInterval = setInterval(() => {
+                if (displayedResponse.length < fullResponseBuffer.length) {
+                    const chunkParams = 15; 
+                    const nextChunk = fullResponseBuffer.substring(displayedResponse.length, displayedResponse.length + chunkParams);
+                    displayedResponse += nextChunk;
+                    contentDiv.innerHTML = formatMessageContent(displayedResponse);
+                    addCodeCopyButtons(contentDiv); 
+                    scrollToBottom();
+                }
+            }, 5); 
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value, { stream: true });
+                if (chunk.includes("[DONE]")) { fullResponseBuffer += chunk.replace("[DONE]", ""); break; }
+                fullResponseBuffer += chunk;
+            }
+            const checkDoneInterval = setInterval(() => {
+                if (displayedResponse.length >= fullResponseBuffer.length) {
+                    clearInterval(checkDoneInterval); clearInterval(typingInterval); finalizeMessage(botMsgDiv, fullResponseBuffer);
+                }
+            }, 50);
+        } catch (error) {
+            clearInterval(typingInterval);
+            if (error.name === 'AbortError') finalizeMessage(botMsgDiv, displayedResponse);
+            else { contentDiv.innerHTML = `<span style="color:var(--error-red);">연결 오류가 발생했습니다.</span>`; setStreamingState(false); scrollToBottom(); }
+        }
+    }
+
+    function renderMessage(content, role, isLoading = false) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `msg ${role}`;
+        if (role === 'user') msgDiv.innerHTML = `<div class="user-bubble">${content}</div>`;
+        else {
+            let innerHTML = '';
+            if (isLoading) innerHTML += `<div class="thinking-indicator"><div class="ui-load-glx"><div class="gbx"><div class="bx"><i></i><i></i><i></i><i></i></div></div></div>생각 중...</div>`;
+            innerHTML += `<div class="bot-content">${formatMessageContent(content)}</div>`;
+            msgDiv.innerHTML = innerHTML;
+        }
+        chatMessages.appendChild(msgDiv);
+        return msgDiv;
+    }
+
+    function finalizeMessage(msgDiv, content) {
+        setStreamingState(false);
+        const indicator = msgDiv.querySelector('.thinking-indicator');
+        if (indicator) indicator.remove();
+        
+        const contentDiv = msgDiv.querySelector('.bot-content');
+        contentDiv.innerHTML = formatMessageContent(content);
+        
+        addCodeCopyButtons(contentDiv);
+
+        history.push({ role: "model", content: content });
+        saveChatToLocal(); 
+        appendActionButtons(msgDiv, content); 
+        setTimeout(scrollToBottom, 10);
+    }
+
+    function appendActionButtons(msgDiv, content) {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'action-buttons';
+        actionsDiv.innerHTML = `
+            <button class="action-btn" onclick="copyText(this)" title="복사"><span class="material-symbols-rounded">content_copy</span></button>
+            <button class="action-btn regenerate-btn" onclick="retryMessage(this)" title="재생성"><span class="material-symbols-rounded">refresh</span></button>
+            <button class="action-btn" onclick="handleLike(this)" title="좋아요"><span class="material-symbols-rounded">thumb_up</span></button>
+            <button class="action-btn" onclick="handleDislike(this)" title="싫어요"><span class="material-symbols-rounded">thumb_down</span></button>
+            <button class="action-btn" onclick="shareContent(this)" title="공유"><span class="material-symbols-rounded">share</span></button>
+        `;
+        msgDiv.appendChild(actionsDiv);
+        updateRegenerateButtons();
+    }
+
+    function setStreamingState(active) {
+        isStreaming = active;
+        if (active) {
+            sendBtn.classList.add('active'); sendIcon.textContent = 'stop'; sendIcon.style.fontVariationSettings = "'FILL' 1"; userInput.disabled = true;
+        } else {
+            sendBtn.classList.remove('active'); sendIcon.textContent = 'arrow_upward'; sendIcon.style.fontVariationSettings = "'FILL' 0"; userInput.disabled = false; userInput.focus();
+        }
+    }
+
+    function stopResponse() { if (abortController) abortController.abort(); }
+    
+    function scrollToBottom() { 
+        requestAnimationFrame(() => { chatWindow.scrollTop = chatWindow.scrollHeight; });
+    }
+
+    function updateRegenerateButtons() {
+        const btns = document.querySelectorAll('.regenerate-btn');
+        btns.forEach((btn, i) => btn.classList.toggle('disabled', i !== btns.length - 1));
+    }
+
+    window.copyText = function(btn) {
+        const msgDiv = btn.closest('.msg');
+        const txt = getCleanText(msgDiv); 
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(() => {
+                showCopySuccess(btn);
+            }).catch(() => {
+                fallbackCopyTextToClipboard(txt);
+                showCopySuccess(btn);
+            });
+        } else {
+            fallbackCopyTextToClipboard(txt);
+            showCopySuccess(btn);
+        }
+    };
+
+    window.retryMessage = function(btn) {
+        if (isStreaming) return;
+        btn.closest('.msg').remove();
+        if (history.length > 0 && history[history.length - 1].role === 'model') history.pop();
+        saveChatToLocal(); 
+        const lastUserMsg = history.filter(h => h.role === 'user').pop()?.content;
+        if (lastUserMsg) sendMessage(lastUserMsg, true);
+    };
+
+    window.handleLike = function(btn) { btn.style.color = 'var(--mint-point)'; };
+    window.handleDislike = function(btn) { btn.style.color = 'var(--error-red)'; };
+    
+    window.shareContent = function(btn) {
+        const msgDiv = btn.closest('.msg');
+        const txt = getCleanText(msgDiv); 
+        if (navigator.share) navigator.share({ text: txt });
+        else { 
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => alert('텍스트가 복사되었습니다.'));
+            } else {
+                fallbackCopyTextToClipboard(txt);
+                alert('텍스트가 복사되었습니다.');
+            }
+        }
+    };
+
+    function adjustLayout() {
+        if (window.visualViewport) { appContainer.style.height = `${window.visualViewport.height}px`; scrollToBottom(); }
+    }
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', adjustLayout);
+        window.visualViewport.addEventListener('scroll', adjustLayout);
+    }
+    window.addEventListener('resize', adjustLayout);
+    adjustLayout();
+</script>
+
 </body>
-              </html>
+</html>
