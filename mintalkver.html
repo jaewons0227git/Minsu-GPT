@@ -186,10 +186,11 @@
         }
         .bot-content p { margin: 0 0 10px 0; }
         
+        /* 🌟 [수정됨] pre 태그 relative 필수 (버튼 위치 잡기 위함) */
         .bot-content pre { 
             background: var(--code-bg); padding: 12px; border-radius: 8px; 
             overflow-x: auto; font-size: 0.9em; margin: 10px 0; 
-            position: relative; 
+            position: relative !important; /* 중요 */
         }
         .bot-content code { 
             background: transparent; padding: 0; 
@@ -200,20 +201,19 @@
             background: var(--code-bg); padding: 2px 4px; border-radius: 4px;
         }
 
-        /* 🌟 [수정됨] 코드 복사 버튼: 항상 표시 (opacity: 1) */
+        /* 🌟 [수정됨] 코드 복사 버튼: 항상 표시, z-index 강화 */
         .code-copy-btn {
             position: absolute; top: 6px; right: 6px;
-            background: rgba(255,255,255,0.9); /* 가독성을 위해 불투명도 약간 올림 */
+            background: rgba(255,255,255,0.9); 
             border: 1px solid #ddd; border-radius: 6px;
             width: 28px; height: 28px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; 
-            opacity: 1; /* 항상 보이게 설정 */
+            opacity: 1; 
             transition: background 0.2s;
             color: #555;
-            z-index: 5;
+            z-index: 10; /* 버튼이 확실히 보이도록 */
         }
-        /* hover 효과 제거 (항상 보이므로) */
         .code-copy-btn:hover { background: white; color: var(--text-main); }
         .code-copy-btn .material-symbols-rounded { font-size: 16px; }
 
@@ -666,6 +666,9 @@
             if (msg.role === 'user') renderMessage(msg.content, 'user');
             else if (msg.role === 'model') {
                 const msgDiv = renderMessage(msg.content, 'bot');
+                // 🌟 [수정됨] 기록 불러올 때도 코드 복사 버튼 반드시 추가
+                const contentDiv = msgDiv.querySelector('.bot-content');
+                addCodeCopyButtons(contentDiv);
                 appendActionButtons(msgDiv, msg.content); 
             }
         });
@@ -760,30 +763,39 @@
         return clone.innerText.trim();
     }
 
-    // 🌟 [추가됨] 웹페이지 임베딩 환경을 위한 강제 복사 폴백 함수
+    // 🌟 [수정됨] Iframe/iOS 호환 강력 복사 함수
     function fallbackCopyTextToClipboard(text) {
         var textArea = document.createElement("textarea");
         textArea.value = text;
         
-        // 화면 밖으로 보내지 않고 고정 위치에 투명하게 배치 (모바일 이슈 방지)
-        textArea.style.top = "0";
-        textArea.style.left = "0";
+        // 중요: 화면 밖으로 보내되, 'display:none'이 아니어야 선택 가능함
         textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        textArea.style.pointerEvents = "none";
-
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        textArea.setAttribute('readonly', ''); // 키보드 올라옴 방지 (일부 브라우저)
+        
         document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+        
+        // iOS 호환 선택 방식
+        var range = document.createRange();
+        range.selectNodeContents(textArea);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        textArea.setSelectionRange(0, 999999); // 모바일 추가 선택 보정
 
         try {
+            // contentEditable 우회 시도
+            textArea.contentEditable = true;
+            textArea.readOnly = false;
             var successful = document.execCommand('copy');
             if (!successful) throw new Error('Copy command failed');
         } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
+            console.error('Fallback: Unable to copy', err);
+        } finally {
+            document.body.removeChild(textArea);
+            selection.removeAllRanges(); // 선택 해제
         }
-
-        document.body.removeChild(textArea);
     }
 
     function addCodeCopyButtons(container) {
@@ -798,7 +810,6 @@
             btn.addEventListener('click', () => {
                 const code = pre.querySelector('code')?.innerText || pre.innerText;
                 
-                // 🌟 [수정됨] 클립보드 API 실패 시 폴백 사용
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(code).then(() => {
                         showCopySuccess(btn);
@@ -851,15 +862,20 @@
             });
             const reader = response.body.getReader();
             const decoder = new TextDecoder('utf-8');
+            
+            // 🌟 [수정됨] 타이핑 속도 대폭 향상 (20ms/3글자 -> 5ms/15글자)
             typingInterval = setInterval(() => {
                 if (displayedResponse.length < fullResponseBuffer.length) {
-                    const chunkParams = 3; 
+                    const chunkParams = 15; // 한 번에 15글자씩
                     const nextChunk = fullResponseBuffer.substring(displayedResponse.length, displayedResponse.length + chunkParams);
                     displayedResponse += nextChunk;
                     contentDiv.innerHTML = formatMessageContent(displayedResponse);
+                    // 🌟 실시간 렌더링 중에도 버튼 부착 시도
+                    addCodeCopyButtons(contentDiv); 
                     scrollToBottom();
                 }
-            }, 20); 
+            }, 5); // 5ms 간격
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -943,7 +959,6 @@
         btns.forEach((btn, i) => btn.classList.toggle('disabled', i !== btns.length - 1));
     }
 
-    // 🌟 [수정됨] 채팅 말풍선 복사 기능에도 폴백 적용
     window.copyText = function(btn) {
         const msgDiv = btn.closest('.msg');
         const txt = getCleanText(msgDiv); 
@@ -978,7 +993,6 @@
         const txt = getCleanText(msgDiv); 
         if (navigator.share) navigator.share({ text: txt });
         else { 
-            // 공유 실패시에도 복사 시도
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(txt).then(() => alert('텍스트가 복사되었습니다.'));
             } else {
