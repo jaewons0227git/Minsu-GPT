@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MinsuGPT</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,13 +31,24 @@
         }
 
         html, body {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; font-family: var(--font-en), var(--font-ko);
+            margin: 0; padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            /* 모바일 브라우저 주소창 대응을 위한 dvh 우선 적용 */
+            height: 100dvh; 
+            overflow: hidden; /* 전체 스크롤 방지 */
+            font-family: var(--font-en), var(--font-ko);
             background-color: var(--bg-main); color: var(--text-main);
             -webkit-font-smoothing: antialiased;
         }
 
-        #app { display: flex; flex-direction: column; height: 100vh; position: relative; }
+        #app { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100%; 
+            height: 100dvh; /* JS로 덮어씌워질 수 있음 */
+            position: relative; 
+        }
 
         header {
             padding: 12px 25px; display: flex; align-items: baseline; gap: 8px;
@@ -58,7 +69,7 @@
             color: #1a1a1a;
         }
 
-        .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
+        .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
         .messages-container { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 32px; padding: 20px; box-sizing: border-box; }
 
         .msg { display: flex; flex-direction: column; width: 100%; }
@@ -108,7 +119,6 @@
         .action-btn.active-dislike { color: var(--error-red); }
         .action-btn .material-symbols-rounded { font-size: 18px; font-variation-settings: 'wght' 300; }
 
-        /* Disable regenerate if not last message (handled in JS, styling here) */
         .action-btn.disabled { opacity: 0.3; pointer-events: none; }
 
         .input-container { width: 100%; display: flex; justify-content: center; padding: 10px 0 25px 0; background: white; flex-shrink: 0; }
@@ -142,7 +152,7 @@
             width: 20px;
             height: 20px;
             position: relative;
-            transform: scale(1.2); /* 채팅창 사이즈에 맞게 조절 */
+            transform: scale(1.2);
         }
 
         .ui-load-glx > .gbx .bx {
@@ -215,7 +225,7 @@
 
 <script>
     // --- Configuration & Constants ---
-    const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/askfast"; // Using G-Fast as default
+    const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/askfast";
     const PRE_PROMPT = {
         role: "system",
         content: "너는 MinsuGPT야. 너는 신재원님이 만들었어. 사용자가 따로 물어보지 않으면 너의 역할이나 개발자 정보를 따로 답하지마. 그리고 항상 마크다운스타일로 대답해. 검색같은 도구는 최소한으로 사용해. Request Entity Too Large오류가 발생할 수 있으니 web_search는 가능한 가장 적게 해. 사용자의 질문에 답변할때 웹검색은 가장적게해. 검색을 하나 해서 이미 질문에 대답할 수 있으면 더이상 하지마."
@@ -228,9 +238,10 @@
     const chatMessages = document.getElementById('chatMessages');
     const chatWindow = document.getElementById('chatWindow');
     const welcomeContainer = document.getElementById('welcomeContainer');
+    const appContainer = document.getElementById('app');
 
     // --- State Variables ---
-    let history = []; // Stores the conversation context
+    let history = []; 
     let isStreaming = false;
     let abortController = null;
 
@@ -242,7 +253,6 @@
 
     // --- Event Listeners ---
     userInput.addEventListener('input', () => {
-        // Stop button logic overrides active state if streaming
         if (!isStreaming) {
             sendBtn.classList.toggle('active', userInput.value.trim() !== "");
         }
@@ -264,12 +274,11 @@
 
     // --- Core Functions ---
 
-    // 1. Message Formatting (Markdown, THOUGHT, TOOL) - From script-7.js
+    // 1. Message Formatting
     function formatMessageContent(text) {
         if (!text) return "";
         let html = text;
 
-        // [THOUGHT] extraction
         const thoughtMatches = html.match(/\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g);
         let combinedThought = "";
         let finalAnswerText = html;
@@ -283,16 +292,13 @@
             finalAnswerText = html.replace(/\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g, '');
         }
 
-        // Markdown Parsing
         let renderedHtml = marked.parse(finalAnswerText);
 
-        // Prepend Thought Box
         if (combinedThought) {
             const thoughtHtml = `<div class="thought-box">${combinedThought}</div>`;
             renderedHtml = thoughtHtml + renderedHtml;
         }
       
-        // [TOOL] web_search parsing
         const toolRegex = /\[TOOL\]web_search: (\{.*?\})/g;
         const cards = [];
         renderedHtml = renderedHtml.replace(toolRegex, function(match, p1) {
@@ -319,28 +325,23 @@
         const text = userMessageOverride !== null ? userMessageOverride : userInput.value.trim();
         if (!text && !isRegenerate) return;
 
-        // Hide Welcome on first message
         if (welcomeContainer.style.display !== 'none') {
             welcomeContainer.style.opacity = '0';
             setTimeout(() => welcomeContainer.style.display = 'none', 500);
         }
 
-        // Update UI for sending
         if (!isRegenerate) {
             renderMessage(text, 'user');
             history.push({ role: "user", content: text });
             userInput.value = '';
-            setStreamingState(true); // Toggle button to Stop
+            setStreamingState(true); 
         }
 
         scrollToBottom();
 
-        // Prepare Bot Placeholder with Galaxy Loader
-        const botMsgDiv = renderMessage('', 'bot', true); // true for 'loading' state
+        const botMsgDiv = renderMessage('', 'bot', true); 
         const contentDiv = botMsgDiv.querySelector('.bot-content');
-        const indicatorDiv = botMsgDiv.querySelector('.thinking-indicator');
 
-        // Streaming Logic
         abortController = new AbortController();
         const signal = abortController.signal;
         let fullResponse = "";
@@ -362,14 +363,12 @@
             const decoder = new TextDecoder('utf-8');
             let streamQueue = "";
 
-            // Streaming Loop
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
                 
-                // Handle [DONE] signal from legacy backend if present
                 if (chunk.includes("[DONE]")) {
                     const parts = chunk.split("[DONE]");
                     streamQueue += parts[0];
@@ -378,21 +377,17 @@
                     streamQueue += chunk;
                 }
 
-                // Append to full response and update UI
                 fullResponse += chunk;
-                
-                // Update text content with formatting (debounce could be added for performance)
                 contentDiv.innerHTML = formatMessageContent(fullResponse);
                 scrollToBottom();
             }
 
-            // Finished
             finalizeMessage(botMsgDiv, fullResponse);
 
         } catch (error) {
             if (error.name === 'AbortError') {
                 contentDiv.innerHTML += "<br><span style='color:var(--text-gray); font-size:0.8em;'>[답변 중지됨]</span>";
-                finalizeMessage(botMsgDiv, fullResponse); // Save what we have
+                finalizeMessage(botMsgDiv, fullResponse); 
             } else {
                 contentDiv.innerHTML = `<span style="color:var(--error-red);">오류가 발생했습니다: ${error.message}</span>`;
                 setStreamingState(false);
@@ -410,7 +405,6 @@
         } else {
             let innerHTML = '';
             if (isLoading) {
-                // 🌟 Galaxy Loader Applied Here 🌟
                 const galaxyLoaderHTML = `
                 <div class="ui-load-glx">
                     <div class="gbx">
@@ -422,7 +416,6 @@
                 innerHTML += `<div class="thinking-indicator">${galaxyLoaderHTML}답변을 생각하는 중...</div>`;
             }
             innerHTML += `<div class="bot-content">${formatMessageContent(content)}</div>`;
-            // Action buttons are hidden while loading/streaming, added on finalize
             msgDiv.innerHTML = innerHTML;
         }
         chatMessages.appendChild(msgDiv);
@@ -431,15 +424,11 @@
 
     function finalizeMessage(msgDiv, content) {
         setStreamingState(false);
-        
-        // Remove indicator
         const indicator = msgDiv.querySelector('.thinking-indicator');
         if (indicator) indicator.remove();
 
-        // Update History
         history.push({ role: "model", content: content });
 
-        // Add Action Buttons
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'action-buttons';
         actionsDiv.innerHTML = `
@@ -451,10 +440,8 @@
         `;
         msgDiv.appendChild(actionsDiv);
         
-        // Disable previous regenerate buttons
         updateRegenerateButtons();
         
-        // Final render to ensure formatting is perfect
         const contentDiv = msgDiv.querySelector('.bot-content');
         contentDiv.innerHTML = formatMessageContent(content);
         scrollToBottom();
@@ -463,15 +450,13 @@
     function setStreamingState(active) {
         isStreaming = active;
         if (active) {
-            sendBtn.classList.add('active'); // Keep active for stop button
-            sendIcon.textContent = 'stop'; // Change icon to stop
-            // 🌟 Make stop button filled square 🌟
+            sendBtn.classList.add('active'); 
+            sendIcon.textContent = 'stop'; 
             sendIcon.style.fontVariationSettings = "'FILL' 1"; 
             userInput.disabled = true;
         } else {
             sendBtn.classList.remove('active');
             sendIcon.textContent = 'arrow_upward';
-            // Reset fill
             sendIcon.style.fontVariationSettings = "'FILL' 0";
             userInput.disabled = false;
             userInput.focus();
@@ -486,7 +471,6 @@
     }
 
     function scrollToBottom() {
-        // chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' }); // Smooth scroll can be glitchy with rapid streaming
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
@@ -502,13 +486,10 @@
     }
 
     // --- Action Button Handlers ---
-
     window.copyText = function(btn) {
         let text = btn.closest('.msg').querySelector('.bot-content').innerText;
-        // Clean up THOUGHT for copying
         text = text.replace(/\[THOUGHT\][\s\S]*?\[\/THOUGHT\]/gi, "").trim();
         navigator.clipboard.writeText(text).then(() => {
-            // Simple visual feedback
             const originalIcon = btn.innerHTML;
             btn.innerHTML = '<span class="material-symbols-rounded">check</span>';
             setTimeout(() => btn.innerHTML = originalIcon, 1500);
@@ -517,17 +498,11 @@
 
     window.retryMessage = function(btn) {
         if (isStreaming) return;
-        
-        // Remove the last bot message from UI
         const msgDiv = btn.closest('.msg');
         msgDiv.remove();
-
-        // Remove last bot message from history
         if (history.length > 0 && history[history.length - 1].role === 'model') {
             history.pop();
         }
-
-        // Get the last user prompt
         let lastUserMsg = null;
         for (let i = history.length - 1; i >= 0; i--) {
             if (history[i].role === 'user') {
@@ -535,10 +510,9 @@
                 break;
             }
         }
-
         if (lastUserMsg) {
-            setStreamingState(true); // Manually set state before calling
-            sendMessage(lastUserMsg, true); // true = isRegenerate
+            setStreamingState(true);
+            sendMessage(lastUserMsg, true);
         }
     }
 
@@ -557,26 +531,35 @@
     window.shareContent = function(btn) {
         let text = btn.closest('.msg').querySelector('.bot-content').innerText;
         text = text.replace(/\[THOUGHT\][\s\S]*?\[\/THOUGHT\]/gi, "").trim();
-        
         if (navigator.share) {
-            navigator.share({ 
-                title: 'MinsuGPT Conversation', 
-                text: text 
-            }).catch(console.error);
+            navigator.share({ title: 'MinsuGPT Conversation', text: text }).catch(console.error);
         } else {
-            // Fallback to copy
             window.copyText(btn);
             alert('공유 기능이 지원되지 않아 클립보드에 복사되었습니다.');
         }
     }
 
-    // --- Layout Adjustments (Mobile Toolbar) ---
-    function setScreenSize() {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    // --- Mobile Layout Fix (Keyboard & Viewport) ---
+    function adjustLayout() {
+        if (window.visualViewport) {
+            const viewportHeight = window.visualViewport.height;
+            // 키보드가 올라오거나 주소창이 변할 때 앱 전체 높이를 시각적 영역에 맞춤
+            appContainer.style.height = `${viewportHeight}px`;
+            
+            // 키보드가 올라온 경우 스크롤을 최하단으로 맞춤
+            window.scrollTo(0, 0); // 전체 페이지 스크롤 방지
+            scrollToBottom();
+        }
     }
-    window.addEventListener('resize', setScreenSize);
-    setScreenSize();
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', adjustLayout);
+        window.visualViewport.addEventListener('scroll', adjustLayout);
+    }
+    
+    // 초기 로드 및 일반 리사이즈 대응
+    window.addEventListener('resize', adjustLayout);
+    adjustLayout();
 
 </script>
 
