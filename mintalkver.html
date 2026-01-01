@@ -45,6 +45,16 @@
 
         #app { display: flex; flex-direction: column; height: 100%; position: relative; }
 
+        /* 🌟 애니메이션 정의 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         /* --- Header Styles --- */
         header {
             padding: 8px 20px; 
@@ -86,72 +96,103 @@
         #welcomeContainer {
             position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
             width: 92%; max-width: 720px; 
-            text-align: left; 
+            text-align: left; /* 왼쪽 정렬 */
             transition: opacity 0.3s ease; z-index: 5; 
         }
+        
+        /* 웰컴 텍스트 애니메이션 */
         .welcome-text { 
             font-size: clamp(1.5rem, 5vw, 2.0rem); 
             font-weight: 500; 
             letter-spacing: -0.03em; 
             color: #1a1a1a; 
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             margin-left: 4px;
+            animation: fadeInUp 0.6s ease-out;
         }
 
-        /* 🌟 [수정됨] 스크롤 제거 및 꽉 찬 레이아웃 (Fit Layout) */
+        /* 🌟 [수정됨] Suggestion Container */
         .suggestion-container {
             display: flex;
             width: 100%;
-            gap: 6px; /* 버튼 사이 간격 최소화 */
-            justify-content: space-between;
-            flex-wrap: nowrap; /* 줄바꿈 절대 금지 */
+            gap: 6px; /* 모바일을 위해 간격 좁힘 */
+            
+            /* 왼쪽 정렬 및 줄바꿈 금지 */
+            justify-content: flex-start;
+            flex-wrap: nowrap; /* ⚠️ 절대 줄바꿈 금지 */
+            
+            /* 혹시 공간이 너무 부족해도 스크롤 없이 수축되게 설정 */
+            overflow: hidden; 
         }
 
+        /* 🌟 [수정됨] Suggestion Button */
         .suggestion-btn {
             background-color: white;
             border: 1px solid var(--input-border);
-            border-radius: 16px; /* 둥근 정도 약간 조정 */
+            border-radius: 9999px; 
             
-            /* 🌟 [핵심 수정] 무조건 한 줄에 맞추기 */
-            flex: 1; /* 1:1:1 비율로 공간 차지 */
-            min-width: 0; /* 내용이 길어도 강제로 줄어들게 설정 */
+            /* 1. 수축 허용 (Shrink) */
+            flex: 0 1 auto; 
+            min-width: 0; /* 내용물보다 작아질 수 있게 허용 */
             
-            /* 패딩을 좌우 2px로 줄여서 작은 화면에서 글자 공간 확보 */
-            padding: 12px 2px; 
+            /* 2. 사이즈 조절 */
+            /* 화면이 작을때는 패딩을 줄여서라도 한줄에 넣음 */
+            padding: 10px clamp(8px, 2vw, 16px); 
             
-            /* 화면 너비(vw)에 따라 글자 크기 자동 조절 (최소 11px ~ 최대 15px) */
-            font-size: clamp(11px, 3.2vw, 15px); 
-            
+            /* 3. 텍스트 처리 */
+            font-size: clamp(11px, 3.2vw, 15px); /* 폰트 크기 유동적 */
             color: var(--text-main);
             cursor: pointer;
-            white-space: nowrap; /* 줄바꿈 금지 */
-            transition: all 0.2s ease;
+            white-space: nowrap; /* 텍스트 줄바꿈 금지 */
+            text-overflow: ellipsis; /* 너무 좁으면 ... 처리 */
+            overflow: hidden;
+
+            transition: all 0.2s ease, transform 0.1s;
             font-family: var(--font-ko);
-            letter-spacing: -0.05em; /* 자간을 좁혀서 더 많이 들어가게 */
+            letter-spacing: -0.03em; 
             
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 4px; /* 아이콘과 텍스트 간격 좁힘 */
-            overflow: hidden; /* 넘치는 내용 숨김 (안전장치) */
+            gap: 4px; /* 아이콘과 텍스트 사이 간격도 약간 줄임 */
+
+            opacity: 0; 
+            animation: fadeInUp 0.5s ease-out forwards;
         }
+
+        /* PC 버전 오버라이드 (공간이 넉넉할 때) */
+        @media (min-width: 768px) {
+            .suggestion-container {
+                gap: 10px;
+            }
+            .suggestion-btn {
+                padding: 10px 18px; /* PC는 넉넉하게 */
+                gap: 6px;
+            }
+        }
+
+        /* 버튼 순차 등장 */
+        .suggestion-btn:nth-child(1) { animation-delay: 0.1s; }
+        .suggestion-btn:nth-child(2) { animation-delay: 0.2s; }
+        .suggestion-btn:nth-child(3) { animation-delay: 0.3s; }
 
         .suggestion-btn:hover {
             background-color: var(--btn-bg-soft);
             border-color: #d0d0d0;
+            transform: translateY(-2px); 
         }
+        .suggestion-btn:active { transform: scale(0.96); }
 
-        /* 🌟 [수정됨] 아이콘 크기도 화면에 맞춰 축소 */
         .suggestion-btn .material-symbols-rounded {
-            font-size: clamp(16px, 4.5vw, 20px); 
+            font-size: clamp(16px, 4vw, 18px); /* 아이콘 크기도 유동적 */
             font-variation-settings: 'wght' 500;
             flex-shrink: 0; /* 아이콘은 찌그러지지 않게 */
         }
 
         /* 아이콘 색상 */
-        .icon-joke { color: #2563eb; } /* Blue */
-        .icon-talk { color: #9333ea; } /* Purple */
-        .icon-write { color: #ef4444; } /* Red */
+        .icon-joke { color: #2563eb; } 
+        .icon-talk { color: #9333ea; } 
+        .icon-write { color: #ef4444; } 
 
 
         /* --- Chat Window --- */
@@ -163,7 +204,10 @@
             padding: 20px 0; box-sizing: border-box; 
         }
 
-        .msg { display: flex; flex-direction: column; width: 100%; }
+        .msg { 
+            display: flex; flex-direction: column; width: 100%; 
+            animation: fadeInUp 0.4s ease-out; 
+        }
         .msg.bot { align-items: flex-start; }
         
         .bot-content { 
@@ -190,7 +234,10 @@
             line-height: 1.5;
         }
 
-        .action-buttons { display: flex; gap: 6px; margin-top: 6px; opacity: 1; }
+        .action-buttons { 
+            display: flex; gap: 6px; margin-top: 6px; opacity: 1; 
+            animation: slideInRight 0.3s ease-out; 
+        }
         .action-btn {
             background: none; border: none; color: var(--text-gray);
             cursor: pointer; padding: 4px; display: flex; align-items: center;
@@ -239,6 +286,7 @@
         
         .thinking-indicator { 
             color: var(--text-gray); font-size: 0.85rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; height: 32px;
+            animation: fadeInUp 0.3s ease-out;
         }
         .ui-load-glx { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
         .ui-load-glx > .gbx { width: 18px; height: 18px; position: relative; transform: scale(1.0); }
@@ -263,19 +311,31 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- Modal Styles --- */
+        /* --- Modal Animations & Styles --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 100; display: none;
-            align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;
+            background: rgba(0,0,0,0.5); z-index: 100; 
+            display: flex;
+            align-items: center; justify-content: center; 
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s;
         }
-        .modal-overlay.open { display: flex; opacity: 1; }
+
+        .modal-overlay.open { 
+            opacity: 1; visibility: visible; pointer-events: auto; 
+        }
         
         .modal-box {
             background: white; width: 90%; max-width: 400px; max-height: 80%;
-            border-radius: 16px; padding: 20px; display: flex; flex-direction: column;
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .modal-overlay.open .modal-box { 
+            transform: scale(1) translateY(0); 
         }
         
         /* Confirm Modal Specific */
@@ -285,7 +345,9 @@
         .modal-actions { display: flex; gap: 10px; justify-content: center; width: 100%; }
         .modal-btn {
             flex: 1; padding: 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 500; cursor: pointer; border: none;
+            transition: transform 0.1s;
         }
+        .modal-btn:active { transform: scale(0.95); }
         .btn-cancel { background: #f0f0f0; color: #333; }
         .btn-delete { background: var(--error-red); color: white; }
 
@@ -293,16 +355,18 @@
             .modal-overlay:not(#confirmModal) { align-items: flex-end; }
             .modal-box:not(.small-box) {
                 width: 100%; max-width: 100%; border-radius: 24px 24px 0 0; 
-                margin: 0; max-height: 85vh; animation: slideUp 0.3s ease-out;
+                margin: 0; max-height: 85vh; 
+                transform: translateY(100%);
+                transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             }
-            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            .modal-overlay.open .modal-box:not(.small-box) {
+                transform: translateY(0);
+            }
         }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-title { font-weight: 600; font-size: 1.1rem; }
         .close-modal-btn { background: none; border: none; cursor: pointer; padding: 4px; }
-        
-        /* 전체 삭제 버튼 */
         .clear-all-btn {
             font-size: 0.85rem; color: var(--error-red); background: none; border: none;
             font-weight: 500; cursor: pointer; padding: 4px 8px; border-radius: 6px;
@@ -311,11 +375,11 @@
 
         .history-list { overflow-y: auto; flex: 1; list-style: none; padding: 0; margin: 0; }
         
-        /* 개별 기록 아이템 스타일 */
         .history-item {
             padding: 12px; border-bottom: 1px solid #eee; transition: background 0.2s;
             border-radius: 8px; margin-bottom: 4px;
             display: flex; justify-content: space-between; align-items: center;
+            animation: fadeInUp 0.3s ease-out backwards;
         }
         .history-item:hover { background: #f9f9f9; }
         .history-info { flex: 1; overflow: hidden; cursor: pointer; }
@@ -535,6 +599,11 @@
         resizeInput(); 
         sendBtn.classList.remove('active');
         userInput.focus();
+        
+        const originalContent = welcomeContainer.innerHTML;
+        welcomeContainer.innerHTML = '';
+        void welcomeContainer.offsetWidth; // Trigger Reflow
+        welcomeContainer.innerHTML = originalContent;
     }
 
     function prepareWriteMode() {
@@ -603,10 +672,12 @@
         }
         clearAllBtn.style.display = 'block'; 
 
-        chats.forEach(chat => {
+        chats.forEach((chat, index) => {
             const date = new Date(chat.timestamp).toLocaleDateString();
             const li = document.createElement('li');
             li.className = 'history-item';
+            // 리스트 아이템 순차 애니메이션 딜레이
+            li.style.animationDelay = `${index * 0.05}s`;
             
             li.innerHTML = `
                 <div class="history-info">
