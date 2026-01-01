@@ -45,7 +45,6 @@
 
         #app { display: flex; flex-direction: column; height: 100%; position: relative; }
 
-        /* 🌟 [수정됨] 위로 올라오는 동작 제거, 밝기(투명도)만 변화 */
         @keyframes fadeInOnly {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -101,47 +100,38 @@
             transition: opacity 0.3s ease; z-index: 5; 
         }
         
-        /* 🌟 [수정됨] 마진을 줄여서 버튼과의 간격 좁힘 */
         .welcome-text { 
             font-size: clamp(1.5rem, 5vw, 2.0rem); 
             font-weight: 500; 
             letter-spacing: -0.03em; 
             color: #1a1a1a; 
-            margin-bottom: 12px; /* 간격 좁힘 (기존 24px -> 12px) */
+            margin-bottom: 12px; 
             margin-left: 4px;
-            animation: fadeInOnly 0.6s ease-out; /* 위로 올라오는 효과 제거 */
+            animation: fadeInOnly 0.6s ease-out;
         }
 
-        /* 🌟 [수정됨] 버튼 컨테이너: 줄바꿈 금지(nowrap) */
         .suggestion-container {
             display: flex;
             width: 100%;
             gap: 6px;
             justify-content: flex-start;
-            flex-wrap: nowrap; /* ⚠️ 절대 줄바꿈 금지 */
-            overflow: hidden; /* 넘치면 숨김 (안전을 위해) */
+            flex-wrap: nowrap; 
+            overflow: hidden; 
         }
 
-        /* 🌟 [수정됨] 버튼 스타일: 공간 부족 시 줄어들도록 설정 */
         .suggestion-btn {
             background-color: white;
             border: 1px solid var(--input-border);
             border-radius: 9999px; 
-            
-            /* 수축 허용 */
             flex: 0 1 auto; 
-            min-width: 0; /* 내용물보다 작아질 수 있게 허용 */
-            
-            /* 사이즈 조절 (모바일 대응) */
+            min-width: 0; 
             padding: 10px clamp(8px, 2vw, 16px); 
             font-size: clamp(11px, 3.2vw, 15px); 
-            
             color: var(--text-main);
             cursor: pointer;
-            white-space: nowrap; /* 텍스트 줄바꿈 금지 */
-            text-overflow: ellipsis; /* 너무 좁으면 ... 처리 */
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
             overflow: hidden;
-
             transition: all 0.2s ease, transform 0.1s;
             font-family: var(--font-ko);
             letter-spacing: -0.03em; 
@@ -149,9 +139,8 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            
             opacity: 0; 
-            animation: fadeInOnly 0.5s ease-out forwards; /* 위로 올라오는 효과 제거 */
+            animation: fadeInOnly 0.5s ease-out forwards; 
         }
 
         .suggestion-btn:nth-child(1) { animation-delay: 0.1s; }
@@ -186,7 +175,6 @@
 
         .msg { 
             display: flex; flex-direction: column; width: 100%; 
-            /* 🌟 [수정됨] 메세지 등장 시 위로 올라오는 효과 제거 */
             animation: fadeInOnly 0.4s ease-out; 
         }
         .msg.bot { align-items: flex-start; }
@@ -212,16 +200,20 @@
             background: var(--code-bg); padding: 2px 4px; border-radius: 4px;
         }
 
+        /* 🌟 [수정됨] 코드 복사 버튼: 항상 표시 (opacity: 1) */
         .code-copy-btn {
             position: absolute; top: 6px; right: 6px;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9); /* 가독성을 위해 불투명도 약간 올림 */
             border: 1px solid #ddd; border-radius: 6px;
             width: 28px; height: 28px;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; opacity: 0; transition: opacity 0.2s;
+            cursor: pointer; 
+            opacity: 1; /* 항상 보이게 설정 */
+            transition: background 0.2s;
             color: #555;
+            z-index: 5;
         }
-        .bot-content pre:hover .code-copy-btn { opacity: 1; }
+        /* hover 효과 제거 (항상 보이므로) */
         .code-copy-btn:hover { background: white; color: var(--text-main); }
         .code-copy-btn .material-symbols-rounded { font-size: 16px; }
 
@@ -317,7 +309,7 @@
         
         .thinking-indicator { 
             color: var(--text-gray); font-size: 0.85rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; height: 32px;
-            animation: fadeInOnly 0.3s ease-out; /* 위로 올라오는 효과 제거 */
+            animation: fadeInOnly 0.3s ease-out; 
         }
         .ui-load-glx { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
         .ui-load-glx > .gbx { width: 18px; height: 18px; position: relative; transform: scale(1.0); }
@@ -409,7 +401,7 @@
             padding: 12px; border-bottom: 1px solid #eee; transition: background 0.2s;
             border-radius: 8px; margin-bottom: 4px;
             display: flex; justify-content: space-between; align-items: center;
-            animation: fadeInOnly 0.3s ease-out backwards; /* 위로 올라오는 효과 제거 */
+            animation: fadeInOnly 0.3s ease-out backwards; 
         }
         .history-item:hover { background: #f9f9f9; }
         .history-info { flex: 1; overflow: hidden; cursor: pointer; }
@@ -768,6 +760,32 @@
         return clone.innerText.trim();
     }
 
+    // 🌟 [추가됨] 웹페이지 임베딩 환경을 위한 강제 복사 폴백 함수
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // 화면 밖으로 보내지 않고 고정 위치에 투명하게 배치 (모바일 이슈 방지)
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        textArea.style.pointerEvents = "none";
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            var successful = document.execCommand('copy');
+            if (!successful) throw new Error('Copy command failed');
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+
+        document.body.removeChild(textArea);
+    }
+
     function addCodeCopyButtons(container) {
         container.querySelectorAll('pre').forEach(pre => {
             if (pre.querySelector('.code-copy-btn')) return;
@@ -779,15 +797,29 @@
             
             btn.addEventListener('click', () => {
                 const code = pre.querySelector('code')?.innerText || pre.innerText;
-                navigator.clipboard.writeText(code).then(() => {
-                    const originalIcon = btn.innerHTML;
-                    btn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--mint-point)">check</span>';
-                    setTimeout(() => btn.innerHTML = originalIcon, 1500);
-                });
+                
+                // 🌟 [수정됨] 클립보드 API 실패 시 폴백 사용
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(code).then(() => {
+                        showCopySuccess(btn);
+                    }).catch(() => {
+                        fallbackCopyTextToClipboard(code);
+                        showCopySuccess(btn);
+                    });
+                } else {
+                    fallbackCopyTextToClipboard(code);
+                    showCopySuccess(btn);
+                }
             });
             
             pre.appendChild(btn);
         });
+    }
+
+    function showCopySuccess(btn) {
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--mint-point)">check</span>';
+        setTimeout(() => btn.innerHTML = originalIcon, 1500);
     }
 
     async function sendMessage(userMessageOverride = null, isRegenerate = false) {
@@ -911,13 +943,22 @@
         btns.forEach((btn, i) => btn.classList.toggle('disabled', i !== btns.length - 1));
     }
 
+    // 🌟 [수정됨] 채팅 말풍선 복사 기능에도 폴백 적용
     window.copyText = function(btn) {
         const msgDiv = btn.closest('.msg');
         const txt = getCleanText(msgDiv); 
-        navigator.clipboard.writeText(txt).then(() => {
-            const icon = btn.innerHTML; btn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--mint-point)">check</span>';
-            setTimeout(() => btn.innerHTML = icon, 1500);
-        });
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(() => {
+                showCopySuccess(btn);
+            }).catch(() => {
+                fallbackCopyTextToClipboard(txt);
+                showCopySuccess(btn);
+            });
+        } else {
+            fallbackCopyTextToClipboard(txt);
+            showCopySuccess(btn);
+        }
     };
 
     window.retryMessage = function(btn) {
@@ -936,7 +977,15 @@
         const msgDiv = btn.closest('.msg');
         const txt = getCleanText(msgDiv); 
         if (navigator.share) navigator.share({ text: txt });
-        else { navigator.clipboard.writeText(txt).then(() => alert('텍스트가 복사되었습니다.')); }
+        else { 
+            // 공유 실패시에도 복사 시도
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => alert('텍스트가 복사되었습니다.'));
+            } else {
+                fallbackCopyTextToClipboard(txt);
+                alert('텍스트가 복사되었습니다.');
+            }
+        }
     };
 
     function adjustLayout() {
