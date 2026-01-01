@@ -183,23 +183,47 @@
             border-bottom: none; /* Removed Border */
         }
         
-        /* Left Pill Group */
-        .header-left-pill {
-            display: flex; align-items: center; gap: 4px;
-            background-color: var(--header-btn-bg);
-            border-radius: 30px;
-            padding: 4px 14px 4px 6px;
-        }
+        /* 1. 왼쪽 알약 (메뉴+MinsuGPT) 수정 */
+.header-left-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: var(--header-btn-bg);
+    border-radius: 30px;
+    /* 높이를 명시적으로 지정하여 오른쪽과 통일 (보통 40px~44px가 적당합니다) */
+    height: 40px; 
+    padding: 0 14px 0 4px; /* 상하 패딩을 0으로 하고 height와 flex로 중앙 정렬 */
+    box-sizing: border-box;
+}
+
+/* 2. 오른쪽 알약 그룹 수정 (높이 통일) */
+.header-pill-group {
+    display: flex;
+    align-items: center;
+    background-color: var(--header-btn-bg);
+    border-radius: 30px;
+    height: 40px; /* 왼쪽과 동일하게 설정 */
+    padding: 0 4px; /* 내부 요소들이 이미 높이를 가지고 있으므로 좌우 여백만 조정 */
+    gap: 2px;
+    box-sizing: border-box;
+}
+
+/* 3. 메뉴 버튼 원형 크기 조정 (알약 안에서 꽉 차거나 조화롭게) */
+.header-btn-circle {
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-main);
+    transition: background-color 0.2s;
+} 
 
         /* Menu Button (Inside Pill) */
-        .header-btn-circle {
-            width: 32px; height: 32px;
-            background-color: transparent;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-main);
-            transition: background-color 0.2s;
-        }
+        
         .header-btn-circle:hover { background-color: rgba(0,0,0,0.05); }
 
         .logo-main { 
@@ -210,13 +234,7 @@
         }
 
         /* Right Side: Pill Group */
-        .header-pill-group {
-            display: flex; align-items: center;
-            background-color: var(--header-btn-bg);
-            border-radius: 30px;
-            padding: 4px 6px;
-            gap: 2px;
-        }
+        
 
         /* Model Selector Styles */
         .header-model-wrapper { position: relative; }
