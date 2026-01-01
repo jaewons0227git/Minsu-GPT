@@ -31,6 +31,15 @@
             --mint-point: #20c997;
             --error-red: #ef4444;
             --btn-bg-soft: #f5f5f5;
+            
+            /* New Variables for Sidebar & Header Pill */
+            --sidebar-width: 300px;
+            --mini-sidebar-width: 60px;
+            --header-btn-bg: #f1f4f9;
+            --border-color: #e5e8eb;
+            --primary-blue: #1d6fef;
+            --surface-hover: #f9fafb;
+            --surface-secondary: #f1f4f9;
         }
 
         html, body {
@@ -43,7 +52,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        #app { display: flex; flex-direction: column; height: 100%; position: relative; }
+        #app { display: flex; flex-direction: column; height: 100%; position: relative; transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
         @keyframes fadeInOnly {
             from { opacity: 0; }
@@ -55,14 +64,68 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* --- Header Styles --- */
+        /* --- PC Sidebar Styles (New) --- */
+        .mini-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0; width: var(--mini-sidebar-width);
+            background-color: var(--bg-main); border-right: 1px solid var(--input-border);
+            display: none; flex-direction: column; align-items: center; padding-top: 20px; z-index: 95;
+        }
+        
+        .mini-sidebar-icon {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; cursor: pointer; color: var(--text-gray); margin-bottom: 12px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .mini-sidebar-icon:hover { background-color: var(--btn-bg-soft); color: var(--text-main); }
+        .mini-sidebar-icon.delete-all { color: var(--error-red); opacity: 0.7; margin-top: auto; margin-bottom: 20px; }
+        .mini-sidebar-icon.delete-all:hover { opacity: 1; background-color: #fee2e2; }
+
+        .pc-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-width);
+            background-color: var(--bg-main); border-right: 1px solid var(--input-border);
+            transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 96; display: flex; flex-direction: column;
+        }
+        .pc-sidebar.visible { transform: translateX(0); }
+
+        .pc-sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border); }
+        .pc-sidebar-close { cursor: pointer; padding: 4px; border-radius: 50%; display: flex; align-items: center; }
+        .pc-sidebar-close:hover { background-color: var(--btn-bg-soft); }
+        
+        /* Reusing History List styles for PC Sidebar content */
+        .pc-history-container { flex: 1; overflow-y: auto; padding: 10px; }
+        
+        /* Layout Adjustments for PC Sidebar */
+        @media (min-width: 769px) {
+            .mini-sidebar { display: flex; }
+            #app { margin-left: var(--mini-sidebar-width); }
+            
+            body.sidebar-open #app { margin-left: var(--sidebar-width); }
+            /* Hide mini sidebar when main sidebar is open */
+            body.sidebar-open .mini-sidebar { display: none; } 
+        }
+
+        /* --- Header Styles (Modified for Pill) --- */
         header {
             padding: 8px 20px; 
             display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--input-border); background: white; flex-shrink: 0; z-index: 10;
         }
-        .header-left { display: flex; align-items: baseline; gap: 6px; }
         
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        
+        /* Menu Button (Circle) */
+        .header-btn-circle {
+            width: 40px; height: 40px;
+            background-color: transparent;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-main);
+            transition: background-color 0.2s;
+        }
+        .header-btn-circle:hover { background-color: var(--btn-bg-soft); }
+
+        .logo-group { display: flex; align-items: baseline; gap: 6px; }
         .logo-main { 
             font-family: var(--font-logo); 
             font-size: 1.1rem; font-weight: 300; letter-spacing: -0.03em; 
@@ -74,24 +137,64 @@
             font-weight: 400; 
         }
 
-        .header-right { display: flex; gap: 8px; }
-        
-        .icon-btn {
-            background-color: var(--btn-bg-soft); 
-            border: 1px solid transparent; 
-            cursor: pointer; 
-            color: var(--text-main);
-            width: 38px; height: 38px; padding: 0; 
-            border-radius: 12px; 
+        /* Right Side: Pill Group */
+        .header-pill-group {
+            display: flex; align-items: center;
+            background-color: var(--header-btn-bg);
+            border-radius: 30px;
+            padding: 4px 6px;
+            gap: 2px;
+        }
+
+        /* Model Selector Styles */
+        .header-model-wrapper { position: relative; }
+        .header-model-pill {
+            display: flex; align-items: center; gap: 4px;
+            padding: 6px 10px 6px 12px;
+            background-color: transparent;
+            border-radius: 20px;
+            font-size: 14px; font-weight: 600; color: var(--text-main);
+            cursor: pointer; transition: background-color 0.2s;
+            margin-right: 4px; user-select: none;
+        }
+        .header-model-pill:hover { background-color: rgba(0,0,0,0.05); }
+        .header-model-pill .material-symbols-rounded { font-size: 20px; color: var(--text-gray); }
+
+        .model-dropdown-menu {
+            position: absolute; top: 100%; right: 0; margin-top: 8px;
+            background-color: #ffffff; border: 1px solid var(--input-border);
+            border-radius: 12px; padding: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000;
+            min-width: 140px; display: none; flex-direction: column; gap: 2px;
+            animation: fadeInOnly 0.2s;
+        }
+        .model-dropdown-menu.show { display: flex; }
+
+        .model-option-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; border-radius: 8px;
+            font-size: 14px; font-weight: 500; color: var(--text-main);
+            cursor: pointer; transition: background-color 0.2s;
+        }
+        .model-option-item:hover { background-color: var(--btn-bg-soft); }
+        .model-option-item.selected { color: var(--primary-blue); background-color: rgba(29, 111, 239, 0.08); }
+        .model-option-item .check-icon { font-size: 18px; opacity: 0; }
+        .model-option-item.selected .check-icon { opacity: 1; }
+
+        /* Integrated Icon Buttons within Pill */
+        .header-icon {
+            width: 40px; height: 40px;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s ease;
+            color: var(--text-main); cursor: pointer;
+            flex-shrink: 0; border-radius: 50%;
+            transition: background-color 0.2s;
+            background: transparent; border: none;
         }
-        .icon-btn:hover { background-color: #e8e8e8; }
-        .icon-btn:active { transform: scale(0.94); }
-        .icon-btn .material-symbols-rounded { 
-            font-size: 20px; 
-            font-variation-settings: 'wght' 300; 
-        }
+        .header-icon:hover { background-color: rgba(0,0,0,0.05); }
+        .header-icon .material-symbols-rounded { font-size: 22px; }
+
+        /* Hide original buttons logic but keep IDs for JS compatibility */
+        #newChatBtn, #historyBtn { display: flex; } 
 
         #welcomeContainer {
             position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
@@ -132,7 +235,7 @@
             white-space: nowrap; 
             text-overflow: ellipsis; 
             overflow: hidden;
-            transition: all 0.2s ease; /* transform transition removed */
+            transition: all 0.2s ease; 
             font-family: var(--font-ko);
             letter-spacing: -0.03em; 
             display: inline-flex;
@@ -150,7 +253,6 @@
         .suggestion-btn:hover {
             background-color: var(--btn-bg-soft);
             border-color: #d0d0d0;
-            /* transform: translateY(-2px); <-- REMOVED per request */
         }
         .suggestion-btn:active { transform: scale(0.96); }
 
@@ -281,12 +383,11 @@
         .input-group {
             width: 92%; max-width: 720px;
             display: flex; 
-            align-items: flex-end; /* Bottom align ensures plus button stays at bottom */
+            align-items: flex-end; 
             gap: 10px;
             position: relative; 
         }
 
-        /* 🌟 [수정됨] Plus Button: 48px로 확대하여 입력창 높이와 일치 */
         .plus-btn {
             width: 48px; height: 48px;
             border-radius: 50%;
@@ -297,7 +398,7 @@
             cursor: pointer;
             flex-shrink: 0;
             transition: all 0.2s ease;
-            margin-bottom: 0; /* 높이가 같으므로 margin 불필요 */
+            margin-bottom: 0; 
         }
         .plus-btn:hover { background-color: var(--btn-bg-soft); }
         .plus-btn:active { transform: scale(0.94); }
@@ -357,7 +458,7 @@
             padding: 8px 8px 8px 16px; 
             box-sizing: border-box;
             background: white;
-            min-height: 48px; /* 입력창 기본 높이 */
+            min-height: 48px; 
         }
         
         #userInput { 
@@ -500,18 +601,70 @@
 </head>
 <body>
 
+<aside class="mini-sidebar">
+    <div class="mini-sidebar-icon" id="mini-new-chat" title="새 채팅">
+        <span class="material-symbols-rounded">add_circle</span>
+    </div>
+    <div class="mini-sidebar-icon delete-all" id="mini-delete-all" title="전체 삭제">
+        <span class="material-symbols-rounded">delete</span>
+    </div>
+</aside>
+
+<aside id="pc-sidebar" class="pc-sidebar">
+    <div class="pc-sidebar-header">
+        <span style="font-weight:600; font-size:1.1rem;">채팅 기록</span>
+        <div class="pc-sidebar-close" id="pc-sidebar-close">
+            <span class="material-symbols-rounded">close</span>
+        </div>
+    </div>
+    <div class="pc-history-container" id="pcHistoryContainer">
+        </div>
+    <div style="padding: 16px; border-top: 1px solid var(--input-border);">
+         <div class="menu-item" id="pc-delete-all" style="color:var(--error-red); cursor:pointer;">
+            <span class="material-symbols-rounded">delete</span>
+            전체 삭제
+        </div>
+    </div>
+</aside>
+
 <div id="app">
     <header>
         <div class="header-left">
-            <span class="logo-main">MinsuGPT</span>
-            <span class="logo-sub">for mintalk</span>
+            <div class="header-btn-circle" id="menu-button">
+                <span class="material-symbols-rounded">menu</span>
+            </div>
+            <div class="logo-group">
+                <span class="logo-main">MinsuGPT</span>
+                <span class="logo-sub"> </span>
+            </div>
         </div>
-        <div class="header-right">
-            <button class="icon-btn" id="newChatBtn" title="새 채팅">
-                <span class="material-symbols-rounded">add</span>
+        
+        <div class="header-pill-group">
+            <div class="header-model-wrapper">
+                <div class="header-model-pill" id="header-model-select">
+                    <span id="header-model-text">G-Fast</span>
+                    <span class="material-symbols-rounded">expand_more</span>
+                </div>
+                <div class="model-dropdown-menu" id="header-model-dropdown">
+                    <div class="model-option-item selected" data-model="g-fast">
+                        <span>G-Fast</span>
+                        <span class="material-symbols-rounded check-icon">check</span>
+                    </div>
+                    <div class="model-option-item" data-model="g5-pro">
+                        <span>G-5 Pro</span>
+                        <span class="material-symbols-rounded check-icon">check</span>
+                    </div>
+                    <div class="model-option-item" data-model="g4">
+                        <span>G-4 beta</span>
+                        <span class="material-symbols-rounded check-icon">check</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="header-icon" id="newChatBtn" title="새 채팅">
+                <span class="material-symbols-rounded">edit_square</span>
             </button>
-            <button class="icon-btn" id="historyBtn" title="채팅 기록">
-                <span class="material-symbols-rounded">history</span>
+            <button class="header-icon" id="historyBtn" title="채팅 기록" style="display:none;"> <span class="material-symbols-rounded">history</span>
             </button>
         </div>
     </header>
@@ -594,7 +747,14 @@
 </div>
 
 <script>
-    const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/askfast";
+    // Backend Endpoints
+    const BACKEND_ENDPOINTS = {
+        'g-fast': "https://jaewondev.pythonanywhere.com/askfast",
+        'g5-pro': "https://jaewondev.pythonanywhere.com/ask",
+        'g4': "https://jaewondev.pythonanywhere.com/g4ask"
+    };
+    
+    let currentModel = 'g-fast';
     const PRE_PROMPT = {
         role: "system",
         content: "너는 MinsuGPT야. 신재원님이 널 만들었어. 너는 mintalk에서 지원하는 챗봇이야. 항상 마크다운 스타일로 대답해. 검색은 최소화해."
@@ -610,7 +770,7 @@
     const appContainer = document.getElementById('app');
     
     const newChatBtn = document.getElementById('newChatBtn');
-    const historyBtn = document.getElementById('historyBtn');
+    const historyBtn = document.getElementById('historyBtn'); // kept for JS compatibility
     const historyModal = document.getElementById('historyModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const historyList = document.getElementById('historyList');
@@ -625,6 +785,18 @@
     // New Element References
     const plusBtn = document.getElementById('plusBtn');
     const attachMenu = document.getElementById('attachMenu');
+    
+    // Model Selector & PC Sidebar Elements
+    const headerModelSelect = document.getElementById('header-model-select');
+    const headerModelDropdown = document.getElementById('header-model-dropdown');
+    const headerModelText = document.getElementById('header-model-text');
+    const menuButton = document.getElementById('menu-button');
+    const pcSidebar = document.getElementById('pc-sidebar');
+    const pcSidebarClose = document.getElementById('pc-sidebar-close');
+    const miniNewChat = document.getElementById('mini-new-chat');
+    const miniDeleteAll = document.getElementById('mini-delete-all');
+    const pcDeleteAll = document.getElementById('pc-delete-all');
+    const pcHistoryContainer = document.getElementById('pcHistoryContainer');
 
     let history = []; 
     let currentChatId = null; 
@@ -634,6 +806,132 @@
     let confirmCallback = null; 
 
     marked.setOptions({ breaks: true, gfm: true });
+
+    /* --- Model Selector Logic --- */
+    function setModel(model) {
+        currentModel = model;
+        let displayText = 'G-Fast';
+        if (model === 'g4') displayText = 'G-4 beta';
+        else if (model === 'g5-pro') displayText = 'G-5 Pro';
+        
+        headerModelText.textContent = displayText;
+        
+        document.querySelectorAll('.model-option-item').forEach(opt => {
+            if(opt.dataset.model === model) opt.classList.add('selected');
+            else opt.classList.remove('selected');
+        });
+        
+        headerModelDropdown.classList.remove('show');
+    }
+
+    headerModelSelect.addEventListener('click', (e) => {
+        e.stopPropagation();
+        headerModelDropdown.classList.toggle('show');
+    });
+
+    document.querySelectorAll('.model-option-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setModel(item.dataset.model);
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!headerModelSelect.contains(e.target)) {
+            headerModelDropdown.classList.remove('show');
+        }
+    });
+
+    /* --- PC Sidebar Logic --- */
+    function togglePCSidebar(force) {
+        if (force === undefined) {
+            pcSidebar.classList.toggle('visible');
+            document.body.classList.toggle('sidebar-open');
+        } else if (force) {
+            pcSidebar.classList.add('visible');
+            document.body.classList.add('sidebar-open');
+        } else {
+            pcSidebar.classList.remove('visible');
+            document.body.classList.remove('sidebar-open');
+        }
+        
+        // Populate PC history when opening
+        if (document.body.classList.contains('sidebar-open')) {
+            renderPCHistory();
+        }
+    }
+
+    // Menu Button: Different behavior for Mobile vs PC
+    menuButton.addEventListener('click', () => {
+        if (window.innerWidth > 768) {
+            togglePCSidebar();
+        } else {
+            openHistoryModal();
+        }
+    });
+
+    pcSidebarClose.addEventListener('click', () => togglePCSidebar(false));
+    miniNewChat.addEventListener('click', startNewChat);
+    
+    // PC Delete functions
+    miniDeleteAll.addEventListener('click', () => {
+        showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?", () => {
+             localStorage.removeItem(STORAGE_KEY);
+             renderHistoryList(); // updates both mobile and PC
+             startNewChat();
+        });
+    });
+    pcDeleteAll.addEventListener('click', () => {
+        showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?", () => {
+             localStorage.removeItem(STORAGE_KEY);
+             renderHistoryList(); 
+             startNewChat();
+        });
+    });
+
+    function renderPCHistory() {
+        // Clone the mobile history list logic but render into PC Sidebar
+        const chats = getSavedChats();
+        const list = document.createElement('ul');
+        list.className = 'history-list';
+        list.style.padding = '0';
+        
+        if (chats.length === 0) {
+            pcHistoryContainer.innerHTML = '<div class="empty-history">기록된 채팅이 없습니다.</div>';
+            return;
+        }
+
+        chats.forEach((chat) => {
+            const date = new Date(chat.timestamp).toLocaleDateString();
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerHTML = `
+                <div class="history-info">
+                    <div class="h-title">${chat.title}</div>
+                    <div class="h-date">${date}</div>
+                </div>
+                <button class="delete-chat-btn" title="삭제">
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
+            `;
+            
+            li.querySelector('.history-info').addEventListener('click', () => {
+                loadChat(chat.id);
+                // On small PC screens, maybe close sidebar? Optional.
+            });
+            li.querySelector('.delete-chat-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                showConfirmModal("기록 삭제", "이 채팅 기록을 삭제하시겠습니까?", () => {
+                    deleteChat(chat.id);
+                });
+            });
+            list.appendChild(li);
+        });
+        
+        pcHistoryContainer.innerHTML = '';
+        pcHistoryContainer.appendChild(list);
+    }
+
 
     /* --- Plus Button Logic --- */
     plusBtn.addEventListener('click', (e) => {
@@ -656,10 +954,8 @@
         }
     });
 
-    // Dummy functionality for menu items
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', () => {
-            // Functionality disabled as requested
             console.log('Feature Clicked: ' + item.innerText); 
             attachMenu.classList.remove('open');
             plusBtn.classList.remove('active');
@@ -699,7 +995,9 @@
 
     newChatBtn.addEventListener('click', startNewChat);
     
-    historyBtn.addEventListener('click', openHistoryModal);
+    // Use the function directly for the modal logic, but button is now hidden in PC Pill
+    // historyBtn.addEventListener('click', openHistoryModal); 
+    
     closeModalBtn.addEventListener('click', closeHistoryModal);
     historyModal.addEventListener('click', (e) => {
         if (e.target === historyModal) closeHistoryModal();
@@ -785,6 +1083,9 @@
         if (existingIndex !== -1) chats[existingIndex] = chatData;
         else chats.unshift(chatData); 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+        
+        // Update Sidebars if open
+        if (document.body.classList.contains('sidebar-open')) renderPCHistory();
     }
 
     function loadChat(id) {
@@ -815,6 +1116,8 @@
         if (chats.length === 0) {
             historyList.innerHTML = '<li class="empty-history">기록된 채팅이 없습니다.</li>';
             clearAllBtn.style.display = 'none'; 
+            // Also update PC view if applicable
+            if (document.body.classList.contains('sidebar-open')) renderPCHistory();
             return;
         }
         clearAllBtn.style.display = 'block'; 
@@ -844,6 +1147,9 @@
             });
             historyList.appendChild(li);
         });
+        
+        // Sync PC sidebar
+        if (document.body.classList.contains('sidebar-open')) renderPCHistory();
     }
 
     function deleteChat(id) {
@@ -981,8 +1287,12 @@
         const signal = abortController.signal;
         
         let fullResponseBuffer = ""; let displayedResponse = ""; let typingInterval = null;   
+        
+        // Select Endpoint based on Model
+        const targetUrl = BACKEND_ENDPOINTS[currentModel] || BACKEND_ENDPOINTS['g-fast'];
+
         try {
-            const response = await fetch(BACKEND_ENDPOINT, {
+            const response = await fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text, history: [PRE_PROMPT, ...history] }),
