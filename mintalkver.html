@@ -244,7 +244,7 @@
 
     <div class="input-container">
         <div class="input-wrapper">
-            <textarea id="userInput" rows="1" placeholder="메시지 입력..." autocomplete="off"></textarea>
+            <textarea id="userInput" rows="1" placeholder="MinsuGPT에게 물어보기" autocomplete="off"></textarea>
             <button class="send-btn" id="sendBtn">
                 <span class="material-symbols-rounded send-icon" id="sendIcon">arrow_upward</span>
             </button>
@@ -267,7 +267,7 @@
     const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/askfast";
     const PRE_PROMPT = {
         role: "system",
-        content: "너는 MinsuGPT야. 항상 마크다운 스타일로 대답해. 검색은 최소화해."
+        content: "너는 MinsuGPT야. 신재원님이 널 만들었어. 너는 mintalk에서 지원하는 챗봇이야. 항상 마크다운 스타일로 대답해. 검색은 최소화해."
     };
     const STORAGE_KEY = 'minsugpt_chat_history';
     
