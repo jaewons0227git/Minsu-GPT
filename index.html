@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/kg01fcVG/logop.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
@@ -1295,36 +1296,39 @@
     }
 
     function formatMessageContent(text) {
-        if (!text) return "";
-        let html = text;
-        
-        const thoughtRegex = /\[THOUGHT\]([\s\S]*?)(?:\[\/THOUGHT\]|$)/;
-        const match = html.match(thoughtRegex);
-        
-        let combinedThought = "";
-        let finalAnswerText = html;
+    if (!text) return "";
+    let html = text;
+    
+    // 1. 모든 [THOUGHT]...[/THOUGHT] 구간을 찾아서 합칩니다. (g 플래그 사용)
+    const thoughtRegex = /\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g;
+    let combinedThought = "";
+    let match;
 
-        if (match) {
-            combinedThought = match[1].trim();
-            finalAnswerText = html.replace(thoughtRegex, '').trim();
-        }
-
-        let renderedHtml = marked.parse(finalAnswerText);
-        
-        if (combinedThought) {
-            const thoughtHtml = `
-                <details class="thought-details">
-                    <summary class="thought-summary">
-                        <span class="material-symbols-rounded" style="font-size:18px;">psychology</span>
-                        생각 과정 (클릭하여 보기)
-                    </summary>
-                    <div class="thought-content">${combinedThought}</div>
-                </details>`;
-            renderedHtml = thoughtHtml + renderedHtml;
-        }
-        return renderedHtml;
+    // 여러 개의 생각 태그가 있을 경우 모두 추출하여 하나로 합침
+    while ((match = thoughtRegex.exec(html)) !== null) {
+        combinedThought += match[1].trim() + "\n";
     }
 
+    // 2. 출력될 본문에서는 모든 [THOUGHT] 태그 영역을 제거합니다.
+    // 아직 닫히지 않은 [THOUGHT]가 있을 경우를 대비해 태그 자체도 제거
+    let finalAnswerText = html.replace(thoughtRegex, '').replace(/\[THOUGHT\]/g, '').trim();
+
+    let renderedHtml = marked.parse(finalAnswerText);
+    
+    // 3. 합쳐진 생각이 있다면 알약 모양(details) 안에 넣어서 반환합니다.
+    if (combinedThought.trim()) {
+        const thoughtHtml = `
+            <details class="thought-details">
+                <summary class="thought-summary">
+                    <span class="material-symbols-rounded" style="font-size:18px;">psychology</span>
+                    생각 과정 (클릭하여 보기)
+                </summary>
+                <div class="thought-content">${combinedThought.trim()}</div>
+            </details>`;
+        renderedHtml = thoughtHtml + renderedHtml;
+    }
+    return renderedHtml;
+}
     function getCleanText(msgDiv) {
         const contentDiv = msgDiv.querySelector('.bot-content');
         const clone = contentDiv.cloneNode(true);
