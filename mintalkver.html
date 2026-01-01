@@ -45,11 +45,12 @@
 
         #app { display: flex; flex-direction: column; height: 100%; position: relative; }
 
-        /* 🌟 애니메이션 정의 */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* 🌟 [수정됨] 위로 올라오는 동작 제거, 밝기(투명도)만 변화 */
+        @keyframes fadeInOnly {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
+        
         @keyframes slideInRight {
             from { opacity: 0; transform: translateX(20px); }
             to { opacity: 1; transform: translateX(0); }
@@ -96,51 +97,45 @@
         #welcomeContainer {
             position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
             width: 92%; max-width: 720px; 
-            text-align: left; /* 왼쪽 정렬 */
+            text-align: left; 
             transition: opacity 0.3s ease; z-index: 5; 
         }
         
-        /* 웰컴 텍스트 애니메이션 */
+        /* 🌟 [수정됨] 마진을 줄여서 버튼과의 간격 좁힘 */
         .welcome-text { 
             font-size: clamp(1.5rem, 5vw, 2.0rem); 
             font-weight: 500; 
             letter-spacing: -0.03em; 
             color: #1a1a1a; 
-            margin-bottom: 24px;
+            margin-bottom: 12px; /* 간격 좁힘 (기존 24px -> 12px) */
             margin-left: 4px;
-            animation: fadeInUp 0.6s ease-out;
+            animation: fadeInOnly 0.6s ease-out; /* 위로 올라오는 효과 제거 */
         }
 
-        /* 🌟 [수정됨] Suggestion Container */
+        /* 🌟 [수정됨] 버튼 컨테이너: 줄바꿈 금지(nowrap) */
         .suggestion-container {
             display: flex;
             width: 100%;
-            gap: 6px; /* 모바일을 위해 간격 좁힘 */
-            
-            /* 왼쪽 정렬 및 줄바꿈 금지 */
+            gap: 6px;
             justify-content: flex-start;
             flex-wrap: nowrap; /* ⚠️ 절대 줄바꿈 금지 */
-            
-            /* 혹시 공간이 너무 부족해도 스크롤 없이 수축되게 설정 */
-            overflow: hidden; 
+            overflow: hidden; /* 넘치면 숨김 (안전을 위해) */
         }
 
-        /* 🌟 [수정됨] Suggestion Button */
+        /* 🌟 [수정됨] 버튼 스타일: 공간 부족 시 줄어들도록 설정 */
         .suggestion-btn {
             background-color: white;
             border: 1px solid var(--input-border);
             border-radius: 9999px; 
             
-            /* 1. 수축 허용 (Shrink) */
+            /* 수축 허용 */
             flex: 0 1 auto; 
             min-width: 0; /* 내용물보다 작아질 수 있게 허용 */
             
-            /* 2. 사이즈 조절 */
-            /* 화면이 작을때는 패딩을 줄여서라도 한줄에 넣음 */
+            /* 사이즈 조절 (모바일 대응) */
             padding: 10px clamp(8px, 2vw, 16px); 
+            font-size: clamp(11px, 3.2vw, 15px); 
             
-            /* 3. 텍스트 처리 */
-            font-size: clamp(11px, 3.2vw, 15px); /* 폰트 크기 유동적 */
             color: var(--text-main);
             cursor: pointer;
             white-space: nowrap; /* 텍스트 줄바꿈 금지 */
@@ -150,28 +145,15 @@
             transition: all 0.2s ease, transform 0.1s;
             font-family: var(--font-ko);
             letter-spacing: -0.03em; 
-            
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 4px; /* 아이콘과 텍스트 사이 간격도 약간 줄임 */
-
+            gap: 4px;
+            
             opacity: 0; 
-            animation: fadeInUp 0.5s ease-out forwards;
+            animation: fadeInOnly 0.5s ease-out forwards; /* 위로 올라오는 효과 제거 */
         }
 
-        /* PC 버전 오버라이드 (공간이 넉넉할 때) */
-        @media (min-width: 768px) {
-            .suggestion-container {
-                gap: 10px;
-            }
-            .suggestion-btn {
-                padding: 10px 18px; /* PC는 넉넉하게 */
-                gap: 6px;
-            }
-        }
-
-        /* 버튼 순차 등장 */
         .suggestion-btn:nth-child(1) { animation-delay: 0.1s; }
         .suggestion-btn:nth-child(2) { animation-delay: 0.2s; }
         .suggestion-btn:nth-child(3) { animation-delay: 0.3s; }
@@ -184,16 +166,14 @@
         .suggestion-btn:active { transform: scale(0.96); }
 
         .suggestion-btn .material-symbols-rounded {
-            font-size: clamp(16px, 4vw, 18px); /* 아이콘 크기도 유동적 */
+            font-size: clamp(16px, 4vw, 18px);
             font-variation-settings: 'wght' 500;
-            flex-shrink: 0; /* 아이콘은 찌그러지지 않게 */
+            flex-shrink: 0;
         }
 
-        /* 아이콘 색상 */
         .icon-joke { color: #2563eb; } 
         .icon-talk { color: #9333ea; } 
         .icon-write { color: #ef4444; } 
-
 
         /* --- Chat Window --- */
         .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
@@ -206,23 +186,73 @@
 
         .msg { 
             display: flex; flex-direction: column; width: 100%; 
-            animation: fadeInUp 0.4s ease-out; 
+            /* 🌟 [수정됨] 메세지 등장 시 위로 올라오는 효과 제거 */
+            animation: fadeInOnly 0.4s ease-out; 
         }
         .msg.bot { align-items: flex-start; }
         
         .bot-content { 
             width: 100%; font-size: 1rem; line-height: 1.6; word-break: break-word; 
             display: block; min-height: 1.2em;
-            font-family: var(--font-ko); 
+            font-family: var(--font-en), var(--font-ko); 
         }
         .bot-content p { margin: 0 0 10px 0; }
-        .bot-content pre { background: var(--code-bg); padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 0.9em; margin: 10px 0; }
-        .bot-content code { background: var(--code-bg); padding: 2px 4px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+        
+        .bot-content pre { 
+            background: var(--code-bg); padding: 12px; border-radius: 8px; 
+            overflow-x: auto; font-size: 0.9em; margin: 10px 0; 
+            position: relative; 
+        }
+        .bot-content code { 
+            background: transparent; padding: 0; 
+            font-family: monospace; font-size: 0.9em; 
+        }
+        
+        .bot-content p code, .bot-content li code {
+            background: var(--code-bg); padding: 2px 4px; border-radius: 4px;
+        }
 
-        .thought-box {
-            background: var(--thought-bg); border-left: 3px solid var(--thought-border);
-            padding: 10px 14px; margin-bottom: 15px; font-size: 0.85rem; color: #777; border-radius: 4px;
-            white-space: pre-wrap; font-style: italic;
+        .code-copy-btn {
+            position: absolute; top: 6px; right: 6px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #ddd; border-radius: 6px;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; opacity: 0; transition: opacity 0.2s;
+            color: #555;
+        }
+        .bot-content pre:hover .code-copy-btn { opacity: 1; }
+        .code-copy-btn:hover { background: white; color: var(--text-main); }
+        .code-copy-btn .material-symbols-rounded { font-size: 16px; }
+
+        details.thought-details {
+            border: 1px solid var(--thought-border);
+            background: var(--thought-bg);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        summary.thought-summary {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #777;
+            font-weight: 500;
+            list-style: none;
+            display: flex; align-items: center; gap: 6px;
+            outline: none;
+            user-select: none;
+        }
+        summary.thought-summary::-webkit-details-marker { display: none; }
+        .thought-content {
+            padding: 10px 14px;
+            border-top: 1px solid var(--thought-border);
+            font-size: 0.9rem;
+            color: #555;
+            white-space: pre-wrap;
+            font-family: var(--font-ko);
+            background: white;
+            line-height: 1.5;
         }
 
         .msg.user { align-items: flex-end; }
@@ -230,7 +260,7 @@
             max-width: 80%; padding: 10px 18px; border-radius: 22px;
             background-color: var(--user-msg-bg); color: var(--text-main); font-size: 0.95rem;
             white-space: pre-wrap;
-            font-family: var(--font-ko);
+            font-family: var(--font-en), var(--font-ko); 
             line-height: 1.5;
         }
 
@@ -265,7 +295,7 @@
             padding: 0; 
             margin-bottom: 4px; 
             font-size: 0.95rem; 
-            font-family: var(--font-ko);
+            font-family: var(--font-en), var(--font-ko); 
             resize: none; 
             max-height: 150px; 
             overflow-y: hidden; 
@@ -274,6 +304,7 @@
             height: 24px; 
             box-sizing: border-box;
         }
+        #userInput::placeholder { font-family: var(--font-en), var(--font-ko); opacity: 0.6; }
 
         .send-btn {
             background-color: var(--btn-disabled); color: var(--btn-disabled-icon); border: none; border-radius: 50%;
@@ -286,7 +317,7 @@
         
         .thinking-indicator { 
             color: var(--text-gray); font-size: 0.85rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; height: 32px;
-            animation: fadeInUp 0.3s ease-out;
+            animation: fadeInOnly 0.3s ease-out; /* 위로 올라오는 효과 제거 */
         }
         .ui-load-glx { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
         .ui-load-glx > .gbx { width: 18px; height: 18px; position: relative; transform: scale(1.0); }
@@ -338,7 +369,6 @@
             transform: scale(1) translateY(0); 
         }
         
-        /* Confirm Modal Specific */
         .modal-box.small-box { max-width: 320px; height: auto; padding: 24px; text-align: center; }
         .confirm-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
         .confirm-msg { font-size: 0.95rem; color: #666; margin-bottom: 24px; line-height: 1.5; }
@@ -379,7 +409,7 @@
             padding: 12px; border-bottom: 1px solid #eee; transition: background 0.2s;
             border-radius: 8px; margin-bottom: 4px;
             display: flex; justify-content: space-between; align-items: center;
-            animation: fadeInUp 0.3s ease-out backwards;
+            animation: fadeInOnly 0.3s ease-out backwards; /* 위로 올라오는 효과 제거 */
         }
         .history-item:hover { background: #f9f9f9; }
         .history-info { flex: 1; overflow: hidden; cursor: pointer; }
@@ -473,7 +503,6 @@
 </div>
 
 <script>
-    // --- Configuration ---
     const BACKEND_ENDPOINT = "https://jaewondev.pythonanywhere.com/askfast";
     const PRE_PROMPT = {
         role: "system",
@@ -481,7 +510,6 @@
     };
     const STORAGE_KEY = 'minsugpt_chat_history';
     
-    // --- Elements ---
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
     const sendIcon = document.getElementById('sendIcon');
@@ -497,14 +525,12 @@
     const historyList = document.getElementById('historyList');
     const clearAllBtn = document.getElementById('clearAllBtn');
 
-    // Confirm Modal Elements
     const confirmModal = document.getElementById('confirmModal');
     const confirmTitle = document.getElementById('confirmTitle');
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
     const confirmOkBtn = document.getElementById('confirmOkBtn');
 
-    // --- State ---
     let history = []; 
     let currentChatId = null; 
     let isStreaming = false;
@@ -514,7 +540,6 @@
 
     marked.setOptions({ breaks: true, gfm: true });
 
-    // --- Input Logic ---
     const BASE_HEIGHT = '24px'; 
     function resizeInput() {
         userInput.style.height = BASE_HEIGHT; 
@@ -546,17 +571,14 @@
         else sendMessage();
     });
 
-    // --- Chat Logic ---
     newChatBtn.addEventListener('click', startNewChat);
     
-    // History Modal Events
     historyBtn.addEventListener('click', openHistoryModal);
     closeModalBtn.addEventListener('click', closeHistoryModal);
     historyModal.addEventListener('click', (e) => {
         if (e.target === historyModal) closeHistoryModal();
     });
     
-    // 전체 삭제 버튼 이벤트
     clearAllBtn.addEventListener('click', () => {
         showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?<br>이 작업은 되돌릴 수 없습니다.", () => {
             localStorage.removeItem(STORAGE_KEY);
@@ -565,7 +587,6 @@
         });
     });
 
-    // Confirm Modal Logic
     function showConfirmModal(title, msg, onConfirm) {
         confirmTitle.innerText = title;
         confirmMessage.innerHTML = msg;
@@ -587,7 +608,6 @@
         if (e.target === confirmModal) closeConfirmModal();
     });
 
-
     function startNewChat() {
         if (isStreaming) stopResponse();
         currentChatId = null;
@@ -602,7 +622,7 @@
         
         const originalContent = welcomeContainer.innerHTML;
         welcomeContainer.innerHTML = '';
-        void welcomeContainer.offsetWidth; // Trigger Reflow
+        void welcomeContainer.offsetWidth; 
         welcomeContainer.innerHTML = originalContent;
     }
 
@@ -661,7 +681,6 @@
         setTimeout(scrollToBottom, 100);
     }
 
-    // 개별 삭제 기능 포함한 렌더링
     function renderHistoryList() {
         const chats = getSavedChats();
         historyList.innerHTML = '';
@@ -676,7 +695,6 @@
             const date = new Date(chat.timestamp).toLocaleDateString();
             const li = document.createElement('li');
             li.className = 'history-item';
-            // 리스트 아이템 순차 애니메이션 딜레이
             li.style.animationDelay = `${index * 0.05}s`;
             
             li.innerHTML = `
@@ -714,24 +732,62 @@
     function formatMessageContent(text) {
         if (!text) return "";
         let html = text;
-        const thoughtMatches = html.match(/\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g);
+        
+        const thoughtRegex = /\[THOUGHT\]([\s\S]*?)(?:\[\/THOUGHT\]|$)/;
+        const match = html.match(thoughtRegex);
+        
         let combinedThought = "";
         let finalAnswerText = html;
-        if (thoughtMatches) {
-            combinedThought = thoughtMatches.map(m => m.replace(/\[\/?THOUGHT\]/g, '').trim()).join(' ').replace(/\n/g, ' '); 
-            finalAnswerText = html.replace(/\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g, '');
+
+        if (match) {
+            combinedThought = match[1].trim();
+            finalAnswerText = html.replace(thoughtRegex, '').trim();
         }
+
         let renderedHtml = marked.parse(finalAnswerText);
-        if (combinedThought) renderedHtml = `<div class="thought-box">${combinedThought}</div>` + renderedHtml;
+        
+        if (combinedThought) {
+            const thoughtHtml = `
+                <details class="thought-details">
+                    <summary class="thought-summary">
+                        <span class="material-symbols-rounded" style="font-size:18px;">psychology</span>
+                        생각 과정 (클릭하여 보기)
+                    </summary>
+                    <div class="thought-content">${combinedThought}</div>
+                </details>`;
+            renderedHtml = thoughtHtml + renderedHtml;
+        }
         return renderedHtml;
     }
 
     function getCleanText(msgDiv) {
         const contentDiv = msgDiv.querySelector('.bot-content');
         const clone = contentDiv.cloneNode(true);
-        const thoughts = clone.querySelectorAll('.thought-box');
-        thoughts.forEach(t => t.remove()); 
+        clone.querySelectorAll('.thought-details').forEach(t => t.remove()); 
+        clone.querySelectorAll('.code-copy-btn').forEach(b => b.remove());
         return clone.innerText.trim();
+    }
+
+    function addCodeCopyButtons(container) {
+        container.querySelectorAll('pre').forEach(pre => {
+            if (pre.querySelector('.code-copy-btn')) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.title = '코드 복사';
+            btn.innerHTML = '<span class="material-symbols-rounded">content_copy</span>';
+            
+            btn.addEventListener('click', () => {
+                const code = pre.querySelector('code')?.innerText || pre.innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalIcon = btn.innerHTML;
+                    btn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--mint-point)">check</span>';
+                    setTimeout(() => btn.innerHTML = originalIcon, 1500);
+                });
+            });
+            
+            pre.appendChild(btn);
+        });
     }
 
     async function sendMessage(userMessageOverride = null, isRegenerate = false) {
@@ -809,7 +865,12 @@
         setStreamingState(false);
         const indicator = msgDiv.querySelector('.thinking-indicator');
         if (indicator) indicator.remove();
-        msgDiv.querySelector('.bot-content').innerHTML = formatMessageContent(content);
+        
+        const contentDiv = msgDiv.querySelector('.bot-content');
+        contentDiv.innerHTML = formatMessageContent(content);
+        
+        addCodeCopyButtons(contentDiv);
+
         history.push({ role: "model", content: content });
         saveChatToLocal(); 
         appendActionButtons(msgDiv, content); 
