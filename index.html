@@ -12,6 +12,23 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+    <script>
+    // 허용할 도메인 리스트
+    const ALLOWED_REFERRERS = [
+        'https://ai.minsugpt.kro.kr/',
+        'https://user.minsugpt.kro.kr/'
+    ];
+    const REDIRECT_URL = 'https://status.minsugpt.kro.kr';
+    const referrer = document.referrer;
+
+    // some() 함수를 사용하여 현재 referrer가 허용 리스트 중 하나로 시작하는지 확인합니다.
+    const isAllowed = ALLOWED_REFERRERS.some(url => referrer.startsWith(url));
+
+    if (referrer === '' || !isAllowed) {
+      window.location.replace(REDIRECT_URL);
+    }
+</script>
+
     <style>
         :root {
             --bg-main: #ffffff;
@@ -32,8 +49,8 @@
             --error-red: #ef4444;
             --btn-bg-soft: #f5f5f5;
             
-            /* New Variables for Sidebar & Header Pill */
-            --sidebar-width: 300px;
+            /* Variables for Sidebar & Header Pill */
+            --sidebar-width: 280px; /* Adjusted width */
             --mini-sidebar-width: 60px;
             --header-btn-bg: #f1f4f9;
             --border-color: #e5e8eb;
@@ -64,7 +81,7 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* --- PC Sidebar Styles (New) --- */
+        /* --- PC Sidebar Styles (Modified) --- */
         .mini-sidebar {
             position: fixed; top: 0; left: 0; bottom: 0; width: var(--mini-sidebar-width);
             background-color: var(--bg-main); border-right: 1px solid var(--input-border);
@@ -88,53 +105,107 @@
         }
         .pc-sidebar.visible { transform: translateX(0); }
 
-        .pc-sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border); }
-        .pc-sidebar-close { cursor: pointer; padding: 4px; border-radius: 50%; display: flex; align-items: center; }
+        /* New PC Sidebar Internal Layout */
+        .pc-sidebar-content {
+            display: flex; flex-direction: column; height: 100%; padding: 16px; box-sizing: border-box;
+        }
+
+        .sidebar-logo-area {
+            display: flex; align-items: center; margin-bottom: 16px; cursor: pointer; padding-left: 4px;
+        }
+        .sidebar-logo-img {
+            height: 24px; width: auto; display: block;
+        }
+
+        .sidebar-search-box {
+            background-color: var(--surface-secondary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .sidebar-search-input {
+            border: none; background: transparent; width: 100%; outline: none;
+            font-family: var(--font-ko); font-size: 0.9rem; color: var(--text-main);
+        }
+        .sidebar-search-input::placeholder { color: #aaa; }
+
+        .sidebar-nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 0.9rem; font-weight: 500;
+            transition: background-color 0.2s;
+            margin-bottom: 2px;
+        }
+        .sidebar-nav-item:hover { background-color: var(--btn-bg-soft); }
+        .sidebar-nav-item .material-symbols-rounded { font-size: 20px; color: #555; }
+
+        .sidebar-section-title {
+            font-size: 0.75rem; color: var(--text-gray); font-weight: 600;
+            margin: 20px 0 8px 12px;
+        }
+
+        .pc-history-container { 
+            flex: 1; overflow-y: auto; overflow-x: hidden; 
+            margin-top: 4px; 
+        }
+        .pc-history-container::-webkit-scrollbar { width: 4px; }
+        .pc-history-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+        /* Reuse history item styles but adjust padding */
+        .pc-sidebar .history-item { padding: 10px 12px; border-bottom: none; border-radius: 8px; }
+        .pc-sidebar .history-item:hover { background-color: var(--btn-bg-soft); }
+        
+        .pc-sidebar-close { 
+            position: absolute; right: 10px; top: 16px;
+            cursor: pointer; padding: 4px; border-radius: 50%; display: flex; 
+        }
         .pc-sidebar-close:hover { background-color: var(--btn-bg-soft); }
-        
-        /* Reusing History List styles for PC Sidebar content */
-        .pc-history-container { flex: 1; overflow-y: auto; padding: 10px; }
-        
+
         /* Layout Adjustments for PC Sidebar */
         @media (min-width: 769px) {
             .mini-sidebar { display: flex; }
             #app { margin-left: var(--mini-sidebar-width); }
             
             body.sidebar-open #app { margin-left: var(--sidebar-width); }
-            /* Hide mini sidebar when main sidebar is open */
             body.sidebar-open .mini-sidebar { display: none; } 
         }
 
-        /* --- Header Styles (Modified for Pill) --- */
+        /* --- Header Styles (Modified for Left Pill & No Border) --- */
         header {
             padding: 8px 20px; 
             display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--input-border); background: white; flex-shrink: 0; z-index: 10;
+            background: white; flex-shrink: 0; z-index: 10;
+            border-bottom: none; /* Removed Border */
         }
         
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        
-        /* Menu Button (Circle) */
+        /* Left Pill Group */
+        .header-left-pill {
+            display: flex; align-items: center; gap: 4px;
+            background-color: var(--header-btn-bg);
+            border-radius: 30px;
+            padding: 4px 14px 4px 6px;
+        }
+
+        /* Menu Button (Inside Pill) */
         .header-btn-circle {
-            width: 40px; height: 40px;
+            width: 32px; height: 32px;
             background-color: transparent;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; color: var(--text-main);
             transition: background-color 0.2s;
         }
-        .header-btn-circle:hover { background-color: var(--btn-bg-soft); }
+        .header-btn-circle:hover { background-color: rgba(0,0,0,0.05); }
 
-        .logo-group { display: flex; align-items: baseline; gap: 6px; }
         .logo-main { 
             font-family: var(--font-logo); 
             font-size: 1.1rem; font-weight: 300; letter-spacing: -0.03em; 
-        }
-        .logo-sub { 
-            font-family: var(--font-logo); 
-            font-size: 1.1rem; 
-            color: var(--text-gray); 
-            font-weight: 400; 
+            margin-left: 4px;
+            user-select: none;
         }
 
         /* Right Side: Pill Group */
@@ -551,9 +622,10 @@
         .modal-btn:active { transform: scale(0.95); }
         .btn-cancel { background: #f0f0f0; color: #333; }
         .btn-delete { background: var(--error-red); color: white; }
+        .btn-ok { background: var(--text-main); color: white; }
 
         @media (max-width: 600px) {
-            .modal-overlay:not(#confirmModal) { align-items: flex-end; }
+            .modal-overlay:not(#confirmModal):not(#msgModal) { align-items: flex-end; }
             .modal-box:not(.small-box) {
                 width: 100%; max-width: 100%; border-radius: 24px 24px 0 0; 
                 margin: 0; max-height: 85vh; 
@@ -611,32 +683,50 @@
 </aside>
 
 <aside id="pc-sidebar" class="pc-sidebar">
-    <div class="pc-sidebar-header">
-        <span style="font-weight:600; font-size:1.1rem;">채팅 기록</span>
-        <div class="pc-sidebar-close" id="pc-sidebar-close">
-            <span class="material-symbols-rounded">close</span>
+    <div class="pc-sidebar-content">
+        <div class="sidebar-logo-area" id="sidebar-logo-btn">
+             <img src="https://i.postimg.cc/LJV3sj3F/logop.png" alt="Logo" class="sidebar-logo-img">
+        </div>
+        
+        <div class="sidebar-search-box">
+             <span class="material-symbols-rounded" style="color:#999; font-size: 20px;">search</span>
+             <input type="text" class="sidebar-search-input" id="sidebar-search" placeholder="채팅 검색..." autocomplete="off">
+        </div>
+
+        <div class="sidebar-nav-item" onclick="showFeatureNotReady()">
+            <span class="material-symbols-rounded">image</span> 이미지
+        </div>
+        <div class="sidebar-nav-item" onclick="showFeatureNotReady()">
+            <span class="material-symbols-rounded">apps</span> 앱
+        </div>
+        <div class="sidebar-nav-item" onclick="showFeatureNotReady()">
+            <span class="material-symbols-rounded">folder_open</span> 프로젝트
+        </div>
+
+        <div class="sidebar-section-title">최근</div>
+        
+        <div class="pc-history-container" id="pcHistoryContainer">
+            </div>
+
+        <div style="margin-top: auto; border-top: 1px solid var(--input-border); padding-top: 10px;">
+             <div class="sidebar-nav-item" id="pc-new-chat-btn">
+                <span class="material-symbols-rounded">add</span> 새 채팅
+             </div>
+             <div class="sidebar-nav-item" id="pc-delete-all" style="color:var(--error-red);">
+                <span class="material-symbols-rounded">delete</span> 전체 삭제
+             </div>
         </div>
     </div>
-    <div class="pc-history-container" id="pcHistoryContainer">
-        </div>
-    <div style="padding: 16px; border-top: 1px solid var(--input-border);">
-         <div class="menu-item" id="pc-delete-all" style="color:var(--error-red); cursor:pointer;">
-            <span class="material-symbols-rounded">delete</span>
-            전체 삭제
-        </div>
+    <div class="pc-sidebar-close" id="pc-sidebar-close" style="display:none;"> <span class="material-symbols-rounded">close</span>
     </div>
 </aside>
 
 <div id="app">
     <header>
-        <div class="header-left">
-            <div class="header-btn-circle" id="menu-button">
+        <div class="header-left-pill"> <div class="header-btn-circle" id="menu-button">
                 <span class="material-symbols-rounded">menu</span>
             </div>
-            <div class="logo-group">
-                <span class="logo-main">MinsuGPT</span>
-                <span class="logo-sub"> </span>
-            </div>
+            <span class="logo-main">MinsuGPT</span>
         </div>
         
         <div class="header-pill-group">
@@ -664,7 +754,8 @@
             <button class="header-icon" id="newChatBtn" title="새 채팅">
                 <span class="material-symbols-rounded">edit_square</span>
             </button>
-            <button class="header-icon" id="historyBtn" title="채팅 기록" style="display:none;"> <span class="material-symbols-rounded">history</span>
+            <button class="header-icon" id="historyBtn" title="채팅 기록" style="display:none;"> 
+                 <span class="material-symbols-rounded">history</span>
             </button>
         </div>
     </header>
@@ -698,15 +789,15 @@
             </button>
             
             <div class="attach-menu" id="attachMenu">
-                <button class="menu-item">
+                <button class="menu-item" onclick="showFeatureNotReady()">
                     <span class="material-symbols-rounded" style="color:#20c997">image</span>
                     이미지
                 </button>
-                <button class="menu-item">
+                <button class="menu-item" onclick="showFeatureNotReady()">
                     <span class="material-symbols-rounded" style="color:#3b82f6">folder_open</span>
                     파일
                 </button>
-                <button class="menu-item">
+                <button class="menu-item" onclick="showFeatureNotReady()">
                     <span class="material-symbols-rounded" style="color:#ef4444">photo_camera</span>
                     카메라
                 </button>
@@ -746,6 +837,16 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="msgModal">
+    <div class="modal-box small-box">
+        <div class="confirm-title" id="msgTitle">알림</div>
+        <div class="confirm-msg" id="msgContent"></div>
+        <div class="modal-actions">
+            <button class="modal-btn btn-ok" id="msgOkBtn">확인</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // Backend Endpoints
     const BACKEND_ENDPOINTS = {
@@ -781,6 +882,12 @@
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
     const confirmOkBtn = document.getElementById('confirmOkBtn');
+    
+    // Msg Modal
+    const msgModal = document.getElementById('msgModal');
+    const msgTitle = document.getElementById('msgTitle');
+    const msgContent = document.getElementById('msgContent');
+    const msgOkBtn = document.getElementById('msgOkBtn');
 
     // New Element References
     const plusBtn = document.getElementById('plusBtn');
@@ -795,8 +902,13 @@
     const pcSidebarClose = document.getElementById('pc-sidebar-close');
     const miniNewChat = document.getElementById('mini-new-chat');
     const miniDeleteAll = document.getElementById('mini-delete-all');
+    
+    // New PC Sidebar Elements
     const pcDeleteAll = document.getElementById('pc-delete-all');
+    const pcNewChatBtn = document.getElementById('pc-new-chat-btn');
     const pcHistoryContainer = document.getElementById('pcHistoryContainer');
+    const sidebarLogoBtn = document.getElementById('sidebar-logo-btn');
+    const sidebarSearch = document.getElementById('sidebar-search');
 
     let history = []; 
     let currentChatId = null; 
@@ -870,14 +982,24 @@
         }
     });
 
-    pcSidebarClose.addEventListener('click', () => togglePCSidebar(false));
+    // Close buttons for sidebar
+    if(pcSidebarClose) pcSidebarClose.addEventListener('click', () => togglePCSidebar(false));
+    
+    // Sidebar Actions
     miniNewChat.addEventListener('click', startNewChat);
+    sidebarLogoBtn.addEventListener('click', startNewChat);
+    pcNewChatBtn.addEventListener('click', startNewChat);
+
+    // Sidebar Search Listener
+    sidebarSearch.addEventListener('input', (e) => {
+        renderPCHistory(e.target.value);
+    });
     
     // PC Delete functions
     miniDeleteAll.addEventListener('click', () => {
         showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?", () => {
              localStorage.removeItem(STORAGE_KEY);
-             renderHistoryList(); // updates both mobile and PC
+             renderHistoryList(); 
              startNewChat();
         });
     });
@@ -889,19 +1011,39 @@
         });
     });
 
-    function renderPCHistory() {
-        // Clone the mobile history list logic but render into PC Sidebar
+    // Feature Not Ready Modal
+    window.showFeatureNotReady = function() {
+        msgTitle.innerText = "알림";
+        msgContent.innerText = "아직 지원되지 않는 기능입니다.";
+        msgModal.classList.add('open');
+    }
+    
+    msgOkBtn.addEventListener('click', () => {
+        msgModal.classList.remove('open');
+    });
+    msgModal.addEventListener('click', (e) => {
+        if (e.target === msgModal) msgModal.classList.remove('open');
+    });
+
+
+    function renderPCHistory(filter = "") {
         const chats = getSavedChats();
+        let filteredChats = chats;
+        
+        if (filter.trim() !== "") {
+            filteredChats = chats.filter(c => c.title.toLowerCase().includes(filter.toLowerCase()));
+        }
+
         const list = document.createElement('ul');
         list.className = 'history-list';
         list.style.padding = '0';
         
-        if (chats.length === 0) {
-            pcHistoryContainer.innerHTML = '<div class="empty-history">기록된 채팅이 없습니다.</div>';
+        if (filteredChats.length === 0) {
+            pcHistoryContainer.innerHTML = '<div class="empty-history">검색 결과가 없습니다.</div>';
             return;
         }
 
-        chats.forEach((chat) => {
+        filteredChats.forEach((chat) => {
             const date = new Date(chat.timestamp).toLocaleDateString();
             const li = document.createElement('li');
             li.className = 'history-item';
@@ -917,7 +1059,6 @@
             
             li.querySelector('.history-info').addEventListener('click', () => {
                 loadChat(chat.id);
-                // On small PC screens, maybe close sidebar? Optional.
             });
             li.querySelector('.delete-chat-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -954,14 +1095,6 @@
         }
     });
 
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', () => {
-            console.log('Feature Clicked: ' + item.innerText); 
-            attachMenu.classList.remove('open');
-            plusBtn.classList.remove('active');
-        });
-    });
-
     const BASE_HEIGHT = '24px'; 
     function resizeInput() {
         userInput.style.height = BASE_HEIGHT; 
@@ -994,9 +1127,6 @@
     });
 
     newChatBtn.addEventListener('click', startNewChat);
-    
-    // Use the function directly for the modal logic, but button is now hidden in PC Pill
-    // historyBtn.addEventListener('click', openHistoryModal); 
     
     closeModalBtn.addEventListener('click', closeHistoryModal);
     historyModal.addEventListener('click', (e) => {
@@ -1085,7 +1215,9 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
         
         // Update Sidebars if open
-        if (document.body.classList.contains('sidebar-open')) renderPCHistory();
+        if (document.body.classList.contains('sidebar-open')) {
+            renderPCHistory(sidebarSearch.value);
+        }
     }
 
     function loadChat(id) {
@@ -1116,7 +1248,6 @@
         if (chats.length === 0) {
             historyList.innerHTML = '<li class="empty-history">기록된 채팅이 없습니다.</li>';
             clearAllBtn.style.display = 'none'; 
-            // Also update PC view if applicable
             if (document.body.classList.contains('sidebar-open')) renderPCHistory();
             return;
         }
@@ -1149,7 +1280,7 @@
         });
         
         // Sync PC sidebar
-        if (document.body.classList.contains('sidebar-open')) renderPCHistory();
+        if (document.body.classList.contains('sidebar-open')) renderPCHistory(sidebarSearch.value);
     }
 
     function deleteChat(id) {
@@ -1288,7 +1419,6 @@
         
         let fullResponseBuffer = ""; let displayedResponse = ""; let typingInterval = null;   
         
-        // Select Endpoint based on Model
         const targetUrl = BACKEND_ENDPOINTS[currentModel] || BACKEND_ENDPOINTS['g-fast'];
 
         try {
