@@ -1409,7 +1409,7 @@ input:checked + .slider:before { transform: translateX(18px); }
                     <div class="settings-item disabled-item">
     <div>
         <div class="setting-label" style="color: #777;">기본 쿠키 허용</div>
-        <div class="setting-desc">서비스 이용에 필수적인 쿠키입니다. <br> 이 쿠기는 끌 수 없습니다.</div>
+        <div class="setting-desc">서비스 이용에 필수적인 쿠키입니다. <br> 이 쿠키는 끌 수 없습니다.</div>
     </div>
     <label class="toggle-switch">
         <input type="checkbox" checked disabled>
@@ -1446,6 +1446,17 @@ input:checked + .slider:before { transform: translateX(18px); }
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="setting-collect-data" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="tab-response" class="settings-panel">
+                    <div class="settings-item">
+                        <div>
+                            <div class="setting-label">답변 데이터 이용</div>
+                            <div class="setting-desc">답변 향상을 위해 대화 내용을 이용하는 것을 허용합니다.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="setting-collect-data-two" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
