@@ -578,7 +578,7 @@
             font-size: 0.95rem; 
             font-family: var(--font-en), var(--font-ko); 
             resize: none; 
-            max-height: 100px; 
+            max-height: 90px; 
             overflow-y: hidden; 
             background: transparent;
             line-height: 24px; 
@@ -689,7 +689,7 @@
         
         .history-item {
             padding: 12px; border-bottom: 1px solid #eee; transition: background 0.2s;
-            border-radius: 8px; margin-bottom: 4px;
+            border-radius: 12px; margin-bottom: 4px;
             display: flex; justify-content: space-between; align-items: center;
             animation: fadeInOnly 0.3s ease-out backwards; 
         }
@@ -782,6 +782,12 @@
 }
 
 /* 모바일 전용 스타일 수정 (화면 너비 600px 이하) */
+/* 모든 요소에 대해 클릭 시 발생하는 파란색 하이라이트 제거 */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* 일부 구형 안드로이드 대응 */
+    outline: none; /* 포커스 시 나타나는 테두리도 함께 제거 */
+}
 
     </style>
 </head>
