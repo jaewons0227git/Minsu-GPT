@@ -170,7 +170,7 @@
         .pc-history-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
 
         /* Reuse history item styles but adjust padding */
-        .pc-sidebar .history-item { padding: 10px 12px; border-bottom: none; border-radius: 8px; }
+        .pc-sidebar .history-item { padding: 12px 12px; border-bottom: none; border-radius: 8px; }
         .pc-sidebar .history-item:hover { background-color: var(--btn-bg-soft); }
         
         .pc-sidebar-close { 
@@ -788,6 +788,53 @@
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* 일부 구형 안드로이드 대응 */
     outline: none; /* 포커스 시 나타나는 테두리도 함께 제거 */
 }
+
+
+/* 사이드바 텍스트 정렬 통일 (최근 타이틀 & 채팅 제목) */
+.sidebar-section-title {
+    /* 왼쪽 여백을 16px로 고정 */
+    margin: 24px 0 8px 16px !important;
+}
+
+.pc-sidebar .history-item {
+    /* 내부 여백 왼쪽을 16px로 고정하여 위 타이틀과 시작점 일치 */
+    padding: 10px 5px !important;
+}
+
+/* 추가: 메뉴 아이템(이미지, 앱 등)도 같은 라인으로 맞추고 싶다면 아래 주석을 해제하세요 */
+ .sidebar-nav-item {
+    padding: 10px 6px !important;
+} 
+
+
+/* 1. 사이드바 "최근" 타이틀과 채팅 제목 시작 위치 일치시키기 */
+.sidebar-section-title {
+    /* 왼쪽 여백을 16px로 설정 */
+    margin: 24px 0 8px 16px !important;
+}
+
+.pc-sidebar .history-item {
+    /* 아이템 내부 여백을 16px로 설정하여 위 타이틀 글자와 세로 라인을 맞춤 */
+    padding: 2px 5px !important;
+}
+
+/* 2. 채팅 제목 아래의 날짜/시간 텍스트 완전히 없애기 */
+.h-date {
+    display: none !important;
+}
+
+/* 3. 날짜가 사라진 후 제목이 위로 쏠리지 않게 중앙 정렬 보정 */
+.history-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 24px; /* 제목만 있을 때의 적정 높이 */
+}
+
+.h-title {
+    margin-bottom: 0 !important; /* 아래쪽 여백 제거 */
+}
+
 
     </style>
 </head>
