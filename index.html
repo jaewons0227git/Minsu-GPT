@@ -991,7 +991,24 @@ input:checked + .slider:before { transform: translateX(18px); }
     color: #444;
     font-size: 0.95rem;
     padding: 10px;
+    max-height: 70vh; /* 세로 높이 제한 */
+    overflow-y: auto; /* 내용이 길면 스크롤 발생 */
 }
+
+/* 스크롤바 디자인 (선택 사항: 더 깔끔하게 보이게 함) */
+.thought-modal-content::-webkit-scrollbar {
+    width: 4px;  /* 세로 스크롤바 두께 */
+}
+
+.thought-modal-content::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* 스크롤바 색상 */
+    border-radius: 10px;
+}
+
+.thought-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .thought-raw { display: none; }
 
 
@@ -1488,6 +1505,16 @@ input:checked + .slider:before { transform: translateX(18px); }
     let isMobile = /Mobi|Android/i.test(navigator.userAgent);
     let confirmCallback = null; 
 
+    // Random Thinking Texts
+    let thinkingInterval = null;
+    const thinkingMessages = [
+        "생각 중...",
+        "논리 점검 중...",
+        "정보를 분석 중...",
+        "답변 작성 중...",
+        "잠시만 기다려주세요..."
+    ];
+
     marked.setOptions({ breaks: true, gfm: true });
 
     /* --- Model Selector Logic --- */
@@ -1877,18 +1904,19 @@ function renderPCHistory(filter = "") {
 
     function formatMessageContent(text) {
         if (!text) return "";
-        let html = text;
+        let cleanText = text;
         
-        // Remove [THOUGHT] blocks from visible display
-        // We do not render the details element anymore.
-        const thoughtRegex = /\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g;
+        // 1. 이미 완료된 [THOUGHT]...[/THOUGHT] 블록 모두 제거
+        cleanText = cleanText.replace(/\[THOUGHT\][\s\S]*?\[\/THOUGHT\]/g, '');
         
-        // Remove tags and content for the main display
-        let finalAnswerText = html.replace(thoughtRegex, '').replace(/\[THOUGHT\]/g, '').trim();
+        // 2. 스트리밍 중에 열려있는 [THOUGHT] 태그 이후의 모든 내용 제거 (아직 닫히지 않은 경우)
+        // [THOUGHT]가 발견되면 그 지점부터 끝까지 다 자름
+        cleanText = cleanText.replace(/\[THOUGHT\][\s\S]*/, '');
+        
+        // 3. 혹시 남은 태그 제거
+        cleanText = cleanText.replace(/\[THOUGHT\]/g, '').replace(/\[\/THOUGHT\]/g, '');
 
-        let renderedHtml = marked.parse(finalAnswerText);
-        
-        return renderedHtml;
+        return marked.parse(cleanText.trim());
     }
 
     function getCleanText(msgDiv) {
@@ -2033,7 +2061,23 @@ function renderPCHistory(filter = "") {
         if (role === 'user') msgDiv.innerHTML = `<div class="user-bubble">${content}</div>`;
         else {
             let innerHTML = '';
-            if (isLoading) innerHTML += `<div class="thinking-indicator"><div class="ui-load-glx"><div class="gbx"><div class="bx"><i></i><i></i><i></i><i></i></div></div></div>생각 중...</div>`;
+            // 로딩 시 생각 중 텍스트와 애니메이션
+            if (isLoading) {
+                innerHTML += `<div class="thinking-indicator"><div class="ui-load-glx"><div class="gbx"><div class="bx"><i></i><i></i><i></i><i></i></div></div></div> 생각 중...</div>`;
+                
+                // 랜덤 텍스트 변경 로직 시작
+                if (thinkingInterval) clearInterval(thinkingInterval);
+                let msgIdx = 0;
+                // 초기화 후 5초마다 텍스트 변경
+                thinkingInterval = setInterval(() => {
+                    msgIdx = (msgIdx + 1) % thinkingMessages.length;
+                    const indicator = msgDiv.querySelector('.thinking-indicator');
+                    if(indicator && indicator.lastChild) {
+                        indicator.lastChild.textContent = " " + thinkingMessages[msgIdx];
+                    }
+                }, 5000);
+            }
+
             innerHTML += `<div class="bot-content">${formatMessageContent(content)}</div>`;
             msgDiv.innerHTML = innerHTML;
         }
@@ -2045,6 +2089,12 @@ function renderPCHistory(filter = "") {
         setStreamingState(false);
         const indicator = msgDiv.querySelector('.thinking-indicator');
         if (indicator) indicator.remove();
+        
+        // 로딩 텍스트 인터벌 종료
+        if (thinkingInterval) {
+            clearInterval(thinkingInterval);
+            thinkingInterval = null;
+        }
         
         const contentDiv = msgDiv.querySelector('.bot-content');
         contentDiv.innerHTML = formatMessageContent(content);
@@ -2066,8 +2116,9 @@ function renderPCHistory(filter = "") {
         let combinedThought = "";
         let match;
         while ((match = thoughtRegex.exec(content)) !== null) {
-            combinedThought += match[1].trim(); // Combined without newline
+            combinedThought += match[1].trim() + "\n\n"; // Multiple blocks separated by newlines
         }
+        combinedThought = combinedThought.trim();
         
         // Store thought in a hidden div for retrieval
         if(combinedThought) {
@@ -2103,7 +2154,10 @@ function renderPCHistory(filter = "") {
         }
     }
 
-    function stopResponse() { if (abortController) abortController.abort(); }
+    function stopResponse() { 
+        if (abortController) abortController.abort(); 
+        if (thinkingInterval) clearInterval(thinkingInterval); // Ensure interval stops
+    }
     
     function scrollToBottom() { 
         requestAnimationFrame(() => { chatWindow.scrollTop = chatWindow.scrollHeight; });
@@ -2164,7 +2218,13 @@ function renderPCHistory(filter = "") {
         window.visualViewport.addEventListener('resize', adjustLayout);
         window.visualViewport.addEventListener('scroll', adjustLayout);
     }
-    window.addEventListener('resize', adjustLayout);
+    window.addEventListener('resize', () => {
+        adjustLayout();
+        // 화면 너비가 768px 이하로 줄어들면 사이드바 자동 닫기
+        if (window.innerWidth <= 768) {
+            togglePCSidebar(false);
+        }
+    });
     adjustLayout();
     
     /* Settings Modal Logic */
@@ -2254,21 +2314,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 5. 모바일 전환 시 메뉴(사이드바) 자동 닫기
-    window.addEventListener('resize', () => {
-        // 모바일 기준점(600px) 이하일 때
-        if (window.innerWidth <= 600) {
-            // 사이드바가 열려있는 상태라면 닫기 함수 호출
-            // 기존 코드에 정의된 closeSidebar() 함수를 활용합니다.
-            if (typeof closeSidebar === 'function') {
-                const sidebar = document.getElementById('sidebar');
-                // 사이드바가 현재 화면에 보이는 상태(left: 0)일 때만 닫기 실행
-                if (sidebar && getComputedStyle(sidebar).left === '0px') {
-                    closeSidebar();
-                }
-            }
-        }
-    });
+    // 5. 모바일 전환 시 메뉴(사이드바) 자동 닫기 (이미 상단의 resize 이벤트에 통합됨)
+    // 중복 제거 및 안전 장치
 });
 
 /* --- 설정 저장 및 레이아웃 제어 로직 끝 --- */
