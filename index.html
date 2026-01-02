@@ -75,6 +75,7 @@
             --accent-color: #000000; /* 전송 버튼 활성색 */
             --accent-bubble-bg: #f2f2f2; /* 사용자 말풍선 배경 */
             --accent-bubble-text: #212121; /* 사용자 말풍선 텍스트 */
+            --toggle-bg-checked: #212121; /* 토글 스위치 켜짐 색상 */
         }
 
         /* 다크 테마 */
@@ -100,6 +101,7 @@
             --accent-color: #ffffff;
             --accent-bubble-bg: #333333;
             --accent-bubble-text: #e0e0e0;
+            --toggle-bg-checked: #ffffff;
         }
 
         html, body {
@@ -393,7 +395,7 @@
         .icon-talk { color: #9333ea; } 
         .icon-write { color: #ef4444; } 
 
-        .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
+        .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; -webkit-overflow-scrolling: touch; position: relative; }
         
         .messages-container { 
             width: 92%; max-width: 720px; 
@@ -448,24 +450,10 @@
             white-space: pre-wrap;
             font-family: var(--font-en), var(--font-ko); 
             line-height: 1.5;
-            cursor: pointer;
             position: relative;
             transition: background-color 0.3s, color 0.3s;
         }
         
-        .user-bubble:hover::after {
-            content: "수정하려면 클릭";
-            position: absolute;
-            top: -24px; right: 0;
-            background: rgba(0,0,0,0.7); color: white;
-            padding: 4px 8px; border-radius: 4px;
-            font-size: 11px;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0; transition: opacity 0.2s;
-        }
-        .user-bubble:hover::after { opacity: 1; }
-
         /* User Message Edit Mode Styles */
         .msg.user.editing .user-bubble { display: none; }
         .edit-container {
@@ -482,8 +470,13 @@
             font-size: 0.95rem; font-family: var(--font-ko);
             resize: none; outline: none;
             min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
             box-sizing: border-box;
         }
+        .edit-textarea::-webkit-scrollbar { width: 4px; }
+        .edit-textarea::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
         .edit-buttons { display: flex; gap: 6px; }
         .edit-btn-pill {
             padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;
@@ -494,15 +487,19 @@
         .edit-confirm { background: var(--accent-color); color: white; }
         .edit-confirm:hover { opacity: 0.9; }
 
-        /* 수정 버튼 (User bubble 아래 표시) */
+        /* 수정 버튼 (User bubble 아래 표시) - 가장 최근 메세지 1개만 */
         .msg-edit-btn {
             font-size: 12px; color: var(--text-gray); margin-top: 4px; 
             cursor: pointer; background: none; border: none;
-            display: flex; align-items: center; gap: 2px;
+            display: none; align-items: center; gap: 2px;
             opacity: 0; transition: opacity 0.2s;
+            text-decoration: none !important;
         }
+        
+        /* Only show edit button for the last user message */
+        .msg.user:last-of-type .msg-edit-btn { display: flex; }
         .msg.user:hover .msg-edit-btn { opacity: 1; }
-        .msg-edit-btn:hover { color: var(--text-main); text-decoration: underline; }
+        .msg-edit-btn:hover { color: var(--text-main); text-decoration: none; }
 
         .action-buttons { 
             display: flex; gap: 6px; margin-top: 6px; opacity: 1; 
@@ -540,6 +537,7 @@
             background: var(--bg-main); 
             flex-shrink: 0; 
             position: relative; 
+            z-index: 10;
         }
         
         .input-group {
@@ -906,23 +904,55 @@
         .setting-label { font-size: 0.95rem; font-weight: 500; color: var(--text-main); }
         .setting-desc { font-size: 0.8rem; color: var(--text-gray); margin-top: 4px; }
 
-        /* Custom Select for Theme/Color */
-        .setting-select {
-            appearance: none; -webkit-appearance: none;
+        /* Custom Dropdown Styles */
+        .custom-select-wrapper {
+            position: relative;
+            width: 200px;
+            user-select: none;
+        }
+        .custom-select-trigger {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px;
             background-color: var(--btn-bg-soft);
-            color: var(--text-main);
             border: 1px solid var(--input-border);
-            padding: 8px 30px 8px 12px;
             border-radius: 8px;
             font-size: 0.9rem;
+            color: var(--text-main);
             cursor: pointer;
-            font-family: var(--font-ko);
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 14px;
+            transition: border-color 0.2s;
         }
-        .setting-select:focus { border-color: var(--primary-blue); outline: none; }
+        .custom-select-trigger:hover { border-color: #ccc; }
+        .custom-options {
+            position: absolute; top: 100%; left: 0; right: 0;
+            margin-top: 4px;
+            background: var(--bg-main);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+            opacity: 0; visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s;
+            max-height: 200px; overflow-y: auto;
+        }
+        .custom-select.open .custom-options {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+        .custom-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            display: flex; align-items: center; gap: 8px;
+            transition: background 0.1s;
+        }
+        .custom-option:hover { background-color: var(--btn-bg-soft); }
+        .custom-option.selected { color: var(--primary-blue); background-color: rgba(29,111,239,0.05); }
+
+        .color-circle {
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+        }
 
         /* Toggle Switch */
         .toggle-switch { position: relative; width: 40px; height: 22px; }
@@ -937,7 +967,7 @@
             height: 16px; width: 16px; left: 3px; bottom: 3px;
             background-color: white; transition: .4s; border-radius: 50%;
         }
-        input:checked + .slider { background-color: var(--primary-blue); }
+        input:checked + .slider { background-color: var(--toggle-bg-checked); }
         input:checked + .slider:before { transform: translateX(18px); }
 
         .info-logo { font-family: var(--font-logo); font-size: 1.8rem; margin-bottom: 8px; color: var(--text-main); }
@@ -982,6 +1012,7 @@
                 display: flex !important; justify-content: space-between !important;
                 align-items: center !important; width: 100% !important; gap: 12px !important; padding: 12px 0 !important;
             }
+            .custom-select-wrapper { width: 150px; }
         }
 
         .settings-item.disabled-item { opacity: 0.7; }
@@ -1015,6 +1046,32 @@
             font-style: normal; font-size: 18px; color: var(--text-gray); flex-shrink: 0;
         }
         .bot-content a:hover::before { color: var(--primary-blue); }
+
+        /* Vignettes for Smooth Scrolling */
+        .vignette-top {
+            position: absolute; top: 0; left: 0; right: 0; height: 30px;
+            background: linear-gradient(to bottom, var(--bg-main), transparent);
+            z-index: 4; pointer-events: none;
+        }
+        .vignette-bottom {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+            background: linear-gradient(to top, var(--bg-main), transparent);
+            z-index: 4; pointer-events: none;
+        }
+        
+        /* 다크모드 전용 토글 버튼 스타일 커스텀 */
+.dark-mode .slider {
+    background-color: #ffffff !important; /* 배경색을 흰색으로 변경 */
+}
+
+.dark-mode .slider:before {
+    background-color: #000000 !important; /* 내부 원 색상을 검은색으로 변경 */
+}
+
+/* 체크(Checked) 되었을 때도 동일하게 유지하고 싶을 경우 추가 */
+.dark-mode input:checked + .slider {
+    background-color: #ffffff !important;
+}
     </style>
 </head>
 <body>
@@ -1149,7 +1206,9 @@
 </div>
 
     <div class="chat-window" id="chatWindow">
+        <div class="vignette-top"></div>
         <div class="messages-container" id="chatMessages"></div>
+        <div class="vignette-bottom"></div>
     </div>
 
     <div class="input-container">
@@ -1258,11 +1317,17 @@
                             <div class="setting-label">화면 테마</div>
                             <div class="setting-desc">앱의 전반적인 분위기를 선택하세요.</div>
                         </div>
-                        <select id="setting-theme-mode" class="setting-select" onchange="changeThemeMode(this.value)">
-                            <option value="auto">자동 (시스템 설정)</option>
-                            <option value="light">화이트</option>
-                            <option value="dark">다크</option>
-                        </select>
+                        <div class="custom-select-wrapper custom-select" id="theme-select">
+                            <div class="custom-select-trigger">
+                                <span id="selected-theme-text">자동 (시스템 설정)</span>
+                                <span class="material-symbols-rounded" style="font-size:20px; color:var(--text-gray);">expand_more</span>
+                            </div>
+                            <div class="custom-options">
+                                <div class="custom-option" data-value="auto">자동 (시스템 설정)</div>
+                                <div class="custom-option" data-value="light">화이트</div>
+                                <div class="custom-option" data-value="dark">다크</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="settings-item">
@@ -1270,16 +1335,49 @@
                             <div class="setting-label">강조 색상</div>
                             <div class="setting-desc">전송 버튼과 말풍선 색상을 변경합니다.</div>
                         </div>
-                        <select id="setting-accent-color" class="setting-select" onchange="changeAccentColor(this.value)">
-                            <option value="default">⚫ 기본</option>
-                            <option value="pastel-red">🔴 파스텔 레드</option>
-                            <option value="pastel-orange">🟠 파스텔 오렌지</option>
-                            <option value="pastel-yellow">🟡 파스텔 옐로우</option>
-                            <option value="pastel-green">🟢 파스텔 그린</option>
-                            <option value="pastel-blue">🔵 파스텔 블루</option>
-                            <option value="pastel-navy">🔵 파스텔 네이비</option>
-                            <option value="pastel-purple">🟣 파스텔 퍼플</option>
-                        </select>
+                        <div class="custom-select-wrapper custom-select" id="accent-select">
+                            <div class="custom-select-trigger">
+                                <span id="selected-accent-text" style="display:flex; align-items:center; gap:8px;">
+                                    <span class="color-circle" style="background:#000;"></span> 기본
+                                </span>
+                                <span class="material-symbols-rounded" style="font-size:20px; color:var(--text-gray);">expand_more</span>
+                            </div>
+                            <div class="custom-options">
+                                <div class="custom-option" data-value="default">
+                                    <span class="color-circle" style="background:#212121;"></span> 기본
+                                </div>
+                                <div class="custom-option" data-value="pastel-pink">
+                                    <span class="color-circle" style="background:#ff9ff3;"></span> 사쿠라 핑크
+                                </div>
+                                <div class="custom-option" data-value="pastel-red">
+                                    <span class="color-circle" style="background:#ff6b6b;"></span> 파스텔 레드
+                                </div>
+                                <div class="custom-option" data-value="pastel-orange">
+                                    <span class="color-circle" style="background:#ffa502;"></span> 파스텔 오렌지
+                                </div>
+                                <div class="custom-option" data-value="pastel-yellow">
+                                    <span class="color-circle" style="background:#ffd32a;"></span> 파스텔 옐로우
+                                </div>
+                                <div class="custom-option" data-value="pastel-green">
+                                    <span class="color-circle" style="background:#2ed573;"></span> 파스텔 그린
+                                </div>
+                                <div class="custom-option" data-value="pastel-mint">
+                                    <span class="color-circle" style="background:#1dd1a1;"></span> 파스텔 민트
+                                </div>
+                                <div class="custom-option" data-value="pastel-sky">
+                                    <span class="color-circle" style="background:#48dbfb;"></span> 파스텔 스카이
+                                </div>
+                                <div class="custom-option" data-value="pastel-blue">
+                                    <span class="color-circle" style="background:#1e90ff;"></span> 파스텔 블루
+                                </div>
+                                <div class="custom-option" data-value="pastel-lavender">
+                                    <span class="color-circle" style="background:#a29bfe;"></span> 파스텔 라벤더
+                                </div>
+                                <div class="custom-option" data-value="pastel-purple">
+                                    <span class="color-circle" style="background:#5352ed;"></span> 파스텔 퍼플
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1448,27 +1546,31 @@
     const THEME_KEY = 'minsugpt_theme_pref';
     const ACCENT_KEY = 'minsugpt_accent_pref';
 
+    // Pastel Colors Optimized for Dark/Light
     const ACCENT_COLORS = {
         'default': { color: '#000000', bubbleBg: '#f2f2f2', bubbleText: '#212121' },
+        'pastel-pink': { color: '#ff9ff3', bubbleBg: '#ffd1f9', bubbleText: '#5f0a40' },
         'pastel-red': { color: '#ff6b6b', bubbleBg: '#ffadad', bubbleText: '#5c0000' },
         'pastel-orange': { color: '#ffa502', bubbleBg: '#ffd6a5', bubbleText: '#5e3e00' },
         'pastel-yellow': { color: '#ffd32a', bubbleBg: '#fdffb6', bubbleText: '#4e4b00' },
         'pastel-green': { color: '#2ed573', bubbleBg: '#caffbf', bubbleText: '#004400' },
+        'pastel-mint': { color: '#1dd1a1', bubbleBg: '#bdfceb', bubbleText: '#004d3a' },
+        'pastel-sky': { color: '#48dbfb', bubbleBg: '#bbf0ff', bubbleText: '#00405c' },
         'pastel-blue': { color: '#1e90ff', bubbleBg: '#a0c4ff', bubbleText: '#001a4d' },
-        'pastel-navy': { color: '#3742fa', bubbleBg: '#bdf2ff', bubbleText: '#002347' },
+        'pastel-lavender': { color: '#a29bfe', bubbleBg: '#dcd6ff', bubbleText: '#2a235e' },
         'pastel-purple': { color: '#5352ed', bubbleBg: '#bdb2ff', bubbleText: '#1f005c' }
     };
 
     function initTheme() {
         // Load Theme
         const savedTheme = localStorage.getItem(THEME_KEY) || 'auto';
-        document.getElementById('setting-theme-mode').value = savedTheme;
         changeThemeMode(savedTheme);
+        updateCustomSelectUI('theme-select', savedTheme);
 
         // Load Accent
         const savedAccent = localStorage.getItem(ACCENT_KEY) || 'default';
-        document.getElementById('setting-accent-color').value = savedAccent;
         changeAccentColor(savedAccent);
+        updateCustomSelectUI('accent-select', savedAccent);
     }
 
     function changeThemeMode(mode) {
@@ -1496,9 +1598,6 @@
         const palette = ACCENT_COLORS[colorKey] || ACCENT_COLORS['default'];
         const root = document.documentElement.style;
         
-        // Dark mode adjustment for default bubble
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        
         root.setProperty('--accent-color', palette.color);
         
         if (colorKey === 'default') {
@@ -1506,8 +1605,60 @@
              root.removeProperty('--accent-bubble-bg');
              root.removeProperty('--accent-bubble-text');
         } else {
+             // Use palette values but check for dark mode adjustments if needed
+             // For now, using palette directly which is optimized for readability
              root.setProperty('--accent-bubble-bg', palette.bubbleBg);
              root.setProperty('--accent-bubble-text', palette.bubbleText);
+        }
+    }
+
+    /* --- Custom Dropdown Logic --- */
+    function setupCustomSelects() {
+        document.querySelectorAll('.custom-select').forEach(wrapper => {
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            const options = wrapper.querySelectorAll('.custom-option');
+            
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close others
+                document.querySelectorAll('.custom-select').forEach(other => {
+                    if (other !== wrapper) other.classList.remove('open');
+                });
+                wrapper.classList.toggle('open');
+            });
+            
+            options.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const value = option.dataset.value;
+                    wrapper.classList.remove('open');
+                    
+                    if (wrapper.id === 'theme-select') {
+                        changeThemeMode(value);
+                    } else if (wrapper.id === 'accent-select') {
+                        changeAccentColor(value);
+                    }
+                    updateCustomSelectUI(wrapper.id, value);
+                });
+            });
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', () => {
+             document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
+        });
+    }
+
+    function updateCustomSelectUI(id, value) {
+        const wrapper = document.getElementById(id);
+        if (!wrapper) return;
+        const triggerSpan = wrapper.querySelector('.custom-select-trigger > span:first-child');
+        const selectedOption = wrapper.querySelector(`.custom-option[data-value="${value}"]`);
+        
+        if (selectedOption) {
+            triggerSpan.innerHTML = selectedOption.innerHTML; // Copy content including color circle
+            wrapper.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+            selectedOption.classList.add('selected');
         }
     }
 
@@ -1552,7 +1703,8 @@
         if (window.innerWidth > 768) {
             togglePCSidebar(true); 
         }
-        initTheme(); // Initialize Theme
+        initTheme(); 
+        setupCustomSelects();
     });
 
     function togglePCSidebar(force) {
@@ -2026,13 +2178,14 @@
         msgDiv.className = `msg ${role}`;
         
         if (role === 'user') {
+            // Only add the edit button markup for user messages.
+            // CSS will control visibility to show it only for the last-of-type.
             msgDiv.innerHTML = `
                 <div class="user-bubble">${content}</div>
                 <button class="msg-edit-btn" onclick="startEditingMessage(this)">
                     <span class="material-symbols-rounded" style="font-size:14px;">edit</span> 수정
                 </button>
             `;
-            // Message editing setup attached via onclick above
         }
         else {
             let innerHTML = '';
@@ -2057,16 +2210,14 @@
 
     /* --- User Message Editing Functions --- */
     window.startEditingMessage = function(btn) {
-        if (isStreaming) return; // Prevent editing while streaming
+        if (isStreaming) return; 
         const msgDiv = btn.closest('.msg.user');
         const bubble = msgDiv.querySelector('.user-bubble');
         const currentText = bubble.innerText;
         
-        // Hide edit button and bubble
         btn.style.display = 'none';
         msgDiv.classList.add('editing');
         
-        // Create Edit UI
         const editContainer = document.createElement('div');
         editContainer.className = 'edit-container';
         editContainer.innerHTML = `
@@ -2080,18 +2231,20 @@
         msgDiv.appendChild(editContainer);
         const textarea = editContainer.querySelector('.edit-textarea');
         textarea.focus();
-        // Auto resize textarea
+        
+        // Auto resize within bounds
+        textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
         textarea.addEventListener('input', () => {
              textarea.style.height = 'auto';
-             textarea.style.height = textarea.scrollHeight + 'px';
+             textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
         });
 
-        // Event Listeners
         editContainer.querySelector('.edit-cancel').addEventListener('click', () => {
             msgDiv.classList.remove('editing');
             editContainer.remove();
-            btn.style.display = 'flex';
+            // Reset button display controlled by CSS mainly, but inline style needs reset
+            btn.style.display = ''; 
         });
         
         editContainer.querySelector('.edit-confirm').addEventListener('click', () => {
@@ -2102,56 +2255,30 @@
     };
 
     function submitEditedMessage(msgDiv, newText) {
-        // Find the index of this message in the DOM to match history
         const allMsgs = Array.from(chatMessages.children);
         const domIndex = allMsgs.indexOf(msgDiv);
         
-        // Filter out non-message elements if any (safe guard) although all children are .msg
-        // Reconstruct history based on DOM structure index
-        // Count how many 'msg' are before this one
-        
-        // Simpler approach: Iterate history and DOM in sync is risky if they drift.
-        // We know history order matches DOM order exactly for chat messages.
-        // However, history has {role, content}. DOM has .msg.user/.msg.bot.
-        // Let's find the history index corresponding to this DOM element.
-        
         let historyIndex = -1;
-        // Count actual messages up to this point
         for(let i=0; i<=domIndex; i++) {
-             historyIndex++; // 1:1 mapping assumed
+             historyIndex++; 
         }
         
-        if(historyIndex === -1 || historyIndex >= history.length) return; // Error safety
+        if(historyIndex === -1 || historyIndex >= history.length) return; 
 
-        // Update history: truncate after this message
         history = history.slice(0, historyIndex + 1);
         history[historyIndex].content = newText;
         
-        // Update UI: Remove all subsequent messages from DOM
         while(chatMessages.children.length > domIndex + 1) {
             chatMessages.removeChild(chatMessages.lastChild);
         }
         
-        // Update current message UI
         const bubble = msgDiv.querySelector('.user-bubble');
         bubble.innerText = newText;
         msgDiv.classList.remove('editing');
         msgDiv.querySelector('.edit-container').remove();
-        msgDiv.querySelector('.msg-edit-btn').style.display = 'flex';
+        msgDiv.querySelector('.msg-edit-btn').style.display = '';
         
-        saveChatToLocal(); // Save truncated state
-        
-        // Trigger Bot Response
-        // We call sendMessage with newText, but we need it to NOT create a user bubble.
-        // sendMessage function logic:
-        // if !isRegenerate -> renderMessage(user) ...
-        // So we pass isRegenerate=true, but we also need to pass the text for the API call?
-        // Actually sendMessage uses `history` for context. `userMessageOverride` is strictly for the *latest* user input content 
-        // if that wasn't added to history yet.
-        // Here, we added to history. So we pass `newText` as userMessageOverride and `true` as isRegenerate.
-        // Wait, `sendMessage` pushes to history if !isRegenerate. 
-        // If isRegenerate=true, it skips pushing.
-        // BUT it uses `text` (first arg) as the prompt to the backend.
+        saveChatToLocal(); 
         
         sendMessage(newText, true);
     }
