@@ -836,6 +836,83 @@
 }
 
 
+
+/* 푸터 그룹 레이아웃: 사이드바의 실제 벽면에서 시작하도록 여백 조정 */
+.sidebar-footer-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 0 0px !important; /* 양옆 여백을 줄여 버튼 내부 여백과 합쳐지게 함 */
+    margin-top: 10px !important;
+    margin-bottom: 0px !important;
+}
+
+/* 전체 삭제 버튼: 새 채팅 버튼과 동일한 시작 라인 확보 */
+#pc-delete-all {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    height: 40px !important;
+    margin: 0 !important;
+    padding: 0 5px !important; /* 내부 패딩을 조절해 아이콘 위치를 맞춤 */
+    gap: 12px !important; 
+    border-radius: 12px !important;
+}
+
+/* 설정 버튼: 1:1 비율 유지 */
+.settings-btn-pc {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--bg-gray);
+    border-radius: 12px !important;
+}
+
+/* 아이콘과 텍스트가 새 채팅 버튼과 동일하게 보이도록 마진 제거 */
+#pc-delete-all .material-symbols-rounded {
+    margin: 0 !important;
+    font-size: 22px !important;
+}
+/* 모바일 전체삭제 버튼 보정 */
+.clear-all-btn {
+    height: 40px !important;
+    margin: 0 !important;
+    flex: 1 !important;
+}
+
+/* 모바일 설정 및 닫기 버튼 (1:1 정사각형 공통) */
+.mobile-settings-btn, 
+.close-modal-btn {
+    width: 48px !important;
+    height: 48px !important;
+    flex-shrink: 0 !important; /* 찌그러짐 방지 */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--bg-gray) !important;
+    border-radius: 12px !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer;
+}
+
+/* 설정 버튼 아이콘 색상 (글자색과 맞춤) */
+.mobile-settings-btn .material-symbols-rounded {
+    color: var(--text-main);
+    font-size: 24px;
+}
+
+/* 버튼 눌렀을 때 반응 */
+.mobile-settings-btn:active, 
+.close-modal-btn:active {
+    opacity: 0.7;
+}
     </style>
 </head>
 <body>
@@ -881,9 +958,17 @@
              <div class="sidebar-nav-item" id="pc-new-chat-btn">
                 <span class="material-symbols-rounded">add</span> 새 채팅
              </div>
-             <div class="sidebar-nav-item" id="pc-delete-all" style="color:var(--error-red);">
-                <span class="material-symbols-rounded">delete</span> 전체 삭제
-             </div>
+             <div class="sidebar-footer-group">
+    <div class="sidebar-nav-item" id="pc-delete-all" onclick="clearAllHistory()" style="color:var(--error-red);">
+        <span class="material-symbols-rounded">delete</span>
+        <span class="delete-text">전체 삭제</span>
+    </div>
+    
+    <div class="sidebar-nav-item settings-btn-pc" onclick="openSettings()">
+        <span class="material-symbols-rounded">settings</span>
+    </div>
+</div>
+</div>
         </div>
     </div>
     <div class="pc-sidebar-close" id="pc-sidebar-close" style="display:none;"> <span class="material-symbols-rounded">close</span>
@@ -1000,10 +1085,17 @@
     <div class="modal-box">
         <div class="modal-header">
             <span class="modal-title">채팅 기록</span>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <button class="clear-all-btn" id="clearAllBtn">전체 삭제</button>
-                <button class="close-modal-btn" id="closeModalBtn"><span class="material-symbols-rounded">close</span></button>
-            </div>
+           <div style="display:flex; align-items:center; gap:8px;">
+    <button class="clear-all-btn" id="clearAllBtn" style="flex: 1;">전체 삭제</button>
+    
+    <button class="mobile-settings-btn" onclick="openSettings()">
+        <span class="material-symbols-rounded">settings</span>
+    </button>
+    
+    <button class="close-modal-btn" id="closeModalBtn">
+        <span class="material-symbols-rounded">close</span>
+    </button>
+</div>
         </div>
         <ul class="history-list" id="historyList"></ul>
     </div>
