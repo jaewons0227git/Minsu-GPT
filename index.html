@@ -489,19 +489,27 @@
         .edit-confirm { background: var(--accent-color); color: white; }
         .edit-confirm:hover { opacity: 0.9; }
 
-        /* 수정 버튼 (User bubble 아래 표시) - 가장 최근 메세지 1개만 */
-        .msg-edit-btn {
-            font-size: 12px; color: var(--text-gray); margin-top: 4px; 
-            cursor: pointer; background: none; border: none;
-            display: none; align-items: center; gap: 2px;
-            opacity: 0; transition: opacity 0.2s;
-            text-decoration: none !important;
+        /* 수정/복사 버튼 컨테이너 (User bubble 아래 표시) - 수정됨 */
+        .msg-user-actions {
+            display: flex; gap: 8px; margin-top: 4px;
+            opacity: 0; visibility: hidden; transition: opacity 0.2s;
         }
+        .msg.user:hover .msg-user-actions { opacity: 1; visibility: visible; }
+
+        .msg-btn {
+            font-size: 12px; color: var(--text-gray); 
+            cursor: pointer; background: none; border: none;
+            display: flex; align-items: center; gap: 2px;
+            padding: 0;
+        }
+        .msg-btn:hover { color: var(--text-main); }
         
-        /* Only show edit button for the last user message */
+        /* 수정 버튼: 기본 숨김, 마지막 메시지에서만 보임 */
+        .msg-edit-btn { display: none; }
         .msg.user:last-of-type .msg-edit-btn { display: flex; }
-        .msg.user:hover .msg-edit-btn { opacity: 1; }
-        .msg-edit-btn:hover { color: var(--text-main); text-decoration: none; }
+
+        /* 복사 버튼: 항상 flex (부모 visibility로 제어됨) */
+        .msg-copy-btn { display: flex; }
 
         .action-buttons { 
             display: flex; gap: 6px; margin-top: 6px; opacity: 1; 
@@ -1049,16 +1057,21 @@
         }
         .bot-content a:hover::before { color: var(--primary-blue); }
 
-        /* Vignettes for Smooth Scrolling */
+        /* Vignettes for Smooth Scrolling - 수정됨 */
         .vignette-top {
-            position: absolute; top: 0; left: 0; right: 0; height: 30px;
+            position: absolute; 
+            top: 74px; /* 상단 헤더 높이(약 74px) 아래에 위치 */
+            left: 0; right: 0; height: 30px;
             background: linear-gradient(to bottom, var(--bg-main), transparent);
-            z-index: 4; pointer-events: none;
+            z-index: 20; pointer-events: none;
         }
         .vignette-bottom {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+            position: absolute; 
+            top: -30px; /* 입력창 위로 올림 */
+            left: 0; right: 0; height: 30px;
             background: linear-gradient(to top, var(--bg-main), transparent);
-            z-index: 4; pointer-events: none;
+            z-index: 20; /* 입력창 영역 내부에서 위로 띄움 */
+            pointer-events: none;
         }
         
         
@@ -1162,6 +1175,8 @@
             </button>
         </div>
     </header>
+    
+    <div class="vignette-top"></div>
 
     <div id="welcomeContainer">
     <div class="welcome-text">무엇을 도와드릴까요?</div>
@@ -1196,13 +1211,11 @@
 </div>
 
     <div class="chat-window" id="chatWindow">
-        <div class="vignette-top"></div>
         <div class="messages-container" id="chatMessages"></div>
-        <div class="vignette-bottom"></div>
-    </div>
+        </div>
 
     <div class="input-container">
-        <div class="input-group">
+        <div class="vignette-bottom"></div> <div class="input-group">
             <button class="plus-btn" id="plusBtn" title="첨부">
                 <span class="material-symbols-rounded">add</span>
             </button>
@@ -2168,13 +2181,17 @@
         msgDiv.className = `msg ${role}`;
         
         if (role === 'user') {
-            // Only add the edit button markup for user messages.
-            // CSS will control visibility to show it only for the last-of-type.
+            // 사용자 메시지: 수정/복사 버튼 포함
             msgDiv.innerHTML = `
                 <div class="user-bubble">${content}</div>
-                <button class="msg-edit-btn" onclick="startEditingMessage(this)">
-                    <span class="material-symbols-rounded" style="font-size:14px;">edit</span> 수정
-                </button>
+                <div class="msg-user-actions">
+                    <button class="msg-btn msg-edit-btn" onclick="startEditingMessage(this)">
+                        <span class="material-symbols-rounded" style="font-size:14px;">edit</span> 수정
+                    </button>
+                    <button class="msg-btn msg-copy-btn" onclick="copyUserMessage(this)">
+                        <span class="material-symbols-rounded" style="font-size:14px;">content_copy</span> 복사
+                    </button>
+                </div>
             `;
         }
         else {
@@ -2198,14 +2215,17 @@
         return msgDiv;
     }
 
-    /* --- User Message Editing Functions --- */
+    /* --- User Message Editing & Copy Functions --- */
     window.startEditingMessage = function(btn) {
         if (isStreaming) return; 
         const msgDiv = btn.closest('.msg.user');
         const bubble = msgDiv.querySelector('.user-bubble');
         const currentText = bubble.innerText;
         
-        btn.style.display = 'none';
+        // Hide entire action group while editing
+        const actionGroup = msgDiv.querySelector('.msg-user-actions');
+        actionGroup.style.display = 'none';
+        
         msgDiv.classList.add('editing');
         
         const editContainer = document.createElement('div');
@@ -2233,8 +2253,7 @@
         editContainer.querySelector('.edit-cancel').addEventListener('click', () => {
             msgDiv.classList.remove('editing');
             editContainer.remove();
-            // Reset button display controlled by CSS mainly, but inline style needs reset
-            btn.style.display = ''; 
+            actionGroup.style.display = ''; // Restore display
         });
         
         editContainer.querySelector('.edit-confirm').addEventListener('click', () => {
@@ -2243,6 +2262,30 @@
             submitEditedMessage(msgDiv, newText);
         });
     };
+    
+    // New function for copying user message
+    window.copyUserMessage = function(btn) {
+        const msgDiv = btn.closest('.msg.user');
+        const text = msgDiv.querySelector('.user-bubble').innerText;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showUserCopySuccess(btn);
+            }).catch(() => {
+                fallbackCopyTextToClipboard(text);
+                showUserCopySuccess(btn);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
+            showUserCopySuccess(btn);
+        }
+    };
+    
+    function showUserCopySuccess(btn) {
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:14px; color:var(--mint-point)">check</span> 복사됨';
+        setTimeout(() => btn.innerHTML = originalIcon, 1500);
+    }
 
     function submitEditedMessage(msgDiv, newText) {
         const allMsgs = Array.from(chatMessages.children);
@@ -2266,7 +2309,7 @@
         bubble.innerText = newText;
         msgDiv.classList.remove('editing');
         msgDiv.querySelector('.edit-container').remove();
-        msgDiv.querySelector('.msg-edit-btn').style.display = '';
+        msgDiv.querySelector('.msg-user-actions').style.display = '';
         
         saveChatToLocal(); 
         
