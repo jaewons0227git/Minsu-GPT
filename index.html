@@ -913,6 +913,43 @@
 .close-modal-btn:active {
     opacity: 0.7;
 }
+
+/* 생각 과정 버튼 디자인 */
+.thought-text-btn {
+    width: auto !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #888 !important;
+    background: var(--bg-gray) !important;
+    border-radius: 6px !important;
+    height: 26px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-right: 6px !important;
+    border: none !important;
+    cursor: pointer;
+}
+
+.thought-text-btn.active {
+    background: var(--mint-point) !important;
+    color: white !important;
+}
+
+/* 생각 과정 답변 상자 */
+.thought-box {
+    display: none;
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 14px;
+    margin: 10px 0;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+    border-left: 4px solid var(--mint-point);
+}
     </style>
 </head>
 <body>
@@ -1783,6 +1820,7 @@ function renderPCHistory(filter = "") {
             <button class="action-btn" onclick="handleLike(this)" title="좋아요"><span class="material-symbols-rounded">thumb_up</span></button>
             <button class="action-btn" onclick="handleDislike(this)" title="싫어요"><span class="material-symbols-rounded">thumb_down</span></button>
             <button class="action-btn" onclick="shareContent(this)" title="공유"><span class="material-symbols-rounded">share</span></button>
+            <button class="msg-btn thought-text-btn" onclick="toggleThought(this)">생각 과정</button>
         `;
         msgDiv.appendChild(actionsDiv);
         updateRegenerateButtons();
@@ -1860,6 +1898,31 @@ function renderPCHistory(filter = "") {
     }
     window.addEventListener('resize', adjustLayout);
     adjustLayout();
+    
+    
+    // 생각 과정 토글 함수
+window.toggleThought = function(btn) {
+    const msgDiv = btn.closest('.msg-content');
+    let thoughtBox = msgDiv.querySelector('.thought-box');
+    
+    if (!thoughtBox) {
+        thoughtBox = document.createElement('div');
+        thoughtBox.className = 'thought-box';
+        // 임시 내용입니다. 나중에 실제 AI 응답의 reasoning 데이터를 넣으시면 됩니다.
+        thoughtBox.innerText = "사용자의 의도를 분석하여 최적의 답변을 생성하는 과정을 거쳤습니다."; 
+        msgDiv.insertBefore(thoughtBox, msgDiv.querySelector('.msg-footer'));
+    }
+
+    if (thoughtBox.style.display === 'none' || !thoughtBox.style.display) {
+        thoughtBox.style.display = 'block';
+        btn.classList.add('active');
+        btn.innerText = "과정 숨기기";
+    } else {
+        thoughtBox.style.display = 'none';
+        btn.classList.remove('active');
+        btn.innerText = "생각 과정";
+    }
+};
 </script>
 
 </body>
