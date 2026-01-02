@@ -15,6 +15,18 @@
 
     
     <style>
+    /* 1. 전체 페이지 및 모든 요소의 스크롤바 숨기기 */
+* {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;    /* Firefox */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* 2. (선택사항) 특정 영역만 다시 보이게 하고 싶다면 해당 요소에 아래를 적용하세요 */
+/* .show-scroll::-webkit-scrollbar { display: block; } */
         :root {
             --bg-main: #ffffff;
             --text-main: #212121;
@@ -566,7 +578,7 @@
             font-size: 0.95rem; 
             font-family: var(--font-en), var(--font-ko); 
             resize: none; 
-            max-height: 150px; 
+            max-height: 100px; 
             overflow-y: hidden; 
             background: transparent;
             line-height: 24px; 
@@ -700,7 +712,7 @@
 
 /* 버튼들을 감싸는 박스 스타일 */
 .sidebar-nav-group {
-    border: 1px solid #E0DEDE; /* 매우 연한 테두리 */
+    border: 1px solid #FFFFFF; /* 매우 연한 테두리 */
     border-radius: 16px;       /* 둥근 사각형 모양 */
     padding: 4px;              /* 내부 버튼과의 간격 */
     margin-bottom: 16px;       /* 다음 요소와의 간격 */
@@ -721,7 +733,7 @@
     overflow-x: hidden;
     margin-top: 4px;
     /* 연한 테두리가 있는 둥근 사각형 박스 추가 */
-    border: 1px solid #E0DEDE; 
+    border: 1px solid #FFFFFF; 
     border-radius: 16px;
     padding: 8px; /* 내부 대화 목록과의 간격 */
     background-color: transparent;
@@ -739,6 +751,38 @@
 .pc-history-container::-webkit-scrollbar {
     width: 3px;
 }
+
+
+
+@media (max-width: 600px) {
+    /* 1. 사용자의 말풍선 크기 및 텍스트 줄이기 */
+    .user-bubble {
+        max-width: 85%;         /* 말풍선 최대 너비 살짝 조정 */
+        padding: 8px 14px;      /* 상하좌우 여백 줄임 (기존 10px 18px) */
+        font-size: 0.85rem;     /* 텍스트 크기 축소 (기존 0.95rem) */
+        line-height: 1.4;       /* 줄 간격 살짝 좁힘 */
+    }
+
+    /* 2. 봇(MinsuGPT)의 답변 텍스트 크기 줄이기 */
+    .bot-content {
+        font-size: 0.85rem;      /* 텍스트 크기 축소 (기존 1rem) */
+        line-height: 1.4;       /* 줄 간격 조정 */
+    }
+
+    /* 3. (선택사항) 봇 답변 내의 코드 블록 텍스트도 함께 줄이기 */
+    .bot-content pre {
+        padding: 10px;
+        font-size: 0.8rem;      /* 코드 텍스트 크기 축소 */
+    }
+
+    /* 4. 메시지 사이의 간격 줄이기 */
+    .messages-container {
+        gap: 20px;              /* 메시지 간의 상하 간격 축소 (기존 32px) */
+    }
+}
+
+/* 모바일 전용 스타일 수정 (화면 너비 600px 이하) */
+
     </style>
 </head>
 <body>
@@ -1040,125 +1084,130 @@
         }
     });
 
-    /* --- PC Sidebar Logic --- */
-    function togglePCSidebar(force) {
-        if (force === undefined) {
-            pcSidebar.classList.toggle('visible');
-            document.body.classList.toggle('sidebar-open');
-        } else if (force) {
-            pcSidebar.classList.add('visible');
-            document.body.classList.add('sidebar-open');
-        } else {
-            pcSidebar.classList.remove('visible');
-            document.body.classList.remove('sidebar-open');
-        }
-        
-        // Populate PC history when opening
-        if (document.body.classList.contains('sidebar-open')) {
-            renderPCHistory();
-        }
+    /* --- PC Sidebar Logic (수정본) --- */
+
+// 페이지 로드 시 PC 버전이면 사이드바를 기본적으로 엽니다.
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.innerWidth > 768) {
+        togglePCSidebar(true); // PC라면 강제로 열기
+    }
+});
+
+function togglePCSidebar(force) {
+    // force 인자가 있으면 그 값에 따르고, 없으면 토글합니다.
+    const shouldOpen = (force === undefined) ? !pcSidebar.classList.contains('visible') : force;
+
+    if (shouldOpen) {
+        pcSidebar.classList.add('visible');
+        document.body.classList.add('sidebar-open');
+        // 사이드바가 열릴 때 히스토리를 렌더링합니다.
+        renderPCHistory(sidebarSearch.value || "");
+    } else {
+        pcSidebar.classList.remove('visible');
+        document.body.classList.remove('sidebar-open');
+    }
+}
+
+// 메뉴 버튼 클릭 이벤트 (PC/모바일 분기)
+menuButton.addEventListener('click', () => {
+    if (window.innerWidth > 768) {
+        // PC 버전: 사이드바 열고 닫기
+        togglePCSidebar();
+    } else {
+        // 모바일 버전: 기존처럼 히스토리 모달 열기
+        openHistoryModal();
+    }
+});
+
+// 사이드바 닫기 버튼 (닫기 버튼이 있을 경우)
+if (pcSidebarClose) {
+    pcSidebarClose.addEventListener('click', () => togglePCSidebar(false));
+}
+
+// 사이드바 액션 (새 채팅)
+[miniNewChat, sidebarLogoBtn, pcNewChatBtn].forEach(btn => {
+    if (btn) btn.addEventListener('click', startNewChat);
+});
+
+// 사이드바 검색 (실시간 검색)
+sidebarSearch.addEventListener('input', (e) => {
+    renderPCHistory(e.target.value);
+});
+
+// PC 전체 삭제 기능 (공통 함수화)
+const handleDeleteAll = () => {
+    showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?", () => {
+        localStorage.removeItem(STORAGE_KEY);
+        if (typeof renderHistoryList === "function") renderHistoryList(); 
+        renderPCHistory(); // PC 목록 갱신
+        startNewChat();
+    });
+};
+
+if (miniDeleteAll) miniDeleteAll.addEventListener('click', handleDeleteAll);
+if (pcDeleteAll) pcDeleteAll.addEventListener('click', handleDeleteAll);
+
+/* --- 기능 미지원 알림 모달 --- */
+window.showFeatureNotReady = function() {
+    msgTitle.innerText = "알림";
+    msgContent.innerText = "아직 지원되지 않는 기능입니다.";
+    msgModal.classList.add('open');
+}
+
+msgOkBtn.addEventListener('click', () => msgModal.classList.remove('open'));
+msgModal.addEventListener('click', (e) => {
+    if (e.target === msgModal) msgModal.classList.remove('open');
+});
+
+/* --- PC 전용 히스토리 렌더링 --- */
+function renderPCHistory(filter = "") {
+    if (!pcHistoryContainer) return;
+
+    const chats = getSavedChats();
+    const filteredChats = filter.trim() === "" 
+        ? chats 
+        : chats.filter(c => c.title.toLowerCase().includes(filter.toLowerCase()));
+
+    if (filteredChats.length === 0) {
+        pcHistoryContainer.innerHTML = `<div class="empty-history">${filter ? '검색 결과가 없습니다.' : '기록이 없습니다.'}</div>`;
+        return;
     }
 
-    // Menu Button: Different behavior for Mobile vs PC
-    menuButton.addEventListener('click', () => {
-        if (window.innerWidth > 768) {
-            togglePCSidebar();
-        } else {
-            openHistoryModal();
-        }
-    });
+    const list = document.createElement('ul');
+    list.className = 'history-list';
+    list.style.padding = '0';
 
-    // Close buttons for sidebar
-    if(pcSidebarClose) pcSidebarClose.addEventListener('click', () => togglePCSidebar(false));
-    
-    // Sidebar Actions
-    miniNewChat.addEventListener('click', startNewChat);
-    sidebarLogoBtn.addEventListener('click', startNewChat);
-    pcNewChatBtn.addEventListener('click', startNewChat);
+    filteredChats.forEach((chat) => {
+        const date = new Date(chat.timestamp).toLocaleDateString();
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        // 현재 활성화된 채팅인 경우 강조 표시를 원한다면 여기에 클래스 추가 가능
+        if (chat.id === currentChatId) li.classList.add('active');
 
-    // Sidebar Search Listener
-    sidebarSearch.addEventListener('input', (e) => {
-        renderPCHistory(e.target.value);
-    });
-    
-    // PC Delete functions
-    miniDeleteAll.addEventListener('click', () => {
-        showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?", () => {
-             localStorage.removeItem(STORAGE_KEY);
-             renderHistoryList(); 
-             startNewChat();
-        });
-    });
-    pcDeleteAll.addEventListener('click', () => {
-        showConfirmModal("전체 삭제", "모든 채팅 기록을 삭제하시겠습니까?", () => {
-             localStorage.removeItem(STORAGE_KEY);
-             renderHistoryList(); 
-             startNewChat();
-        });
-    });
+        li.innerHTML = `
+            <div class="history-info">
+                <div class="h-title">${chat.title}</div>
+                <div class="h-date">${date}</div>
+            </div>
+            <button class="delete-chat-btn" title="삭제">
+                <span class="material-symbols-rounded">delete</span>
+            </button>
+        `;
 
-    // Feature Not Ready Modal
-    window.showFeatureNotReady = function() {
-        msgTitle.innerText = "알림";
-        msgContent.innerText = "아직 지원되지 않는 기능입니다.";
-        msgModal.classList.add('open');
-    }
-    
-    msgOkBtn.addEventListener('click', () => {
-        msgModal.classList.remove('open');
-    });
-    msgModal.addEventListener('click', (e) => {
-        if (e.target === msgModal) msgModal.classList.remove('open');
-    });
-
-
-    function renderPCHistory(filter = "") {
-        const chats = getSavedChats();
-        let filteredChats = chats;
-        
-        if (filter.trim() !== "") {
-            filteredChats = chats.filter(c => c.title.toLowerCase().includes(filter.toLowerCase()));
-        }
-
-        const list = document.createElement('ul');
-        list.className = 'history-list';
-        list.style.padding = '0';
-        
-        if (filteredChats.length === 0) {
-            pcHistoryContainer.innerHTML = '<div class="empty-history">검색 결과가 없습니다.</div>';
-            return;
-        }
-
-        filteredChats.forEach((chat) => {
-            const date = new Date(chat.timestamp).toLocaleDateString();
-            const li = document.createElement('li');
-            li.className = 'history-item';
-            li.innerHTML = `
-                <div class="history-info">
-                    <div class="h-title">${chat.title}</div>
-                    <div class="h-date">${date}</div>
-                </div>
-                <button class="delete-chat-btn" title="삭제">
-                    <span class="material-symbols-rounded">delete</span>
-                </button>
-            `;
-            
-            li.querySelector('.history-info').addEventListener('click', () => {
-                loadChat(chat.id);
+        li.querySelector('.history-info').addEventListener('click', () => loadChat(chat.id));
+        li.querySelector('.delete-chat-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showConfirmModal("기록 삭제", "이 채팅 기록을 삭제하시겠습니까?", () => {
+                deleteChat(chat.id); // 삭제 로직 후 renderPCHistory()가 내부에서 호출되어야 함
+                renderPCHistory(sidebarSearch.value); 
             });
-            li.querySelector('.delete-chat-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                showConfirmModal("기록 삭제", "이 채팅 기록을 삭제하시겠습니까?", () => {
-                    deleteChat(chat.id);
-                });
-            });
-            list.appendChild(li);
         });
-        
-        pcHistoryContainer.innerHTML = '';
-        pcHistoryContainer.appendChild(list);
-    }
+        list.appendChild(li);
+    });
 
+    pcHistoryContainer.innerHTML = '';
+    pcHistoryContainer.appendChild(list);
+}
 
     /* --- Plus Button Logic --- */
     plusBtn.addEventListener('click', (e) => {
