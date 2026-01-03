@@ -3409,17 +3409,18 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
     }
 };
 
-    /* ===============================
-   이미지 업로드 자동 압축 모듈
-   (JS 맨 끝에 그대로 붙여도 됨)
+/* ===============================
+   이미지 업로드 안전 압축 모듈
 ================================ */
 
 (() => {
-    const MAX_MB = 5;               // 최대 허용 용량 (MB)
+    const MAX_MB = 5;
     const MAX_SIZE = MAX_MB * 1024 * 1024;
-    const MAX_WIDTH = 1280;         // 최대 가로
-    const MAX_HEIGHT = 1280;        // 최대 세로
-    const JPEG_QUALITY = 0.75;      // 압축 품질
+    const MAX_WIDTH = 1280;
+    const MAX_HEIGHT = 1280;
+    const JPEG_QUALITY = 0.75;
+
+    let isCompressing = false;
 
     document.addEventListener("change", async (e) => {
         const input = e.target;
@@ -3427,21 +3428,32 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
         if (!input.files || !input.files[0]) return;
 
         const file = input.files[0];
+
+        // 이미 처리 중이면 차단
+        if (isCompressing) return;
+
+        // 이미지 아니면 패스
         if (!file.type.startsWith("image/")) return;
 
-        // 용량이 작으면 그대로 통과
+        // 이미 압축된 파일이면 패스
+        if (file._compressed) return;
+
+        // 용량 작으면 패스
         if (file.size <= MAX_SIZE) return;
+
+        isCompressing = true;
+        showGlobalLoading(true);
+
+        // UI가 먼저 렌더링되도록 한 프레임 양보
+        await new Promise(r => requestAnimationFrame(r));
 
         try {
             const compressedFile = await compressImage(file);
+            compressedFile._compressed = true;
 
-            // 기존 input의 file 교체
             const dt = new DataTransfer();
             dt.items.add(compressedFile);
             input.files = dt.files;
-
-            // 기존 로직이 다시 실행되도록 이벤트 재발행
-            input.dispatchEvent(new Event("change", { bubbles: true }));
 
             console.log(
                 "[Image Compress]",
@@ -3449,8 +3461,11 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
                 (compressedFile.size / 1024 / 1024).toFixed(2) + "MB"
             );
         } catch (err) {
-            console.error("이미지 압축 실패", err);
-            alert("이미지 용량이 너무 커서 처리할 수 없습니다.");
+            alert("이미지 처리 중 오류가 발생했습니다.");
+            console.error(err);
+        } finally {
+            isCompressing = false;
+            showGlobalLoading(false);
         }
     });
 
@@ -3464,7 +3479,6 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
 
             img.onload = () => {
                 let { width, height } = img;
-
                 const ratio = Math.min(
                     MAX_WIDTH / width,
                     MAX_HEIGHT / height,
@@ -3478,22 +3492,29 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
                 canvas.width = width;
                 canvas.height = height;
 
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, width, height);
+                canvas.getContext("2d").drawImage(img, 0, 0, width, height);
 
                 canvas.toBlob(blob => {
-                    if (!blob) return reject("blob 생성 실패");
+                    if (!blob) return reject("Blob 생성 실패");
 
                     resolve(
-                        new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
-                            type: "image/jpeg"
-                        })
+                        new File(
+                            [blob],
+                            file.name.replace(/\.\w+$/, ".jpg"),
+                            { type: "image/jpeg" }
+                        )
                     );
                 }, "image/jpeg", JPEG_QUALITY);
             };
 
             reader.readAsDataURL(file);
         });
+    }
+
+    function showGlobalLoading(show) {
+        const loader = document.querySelector(".thinking-indicator");
+        if (!loader) return;
+        loader.style.display = show ? "flex" : "none";
     }
 })();
 
