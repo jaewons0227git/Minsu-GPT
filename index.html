@@ -3408,6 +3408,95 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
         setStreamingState(false);
     }
 };
+
+    /* ===============================
+   이미지 업로드 자동 압축 모듈
+   (JS 맨 끝에 그대로 붙여도 됨)
+================================ */
+
+(() => {
+    const MAX_MB = 5;               // 최대 허용 용량 (MB)
+    const MAX_SIZE = MAX_MB * 1024 * 1024;
+    const MAX_WIDTH = 1280;         // 최대 가로
+    const MAX_HEIGHT = 1280;        // 최대 세로
+    const JPEG_QUALITY = 0.75;      // 압축 품질
+
+    document.addEventListener("change", async (e) => {
+        const input = e.target;
+        if (!input || input.type !== "file") return;
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        if (!file.type.startsWith("image/")) return;
+
+        // 용량이 작으면 그대로 통과
+        if (file.size <= MAX_SIZE) return;
+
+        try {
+            const compressedFile = await compressImage(file);
+
+            // 기존 input의 file 교체
+            const dt = new DataTransfer();
+            dt.items.add(compressedFile);
+            input.files = dt.files;
+
+            // 기존 로직이 다시 실행되도록 이벤트 재발행
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+
+            console.log(
+                "[Image Compress]",
+                (file.size / 1024 / 1024).toFixed(2) + "MB →",
+                (compressedFile.size / 1024 / 1024).toFixed(2) + "MB"
+            );
+        } catch (err) {
+            console.error("이미지 압축 실패", err);
+            alert("이미지 용량이 너무 커서 처리할 수 없습니다.");
+        }
+    });
+
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            const img = new Image();
+
+            reader.onload = e => img.src = e.target.result;
+            reader.onerror = reject;
+
+            img.onload = () => {
+                let { width, height } = img;
+
+                const ratio = Math.min(
+                    MAX_WIDTH / width,
+                    MAX_HEIGHT / height,
+                    1
+                );
+
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(blob => {
+                    if (!blob) return reject("blob 생성 실패");
+
+                    resolve(
+                        new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {
+                            type: "image/jpeg"
+                        })
+                    );
+                }, "image/jpeg", JPEG_QUALITY);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+})();
+
 </script>
 
 <div id="dropZone" class="drop-zone">
