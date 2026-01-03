@@ -76,6 +76,9 @@
             --accent-bubble-bg: #f2f2f2; /* 사용자 말풍선 배경 */
             --accent-bubble-text: #212121; /* 사용자 말풍선 텍스트 */
             --toggle-bg-checked: #1E76FB; /* 토글 스위치 켜짐 색상 */
+            
+            /* 버튼 텍스트/아이콘 색상 변수 추가 */
+            --btn-active-text: #ffffff; 
         }
 
         /* 다크 테마 */
@@ -103,7 +106,7 @@
             --accent-bubble-text: #e0e0e0;
             --toggle-bg-checked: #1E76FB;
             
-            
+            --btn-active-text: #000000; /* 다크모드 기본값은 블랙 */
         }
 
         html, body {
@@ -242,7 +245,7 @@
             justify-content: space-between;
             background: var(--bg-main); 
             flex-shrink: 0; 
-            z-index: 10;
+            z-index: 50; /* 비네팅(20)보다 높게 설정하여 드롭다운이 가려지지 않게 함 */
             border-bottom: none;
             box-sizing: border-box;
             transition: background 0.3s;
@@ -489,7 +492,7 @@
         .edit-confirm { background: var(--accent-color); color: white; }
         .edit-confirm:hover { opacity: 0.9; }
 
-        /* 수정/복사 버튼 컨테이너 (User bubble 아래 표시) - 수정됨 */
+        /* 수정/복사 버튼 컨테이너 (User bubble 아래 표시) */
         .msg-user-actions {
             display: flex; gap: 8px; margin-top: 4px;
             opacity: 0; visibility: hidden; transition: opacity 0.2s;
@@ -504,9 +507,9 @@
         }
         .msg-btn:hover { color: var(--text-main); }
         
-        /* 수정 버튼: 기본 숨김, 마지막 메시지에서만 보임 */
+        /* 수정 버튼: 기본 숨김, JS로 last user message에만 class 'latest' 추가하여 제어 */
         .msg-edit-btn { display: none; }
-        .msg.user:last-of-type .msg-edit-btn { display: flex; }
+        .msg.user.latest .msg-edit-btn { display: flex; }
 
         /* 복사 버튼: 항상 flex (부모 visibility로 제어됨) */
         .msg-copy-btn { display: flex; }
@@ -638,8 +641,12 @@
             cursor: default; transition: all 0.2s ease; pointer-events: none;
             flex-shrink: 0; margin-left: 8px; margin-bottom: 0px; 
         }
-        /* Active Send Button Color controlled by --accent-color */
-        .send-btn.active { background-color: var(--accent-color); color: #ffffff; cursor: pointer; pointer-events: auto; }
+        /* Active Send Button Color controlled by --accent-color and --btn-active-text */
+        .send-btn.active { 
+            background-color: var(--accent-color); 
+            color: var(--btn-active-text); /* 다크모드/라이트모드에 따라 변함 */
+            cursor: pointer; pointer-events: auto; 
+        }
         .material-symbols-rounded.send-icon { font-variation-settings: 'wght' 300; font-size: 22px; }
         
         .thinking-indicator { 
@@ -1057,23 +1064,69 @@
         }
         .bot-content a:hover::before { color: var(--primary-blue); }
 
-        /* Vignettes for Smooth Scrolling - 수정됨 */
+        /* Vignettes for Smooth Scrolling */
         .vignette-top {
             position: absolute; 
-            top: 74px; /* 상단 헤더 높이(약 74px) 아래에 위치 */
+            top: 74px; 
             left: 0; right: 0; height: 30px;
             background: linear-gradient(to bottom, var(--bg-main), transparent);
             z-index: 20; pointer-events: none;
         }
         .vignette-bottom {
             position: absolute; 
-            top: -30px; /* 입력창 위로 올림 */
+            top: -30px; 
             left: 0; right: 0; height: 30px;
             background: linear-gradient(to top, var(--bg-main), transparent);
-            z-index: 20; /* 입력창 영역 내부에서 위로 띄움 */
+            z-index: 20; 
             pointer-events: none;
         }
         
+        /* --- Source Card Styles --- */
+        .source-container {
+            display: flex; gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin-top: 8px;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        .source-container::-webkit-scrollbar { height: 4px; }
+        .source-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+        
+        .source-card {
+            background-color: var(--bg-main);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            min-width: 200px;
+            max-width: 240px;
+            flex-shrink: 0;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .source-card:hover {
+            background-color: var(--surface-hover);
+        }
+        .source-card:active {
+            transform: scale(0.98);
+        }
+        .source-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .source-url {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         
     </style>
 </head>
@@ -1212,10 +1265,11 @@
 
     <div class="chat-window" id="chatWindow">
         <div class="messages-container" id="chatMessages"></div>
-        </div>
+    </div>
 
     <div class="input-container">
-        <div class="vignette-bottom"></div> <div class="input-group">
+        <div class="vignette-bottom"></div>
+        <div class="input-group">
             <button class="plus-btn" id="plusBtn" title="첨부">
                 <span class="material-symbols-rounded">add</span>
             </button>
@@ -1550,6 +1604,7 @@
     const ACCENT_KEY = 'minsugpt_accent_pref';
 
     // Pastel Colors Optimized for Dark/Light
+    // added text: color for button active state if needed, though handled by css vars now mostly
     const ACCENT_COLORS = {
         'default': { color: '#000000', bubbleBg: '#f2f2f2', bubbleText: '#212121' },
         'pastel-pink': { color: '#ff9ff3', bubbleBg: '#ffd1f9', bubbleText: '#5f0a40' },
@@ -1607,11 +1662,14 @@
              // Let css variables handle dark/light mode for default
              root.removeProperty('--accent-bubble-bg');
              root.removeProperty('--accent-bubble-text');
+             // Default accent button text color handled by CSS vars (--btn-active-text)
         } else {
              // Use palette values but check for dark mode adjustments if needed
              // For now, using palette directly which is optimized for readability
              root.setProperty('--accent-bubble-bg', palette.bubbleBg);
              root.setProperty('--accent-bubble-text', palette.bubbleText);
+             // Pastels are light, so active text should be dark
+             root.setProperty('--btn-active-text', '#000000');
         }
     }
 
@@ -1975,6 +2033,7 @@
                 appendActionButtons(msgDiv, msg.content); 
             }
         });
+        updateLastUserMsgClass();
         closeHistoryModal();
         setTimeout(scrollToBottom, 100);
     }
@@ -2125,6 +2184,7 @@
             setStreamingState(true);
         }
         
+        updateLastUserMsgClass();
         scrollToBottom();
         const botMsgDiv = renderMessage('', 'bot', true); 
         const contentDiv = botMsgDiv.querySelector('.bot-content');
@@ -2213,6 +2273,15 @@
         }
         chatMessages.appendChild(msgDiv);
         return msgDiv;
+    }
+
+    /* --- Helper to update 'latest' class on user messages --- */
+    function updateLastUserMsgClass() {
+        const userMsgs = chatMessages.querySelectorAll('.msg.user');
+        userMsgs.forEach(msg => msg.classList.remove('latest'));
+        if (userMsgs.length > 0) {
+            userMsgs[userMsgs.length - 1].classList.add('latest');
+        }
     }
 
     /* --- User Message Editing & Copy Functions --- */
@@ -2345,16 +2414,60 @@
         const thoughtRegex = /\[THOUGHT\]([\s\S]*?)\[\/THOUGHT\]/g;
         let combinedThought = "";
         let match;
+        
         while ((match = thoughtRegex.exec(content)) !== null) {
             combinedThought += match[1].trim() + "\n\n"; 
         }
         combinedThought = combinedThought.trim();
+
+        // 1. Parse Sources from the thought content
+        // Pattern: Title: ... URL: ... Content: ... Score: ...
+        const sourceRegex = /Title:\s*(.+?)\s*URL:\s*(.+?)\s*Content:[\s\S]*?Score:\s*[\d.]+/g;
+        const sources = [];
+        let cleanThought = combinedThought;
         
-        if(combinedThought) {
+        let sourceMatch;
+        while ((sourceMatch = sourceRegex.exec(combinedThought)) !== null) {
+            sources.push({
+                title: sourceMatch[1].trim(),
+                url: sourceMatch[2].trim()
+            });
+        }
+        
+        // Remove source blocks from the thought text to display clean thought
+        cleanThought = cleanThought.replace(sourceRegex, '').trim();
+        
+        if(cleanThought) {
             const hiddenThought = document.createElement('div');
             hiddenThought.className = 'thought-raw';
-            hiddenThought.innerText = combinedThought;
+            hiddenThought.innerText = cleanThought;
             msgDiv.appendChild(hiddenThought);
+        }
+        
+        // Render Source Cards if any
+        if (sources.length > 0) {
+            const sourceContainer = document.createElement('div');
+            sourceContainer.className = 'source-container';
+            
+            sources.forEach(src => {
+                const card = document.createElement('a');
+                card.className = 'source-card';
+                card.href = src.url;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+                
+                let displayUrl = src.url;
+                if (displayUrl.length > 30) {
+                    displayUrl = displayUrl.substring(0, 30) + '...';
+                }
+                
+                card.innerHTML = `
+                    <div class="source-title">${src.title}</div>
+                    <div class="source-url">${displayUrl}</div>
+                `;
+                sourceContainer.appendChild(card);
+            });
+            msgDiv.appendChild(sourceContainer);
         }
 
         let buttonHTML = `
@@ -2365,7 +2478,7 @@
             <button class="action-btn" onclick="shareContent(this)" title="공유"><span class="material-symbols-rounded">share</span></button>
         `;
         
-        if (combinedThought) {
+        if (cleanThought) {
             buttonHTML += `<button class="thought-btn" onclick="openThoughtModal(this)"><span class="material-symbols-rounded">psychology</span>생각 과정</button>`;
         }
 
