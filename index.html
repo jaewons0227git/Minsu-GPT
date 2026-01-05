@@ -3695,26 +3695,11 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
             image_base64: imageBase64List
         };
 
-        let streamQueue = []; 
+         
         let displayedText = "";
-        let isStreamComplete = false;
+        
 
-        const processStreamQueue = () => {
-            if (signal.aborted) return;
-            if (streamQueue.length > 0) {
-                const chunk = streamQueue.splice(0, streamQueue.length > 50 ? 5 : 1).join('');
-                displayedText += chunk;
-                contentDiv.innerHTML = formatMessageContent(displayedText);
-                addCodeCopyButtons(contentDiv);
-                scrollToBottom();
-                setTimeout(processStreamQueue, 10);
-            } else if (isStreamComplete) {
-                finalizeMessage(botMsgDiv, displayedText);
-            } else {
-                setTimeout(processStreamQueue, 50);
-            }
-        };
-
+        
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3726,18 +3711,44 @@ window.sendMessage = async function(userMessageOverride = null, isRegenerate = f
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
-        processStreamQueue();
+
+        // 첫 데이터를 받으면 인디케이터를 지우기 위한 변수
+        let isFirstChunk = true;
 
         while (true) {
             const { done, value } = await reader.read();
+            
             if (done || signal.aborted) { 
                 if (signal.aborted) await reader.cancel();
-                isStreamComplete = true; 
+                // 스트리밍 종료 상태로 변경
+                setStreamingState(false);
+                
+                // 수신 완료 후 전체 메시지를 마크다운으로 깔끔하게 변환 (선택 사항)
+                // msgContent.innerHTML = marked.parse(msgContent.innerText);
                 break; 
             }
+
             const chunk = decoder.decode(value, { stream: true });
             const cleanChunk = chunk.replace("[DONE]", "");
-            if (cleanChunk) streamQueue.push(...cleanChunk.split(''));
+
+            if (cleanChunk) {
+                // 1. 첫 조각이 들어오면 '생각 중...' 애니메이션 제거
+                if (isFirstChunk) {
+                    msgContent.innerHTML = '';
+                    isFirstChunk = false;
+                }
+
+                // 2. 새로운 텍스트 조각(span) 생성 및 페이드 인 클래스 부여
+                const chunkSpan = document.createElement('span');
+                chunkSpan.className = 'fade-in-chunk'; // CSS에 정의한 애니메이션 적용
+                chunkSpan.innerText = cleanChunk;
+                
+                // 3. 즉시 화면에 추가
+                msgContent.appendChild(chunkSpan);
+                
+                // 4. 즉시 스크롤 아래로 내림
+                chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'auto' });
+            }
         }
 
     } catch (error) {
